@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { ReactQueryDevtools } from 'react-query/devtools';
+
 import { BottomNavigation } from "./components/BottomNavigation";
-import { StockBanner } from "./components/StockBanner";
-import { EventCalendar } from "./components/EventCalendar";
-import { SocialFeed } from "./components/SocialFeed";
-import { NewsList } from "./components/NewsList";
-// import { IntegratedMarket } from "./components/IntegratedMarket";
+import { HomeStockBanner } from "./components/HomeStockBanner";
+import { HomeEventCalendar } from "./components/HomeEventCalendar";
+import { HomeSocialFeed } from "./components/HomeSocialFeed";
+import { HomeNewsList } from "./components/HomeNewsList"; 
 import MarketPage from "./components/MarketPage";
-import { NewsPage } from "./components/NewsPage";
+import { NewsPage } from "./components/NewsPage"; 
 import NewsDetailPage, { NewsItem as DetailNewsItem } from "./components/NewsDetailPage";
 import { SNSPage } from "./components/SNSPage";
 import { SNSDetailPage } from "./components/SNSDetailPage";
@@ -17,6 +19,66 @@ import { SignupPage } from "./components/auth/SignupPage";
 import { UserProfile } from "./components/user/UserProfile";
 import { NotificationSystem } from "./components/notifications/NotificationSystem";
 import { TrendingUp, MessageSquare, Newspaper, Bot, BarChart3, Bell, User, LogIn, ArrowLeft } from "lucide-react";
+
+// ============================================================================
+// React Query 클라이언트 설정
+// ============================================================================
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // 캐싱 설정
+      staleTime: 30000,        // 30초 동안 fresh 상태
+      cacheTime: 300000,       // 5분 동안 캐시 보관
+      
+      // 재시도 설정
+      retry: (failureCount, error) => {
+        // 404, 401, 403은 재시도하지 않음
+        if (error && typeof error === 'object' && 'status' in error) {
+          const status = (error as any).status;
+          if ([404, 401, 403].includes(status)) return false;
+        }
+        return failureCount < 2; // 최대 2번 재시도
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      
+      // 자동 새로고침 설정
+      refetchOnWindowFocus: true,   // 윈도우 포커스 시
+      refetchOnReconnect: true,     // 네트워크 재연결 시
+      refetchInterval: 300000,      // 5분마다 백그라운드 새로고침
+      refetchOnMount: 'always',
+    },
+    mutations: {
+      retry: 1,
+      retryDelay: 1000,
+    }
+  }
+});
+
+// 개발환경 디버깅
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+  (window as any).__REACT_QUERY_CLIENT__ = queryClient;
+  (window as any).debugQueryCache = () => {
+    const cache = queryClient.getQueryCache();
+    console.table(
+      cache.getAll().map(query => ({
+        queryKey: JSON.stringify(query.queryKey),
+        status: query.state.status,
+        dataUpdatedAt: new Date(query.state.dataUpdatedAt).toLocaleTimeString(),
+        error: query.state.error instanceof Error ? query.state.error.message : 
+               query.state.error ? String(query.state.error) : 'None'
+      }))
+    );
+  };
+  (window as any).clearQueryCache = () => {
+    queryClient.clear();
+    console.log('🗑️ React Query 캐시 클리어됨');
+  };
+}
+
+// ============================================================================
+// 타입 정의 (기존과 동일)
+// ============================================================================
 
 type AuthState = "guest" | "login" | "signup" | "authenticated";
 type ViewState = "main" | "auth" | "profile" | "sns-detail" | "stock-news" | "news-detail";
@@ -48,9 +110,13 @@ interface StockNewsItem {
   fetched_at?: string;
 }
 
-export default function App() {
+// ============================================================================
+// 메인 App 컴포넌트
+// ============================================================================
+
+function AppContent() {
   const [activeTab, setActiveTab] = useState("home");
-  const [authState, setAuthState] = useState<AuthState>("guest"); // 게스트 모드로 시작
+  const [authState, setAuthState] = useState<AuthState>("guest");
   const [viewState, setViewState] = useState<ViewState>("main");
   const [showNotifications, setShowNotifications] = useState(false);
   const [selectedSNSPost, setSelectedSNSPost] = useState<SNSPost | null>(null);
@@ -70,15 +136,13 @@ export default function App() {
 
   const isLoggedIn = authState === "authenticated";
 
-  // 네비게이션 이벤트 리스너들
-  useEffect(() => {
-    const handleNavigateToSNS = () => {
-      setActiveTab("sns");
-    };
+  // =========================================================================
+  // 이벤트 핸들러들 (기존과 동일)
+  // =========================================================================
 
-    const handleNavigateToNews = () => {
-      setActiveTab("news");
-    };
+  useEffect(() => {
+    const handleNavigateToSNS = () => setActiveTab("sns");
+    const handleNavigateToNews = () => setActiveTab("news");
 
     window.addEventListener('navigateToSNS', handleNavigateToSNS);
     window.addEventListener('navigateToNews', handleNavigateToNews);
@@ -173,6 +237,10 @@ export default function App() {
     }
   };
 
+  // =========================================================================
+  // 렌더링 함수들 (대부분 기존과 동일)
+  // =========================================================================
+
   // 인증 페이지 렌더링
   if (viewState === "auth") {
     if (authState === "login") {
@@ -224,7 +292,6 @@ export default function App() {
       <div className="min-h-screen relative z-10">
         <div className="max-w-md mx-auto px-4 pt-4 pb-20">
           <div className="space-y-4">
-            {/* 뒤로가기 헤더 */}
             <div className="flex items-center justify-between">
               <button
                 onClick={handleBackToMain}
@@ -239,12 +306,10 @@ export default function App() {
               </div>
             </div>
 
-            {/* 주식 정보 */}
             <div className="glass-card rounded-xl p-4">
               <h2 className="text-lg font-bold text-center">{selectedStockNews.symbol} 관련 뉴스</h2>
             </div>
 
-            {/* 뉴스 리스트 */}
             <div className="space-y-3">
               {selectedStockNews.news.map((news, index) => (
                 <article
@@ -344,14 +409,12 @@ export default function App() {
         </div>
         <div className="flex items-center space-x-2">
           {isLoggedIn ? (
-            // 로그인된 사용자용 헤더
             <>
               <button
                 onClick={handleNotificationClick}
                 className="relative w-8 h-8 rounded-full glass flex items-center justify-center hover:glass-strong transition-all"
               >
                 <Bell size={16} />
-                {/* 알림 배지 */}
                 <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full shadow-lg"></div>
               </button>
               <button
@@ -362,7 +425,6 @@ export default function App() {
               </button>
             </>
           ) : (
-            // 게스트용 헤더
             <button
               onClick={handleLoginClick}
               className="flex items-center space-x-2 px-3 py-1.5 glass-strong rounded-lg hover:bg-white/10 transition-all"
@@ -382,18 +444,10 @@ export default function App() {
         return (
           <div className="space-y-4 relative z-10">
             {renderHeader()}
-
-            {/* 실시간 급변동 배너 - WEI 타이틀 바로 밑 */}
-            <StockBanner onStockNewsClick={handleStockNewsClick} />
-
-            {/* 시장 이벤트 캘린더 - 스톡 배너 바로 밑 */}
-            <EventCalendar />
-
-            {/* SNS 피드 */}
-            <SocialFeed isLoggedIn={isLoggedIn} onPostClick={handleSNSPostClick} />
-
-            {/* 뉴스 리스트 */}
-            <NewsList onViewAll={() => setActiveTab("news")} />
+            <HomeStockBanner onStockNewsClick={handleStockNewsClick} />
+            <HomeEventCalendar />
+            <HomeSocialFeed isLoggedIn={isLoggedIn} onPostClick={handleSNSPostClick} />
+            <HomeNewsList onViewAll={() => setActiveTab("news")} />
           </div>
         );
 
@@ -408,7 +462,6 @@ export default function App() {
                 <h1 className="text-2xl font-bold">시장 & 재무</h1>
               </div>
             </div>
-            
             <MarketPage />
           </div>
         );
@@ -424,7 +477,6 @@ export default function App() {
                 <h1 className="text-2xl font-bold">SNS 피드</h1>
               </div>
             </div>
-            
             <SNSPage 
               isLoggedIn={isLoggedIn} 
               onLoginPrompt={handleLoginClick}
@@ -445,7 +497,12 @@ export default function App() {
               </div>
             </div>
             
-            <NewsPage isLoggedIn={isLoggedIn} onLoginPrompt={handleLoginClick} onNewsClick={handleNewsClick} />
+            {/* 🎯 핵심 변경: 최적화된 NewsPage 사용 */}
+            <NewsPage 
+              isLoggedIn={isLoggedIn} 
+              onLoginPrompt={handleLoginClick} 
+              onNewsClick={handleNewsClick} 
+            />
           </div>
         );
 
@@ -468,7 +525,6 @@ export default function App() {
                 </button>
               )}
             </div>
-            
             <AIAnalysis isLoggedIn={isLoggedIn} onLoginPrompt={handleLoginClick} />
           </div>
         );
@@ -484,7 +540,6 @@ export default function App() {
                 <h1 className="text-2xl font-bold">경제 지표</h1>
               </div>
             </div>
-            
             <EconomicDashboard isLoggedIn={true} onLoginPrompt={handleLoginClick} />
           </div>
         );
@@ -497,15 +552,12 @@ export default function App() {
   return (
     <div className="min-h-screen relative">
       <div className="max-w-md mx-auto relative z-10">
-        {/* 메인 콘텐츠 - 상단 패딩 줄임 */}
         <div className="px-4 pt-4 pb-20">
           {renderContent()}
         </div>
 
-        {/* 하단 네비게이션 */}
         <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
-        {/* 알림 시스템 (로그인한 사용자만) */}
         {isLoggedIn && (
           <NotificationSystem
             isVisible={showNotifications}
@@ -514,5 +566,25 @@ export default function App() {
         )}
       </div>
     </div>
+  );
+}
+
+// ============================================================================
+// React Query Provider로 감싸진 메인 App
+// ============================================================================
+
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppContent />
+      
+      {/* 개발환경에서만 React Query DevTools 표시 */}
+      {process.env.NODE_ENV === 'development' && (
+        <ReactQueryDevtools 
+          initialIsOpen={false}
+          position="bottom-right"
+        />
+      )}
+    </QueryClientProvider>
   );
 }

@@ -166,7 +166,7 @@ const mockNewsData: NewsItem[] = [
   }
 ];
 
-export function NewsList({ onViewAll }: NewsListProps) {
+export function HomeNewsList({ onViewAll }: NewsListProps) {
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();

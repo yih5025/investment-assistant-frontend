@@ -236,7 +236,7 @@ const companyRelatedNews: { [key: string]: CompanyNewsItem[] } = {
   ]
 };
 
-export function EventCalendar() {
+export function HomeEventCalendar() {
   const [currentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<EarningsEvent | null>(null);
   const [showNewsDetail, setShowNewsDetail] = useState(false);

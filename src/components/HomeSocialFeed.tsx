@@ -67,7 +67,7 @@ const mockSNSPosts: SNSPost[] = [
   }
 ];
 
-export function SocialFeed({ isLoggedIn, onPostClick }: SocialFeedProps) {
+export function HomeSocialFeed({ isLoggedIn, onPostClick }: SocialFeedProps) {
   const [selectedPlatform, setSelectedPlatform] = useState<"all" | "X" | "Truth Social">("all");
 
   const filteredPosts = mockSNSPosts.filter(post => 

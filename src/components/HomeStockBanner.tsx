@@ -250,7 +250,7 @@ interface StockBannerProps {
   onStockNewsClick?: (stockNews: StockNewsItem[], symbol: string) => void;
 }
 
-export function StockBanner({ onStockNewsClick }: StockBannerProps) {
+export function HomeStockBanner({ onStockNewsClick }: StockBannerProps) {
   // 각 배너의 현재 주식 상태 관리
   const [currentStocks, setCurrentStocks] = useState<{ [key: number]: StockData }>({});
 
