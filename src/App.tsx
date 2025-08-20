@@ -2,18 +2,21 @@ import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
 
+// WebSocket 서비스 import 추가
+import { websocketService } from './services/websocketService';
+
 import { BottomNavigation } from "./components/BottomNavigation";
-import { HomeStockBanner } from "./components/HomeStockBanner";
+import TopGainersBanner from "./components/TopGainersBanner"; // 새로운 TopGainers 배너
 import { HomeEventCalendar } from "./components/HomeEventCalendar";
 import { HomeSocialFeed } from "./components/HomeSocialFeed";
 import { HomeNewsList } from "./components/HomeNewsList"; 
-import MarketPage from "./components/MarketPage";
+import OptimizedMarketPage from "./components/MarketPage"; // 최적화된 마켓 페이지
 import { NewsPage } from "./components/NewsPage"; 
 import NewsDetailPage, { NewsItem as DetailNewsItem } from "./components/NewsDetailPage";
 import { SNSPage } from "./components/SNSPage";
 import { SNSDetailPage } from "./components/SNSDetailPage";
 import { AIAnalysis } from "./components/AIAnalysis";
-import EconomicDashboard from "./components/EconomicDashboard";
+import OptimizedEconomicDashboard from "./components/EconomicDashboard"; // 최적화된 경제 대시보드
 import { LoginPage } from "./components/auth/LoginPage";
 import { SignupPage } from "./components/auth/SignupPage";
 import { UserProfile } from "./components/user/UserProfile";
@@ -136,6 +139,46 @@ function AppContent() {
 
   const isLoggedIn = authState === "authenticated";
 
+  // ============================================================================
+  // WebSocket 서비스 초기화 (앱 시작 시)
+  // ============================================================================
+  
+  useEffect(() => {
+    console.log('🚀 앱 시작 - WebSocket 서비스 초기화');
+    
+    // WebSocket 서비스 초기화
+    websocketService.initialize();
+
+    // 앱 종료 시 정리
+    return () => {
+      console.log('🛑 앱 종료 - WebSocket 서비스 정리');
+      websocketService.shutdown();
+    };
+  }, []);
+
+  // ============================================================================
+  // 페이지 visibility 처리 (선택사항)
+  // ============================================================================
+  
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        console.log('📱 앱이 백그라운드로 이동 (WebSocket 연결 유지)');
+        // WebSocket 연결은 유지하되 로그만 출력
+      } else {
+        console.log('📱 앱이 포그라운드로 복귀');
+        // 필요시 재연결 시도
+        websocketService.reconnectAll();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
   // =========================================================================
   // 이벤트 핸들러들 (기존과 동일)
   // =========================================================================
@@ -143,13 +186,16 @@ function AppContent() {
   useEffect(() => {
     const handleNavigateToSNS = () => setActiveTab("sns");
     const handleNavigateToNews = () => setActiveTab("news");
+    const handleNavigateToMarkets = () => setActiveTab("markets"); // 마켓 페이지 이동 추가
 
     window.addEventListener('navigateToSNS', handleNavigateToSNS);
     window.addEventListener('navigateToNews', handleNavigateToNews);
+    window.addEventListener('navigateToMarkets', handleNavigateToMarkets); // 이벤트 리스너 추가
     
     return () => {
       window.removeEventListener('navigateToSNS', handleNavigateToSNS);
       window.removeEventListener('navigateToNews', handleNavigateToNews);
+      window.removeEventListener('navigateToMarkets', handleNavigateToMarkets); // 정리
     };
   }, []);
 
@@ -444,7 +490,8 @@ function AppContent() {
         return (
           <div className="space-y-4 relative z-10">
             {renderHeader()}
-            <HomeStockBanner onStockNewsClick={handleStockNewsClick} />
+            {/* 🎯 기존 HomeStockBanner를 TopGainersBanner로 교체 */}
+            <TopGainersBanner />
             <HomeEventCalendar />
             <HomeSocialFeed isLoggedIn={isLoggedIn} onPostClick={handleSNSPostClick} />
             <HomeNewsList onViewAll={() => setActiveTab("news")} />
@@ -462,7 +509,8 @@ function AppContent() {
                 <h1 className="text-2xl font-bold">시장 & 재무</h1>
               </div>
             </div>
-            <MarketPage />
+            {/* 🎯 최적화된 MarketPage 사용 */}
+            <OptimizedMarketPage />
           </div>
         );
 
@@ -540,7 +588,8 @@ function AppContent() {
                 <h1 className="text-2xl font-bold">경제 지표</h1>
               </div>
             </div>
-            <EconomicDashboard isLoggedIn={true} onLoginPrompt={handleLoginClick} />
+            {/* 🎯 최적화된 EconomicDashboard 사용 */}
+            <OptimizedEconomicDashboard isLoggedIn={true} onLoginPrompt={handleLoginClick} />
           </div>
         );
 

@@ -1,100 +1,116 @@
 // components/TopGainersBanner.tsx
-// 홈페이지 상단 TopGainers 배너 컴포넌트
+// 홈페이지 상단 TopGainers 배너 컴포넌트 - HomeStockBanner 스타일 완전 적용
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Activity, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import { useTopGainersData, useWebSocketConnection } from '../hooks/useMarketData';
 
 // ============================================================================
-// 타입 정의
+// FlipBoard 컴포넌트 (HomeStockBanner와 동일한 스타일)
 // ============================================================================
 
-interface TopGainerItemProps {
-  symbol: string;
-  name: string;
-  price: number;
-  changePercent: number;
-  volume: number;
-  sector?: string;
+interface FlipBoardProps {
+  data: any[];
+  color: string;
+  bgColor: string;
+  onBannerClick: (item: any) => void;
 }
 
-// ============================================================================
-// 서브 컴포넌트들
-// ============================================================================
+function FlipBoard({ data, color, bgColor, onBannerClick }: FlipBoardProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isFlipping, setIsFlipping] = useState(false);
 
-const TopGainerItem: React.FC<TopGainerItemProps> = ({ 
-  symbol, 
-  name, 
-  price, 
-  changePercent, 
-  volume,
-  sector 
-}) => {
-  const formatPrice = (price: number): string => {
-    return `${price.toFixed(2)}`;
+  useEffect(() => {
+    if (data.length === 0) return;
+
+    const interval = setInterval(() => {
+      setIsFlipping(true);
+      setTimeout(() => {
+        const newIndex = (currentIndex + 1) % data.length;
+        setCurrentIndex(newIndex);
+        setIsFlipping(false);
+      }, 300);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [currentIndex, data.length]);
+
+  if (data.length === 0) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="animate-spin mx-auto mb-1 opacity-50" size={16} />
+          <div className="text-xs text-foreground/60">로딩 중...</div>
+        </div>
+      </div>
+    );
+  }
+
+  const currentItem = data[currentIndex];
+
+  const formatPrice = (price: number) => {
+    if (price < 1) {
+      return `$${price.toFixed(4)}`;
+    }
+    return `$${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
-  const formatVolume = (volume: number): string => {
-    if (volume >= 1e9) return `${(volume / 1e9).toFixed(1)}B`;
-    if (volume >= 1e6) return `${(volume / 1e6).toFixed(1)}M`;
-    if (volume >= 1e3) return `${(volume / 1e3).toFixed(1)}K`;
-    return volume.toFixed(0);
+  const formatVolume = (volume: number) => {
+    if (volume >= 1000000000) {
+      return `${(volume / 1000000000).toFixed(1)}B`;
+    } else if (volume >= 1000000) {
+      return `${(volume / 1000000).toFixed(1)}M`;
+    }
+    return `${(volume / 1000).toFixed(0)}K`;
   };
 
   return (
-    <div className="glass rounded-xl p-3 min-w-[200px] hover:bg-white/10 transition-all cursor-pointer">
-      <div className="flex items-center justify-between mb-2">
-        <div>
-          <div className="font-semibold text-sm">{symbol}</div>
-          <div className="text-xs text-foreground/60 truncate max-w-[120px]">{name}</div>
-        </div>
-        <div className="text-right">
-          <div className="font-medium text-sm">{formatPrice(price)}</div>
-          <div className={`flex items-center text-xs ${
-            changePercent >= 0 ? 'text-green-400' : 'text-red-400'
-          }`}>
-            {changePercent >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-            <span className="ml-1">
-              {changePercent >= 0 ? '+' : ''}{changePercent.toFixed(2)}%
-            </span>
+    <div 
+      className="h-full flex flex-col cursor-pointer"
+      onClick={() => onBannerClick(currentItem)}
+    >
+      <div className={`flex-1 ${bgColor} rounded-lg ${isFlipping ? 'scale-95' : 'scale-100'} transition-transform duration-300 overflow-hidden hover:scale-105`}>
+        <div className="flip-container h-full">
+          <div className={`flip-content h-full ${isFlipping ? 'flipping' : ''}`}>
+            <div className="h-full p-4 flex flex-col justify-center space-y-2">
+              {/* 심볼 */}
+              <div className="text-center">
+                <div className="text-lg font-bold">{currentItem.symbol}</div>
+              </div>
+              
+              {/* 회사명 */}
+              <div className="text-center">
+                <div className="text-xs text-foreground/70 truncate">{currentItem.name}</div>
+              </div>
+              
+              {/* 주가 */}
+              <div className="text-center">
+                <div className="text-sm font-semibold">{formatPrice(currentItem.price)}</div>
+              </div>
+              
+              {/* 변화율 */}
+              <div className="text-center">
+                <div className={`text-sm font-medium ${currentItem.change_percent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {currentItem.change_percent >= 0 ? '+' : ''}{currentItem.change_percent.toFixed(1)}%
+                </div>
+              </div>
+              
+              {/* 거래량 */}
+              <div className="text-center">
+                <div className="text-xs text-foreground/60">
+                  Vol: {formatVolume(currentItem.volume)}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      
-      <div className="flex items-center justify-between text-xs text-foreground/50">
-        <span>Vol: {formatVolume(volume)}</span>
-        {sector && <span className="truncate max-w-[80px]">{sector}</span>}
-      </div>
     </div>
   );
-};
-
-const LoadingState: React.FC = () => (
-  <div className="flex items-center justify-center space-x-4 py-8">
-    <RefreshCw className="animate-spin text-blue-400" size={24} />
-    <div>
-      <div className="font-medium">실시간 데이터 로딩 중...</div>
-      <div className="text-sm text-foreground/60">Top Gainers 연결 중</div>
-    </div>
-  </div>
-);
-
-const ErrorState: React.FC<{ onRetry: () => void }> = ({ onRetry }) => (
-  <div className="text-center py-8">
-    <WifiOff className="mx-auto mb-2 text-red-400" size={32} />
-    <div className="font-medium text-red-400 mb-1">연결 실패</div>
-    <div className="text-sm text-foreground/60 mb-3">실시간 데이터를 가져올 수 없습니다</div>
-    <button
-      onClick={onRetry}
-      className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors text-sm"
-    >
-      다시 시도
-    </button>
-  </div>
-);
+}
 
 // ============================================================================
-// 메인 컴포넌트
+// 메인 TopGainersBanner 컴포넌트
 // ============================================================================
 
 const TopGainersBanner: React.FC = () => {
@@ -104,10 +120,8 @@ const TopGainersBanner: React.FC = () => {
   
   const { 
     topGainersData, 
-    topByPercent, 
     lastUpdated, 
-    isEmpty, 
-    getTopGainers 
+    isEmpty
   } = useTopGainersData();
 
   const { 
@@ -120,11 +134,47 @@ const TopGainersBanner: React.FC = () => {
   const topGainersStatus = connectionStatuses.topgainers;
 
   // =========================================================================
+  // 배너 데이터 분류 (HomeStockBanner와 동일한 구조)
+  // =========================================================================
+
+  const banners = [
+    {
+      title: "급상승",
+      icon: TrendingUp,
+      color: "text-green-400",
+      bgColor: "bg-gradient-to-br from-green-500/10 to-green-600/5",
+      borderColor: "border-green-500/20",
+      data: topGainersData.filter(item => item.change_percent > 0).slice(0, 6)
+    },
+    {
+      title: "급하락", 
+      icon: TrendingDown,
+      color: "text-red-400",
+      bgColor: "bg-gradient-to-br from-red-500/10 to-red-600/5",
+      borderColor: "border-red-500/20",
+      data: topGainersData.filter(item => item.change_percent < 0).slice(0, 6)
+    },
+    {
+      title: "거래량",
+      icon: Activity,
+      color: "text-blue-400", 
+      bgColor: "bg-gradient-to-br from-blue-500/10 to-blue-600/5",
+      borderColor: "border-blue-500/20",
+      data: [...topGainersData].sort((a, b) => b.volume - a.volume).slice(0, 6)
+    }
+  ];
+
+  // =========================================================================
   // 이벤트 핸들러
   // =========================================================================
 
   const handleRetry = () => {
     reconnect('topgainers');
+  };
+
+  const handleBannerClick = (item: any) => {
+    // 마켓 페이지로 이동
+    window.dispatchEvent(new CustomEvent('navigateToMarkets'));
   };
 
   // =========================================================================
@@ -134,8 +184,12 @@ const TopGainersBanner: React.FC = () => {
   // 로딩 상태
   if (topGainersStatus === 'connecting' || topGainersStatus === 'reconnecting') {
     return (
-      <div className="glass-card rounded-2xl p-6">
-        <LoadingState />
+      <div className="glass-card rounded-xl overflow-hidden">
+        <div className="p-6 text-center">
+          <RefreshCw className="animate-spin text-blue-400 mx-auto mb-2" size={24} />
+          <div className="font-medium">실시간 데이터 로딩 중...</div>
+          <div className="text-sm text-foreground/60">Top Gainers 연결 중</div>
+        </div>
       </div>
     );
   }
@@ -143,8 +197,18 @@ const TopGainersBanner: React.FC = () => {
   // 에러 상태
   if (topGainersStatus === 'disconnected' && isEmpty) {
     return (
-      <div className="glass-card rounded-2xl p-6">
-        <ErrorState onRetry={handleRetry} />
+      <div className="glass-card rounded-xl overflow-hidden">
+        <div className="p-6 text-center">
+          <WifiOff className="mx-auto mb-2 text-red-400" size={32} />
+          <div className="font-medium text-red-400 mb-1">연결 실패</div>
+          <div className="text-sm text-foreground/60 mb-3">실시간 데이터를 가져올 수 없습니다</div>
+          <button
+            onClick={handleRetry}
+            className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors text-sm"
+          >
+            다시 시도
+          </button>
+        </div>
       </div>
     );
   }
@@ -152,137 +216,85 @@ const TopGainersBanner: React.FC = () => {
   // 데이터 없음
   if (isEmpty) {
     return (
-      <div className="glass-card rounded-2xl p-6">
-        <div className="text-center py-8 text-foreground/60">
+      <div className="glass-card rounded-xl overflow-hidden">
+        <div className="p-6 text-center">
           <Activity className="mx-auto mb-2 opacity-50" size={32} />
           <div>아직 데이터가 없습니다</div>
-          <div className="text-sm mt-1">잠시 후 실시간 데이터가 표시됩니다</div>
+          <div className="text-sm mt-1 text-foreground/60">잠시 후 실시간 데이터가 표시됩니다</div>
         </div>
       </div>
     );
   }
 
   // =========================================================================
-  // 메인 렌더링
+  // 메인 렌더링 (HomeStockBanner와 완전 동일한 구조)
   // =========================================================================
 
   return (
-    <div className="glass-card rounded-2xl p-6">
-      {/* 헤더 */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-lg font-semibold flex items-center">
-            <TrendingUp className="mr-2 text-green-400" size={20} />
-            🚀 오늘의 급상승 종목
-          </h2>
-          <p className="text-sm text-foreground/70">
-            실시간으로 업데이트되는 상승률 상위 종목들을 확인하세요
-          </p>
-        </div>
-        
-        {/* 연결 상태 */}
-        <div className="flex items-center space-x-2">
-          {isTopGainersConnected ? (
-            <>
-              <Wifi className="text-green-400" size={16} />
-              <span className="text-green-400 text-xs">실시간</span>
-            </>
-          ) : (
-            <>
-              <WifiOff className="text-red-400" size={16} />
-              <span className="text-red-400 text-xs">연결 끊김</span>
-              <button
-                onClick={handleRetry}
-                className="text-xs text-blue-400 hover:text-blue-300 underline ml-2"
-              >
-                재연결
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Top Gainers 리스트 */}
-      <div className="space-y-4">
-        {/* 상위 5개 큰 카드로 표시 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {topByPercent.slice(0, 3).map((item, index) => (
-            <div key={item.symbol} className="relative">
-              {/* 순위 배지 */}
-              <div className={`absolute -top-2 -left-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold z-10 ${
-                index === 0 ? 'bg-yellow-500 text-black' :
-                index === 1 ? 'bg-gray-300 text-black' :
-                'bg-orange-400 text-black'
-              }`}>
-                {index + 1}
+    <div className="glass-card rounded-xl overflow-hidden">
+      {/* 메인 배너 섹션 */}
+      <div className="grid grid-cols-3 gap-3 p-4">
+        {banners.map((banner, index) => {
+          const Icon = banner.icon;
+          return (
+            <div key={index} className="flex flex-col h-36">
+              {/* 헤더 */}
+              <div className={`${banner.bgColor} px-3 py-2 rounded-t-lg border-b border-white/10 flex-shrink-0`}>
+                <div className="flex items-center justify-center space-x-2">
+                  <Icon size={16} className={banner.color} />
+                  <span className="text-sm font-medium">{banner.title}</span>
+                </div>
               </div>
               
-              <TopGainerItem
-                symbol={item.symbol}
-                name={item.name}
-                price={item.price}
-                changePercent={item.change_percent}
-                volume={item.volume}
-                sector={item.sector}
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* 나머지 항목들 스크롤 가능한 리스트 */}
-        {topGainersData.length > 3 && (
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-medium text-sm">기타 상승 종목</h3>
-              <span className="text-xs text-foreground/60">
-                {topGainersData.length - 3}개 더 보기
-              </span>
-            </div>
-            
-            <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-hide">
-              {getTopGainers(10).slice(3).map((item) => (
-                <TopGainerItem
-                  key={item.symbol}
-                  symbol={item.symbol}
-                  name={item.name}
-                  price={item.price}
-                  changePercent={item.change_percent}
-                  volume={item.volume}
-                  sector={item.sector}
+              {/* Flip Board */}
+              <div className="flex-1">
+                <FlipBoard 
+                  data={banner.data} 
+                  color={banner.color}
+                  bgColor={banner.bgColor}
+                  onBannerClick={handleBannerClick}
                 />
-              ))}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })}
       </div>
 
-      {/* 하단 정보 */}
-      <div className="mt-4 pt-4 border-t border-white/10">
-        <div className="flex items-center justify-between text-xs text-foreground/60">
-          <div className="flex items-center space-x-4">
-            <span className="flex items-center space-x-1">
-              <Activity size={12} />
-              <span>총 {topGainersData.length}개 종목</span>
+      {/* 하단 상태 표시 */}
+      <div className="px-4 py-3 border-t border-white/10 bg-white/[0.02]">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            {/* 연결 상태 */}
+            {isTopGainersConnected ? (
+              <div className="flex items-center space-x-1">
+                <Wifi className="text-green-400" size={14} />
+                <span className="text-xs text-green-400">실시간</span>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-1">
+                <WifiOff className="text-red-400" size={14} />
+                <span className="text-xs text-red-400">연결 끊김</span>
+              </div>
+            )}
+            
+            {/* 데이터 개수 */}
+            <span className="text-xs text-foreground/60">
+              {topGainersData.length}개 종목
             </span>
-            <span>📊 실시간 업데이트</span>
+            
+            {/* 마지막 업데이트 시간 */}
+            {lastUpdated && (
+              <span className="text-xs text-foreground/50">
+                {lastUpdated.toLocaleTimeString('ko-KR')} 업데이트
+              </span>
+            )}
           </div>
-          {lastUpdated && (
-            <span>
-              마지막 업데이트: {lastUpdated.toLocaleTimeString('ko-KR')}
-            </span>
-          )}
+          
+          {/* 안내 텍스트 */}
+          <div className="text-xs text-foreground/60">
+            배너를 클릭하면 마켓으로 이동
+          </div>
         </div>
-      </div>
-
-      {/* 더 보기 링크 */}
-      <div className="mt-4 text-center">
-        <a
-          href="/market"
-          className="inline-flex items-center space-x-2 px-4 py-2 bg-primary/20 text-primary rounded-lg hover:bg-primary/30 transition-colors text-sm font-medium"
-        >
-          <span>전체 마켓 보기</span>
-          <TrendingUp size={14} />
-        </a>
       </div>
     </div>
   );
