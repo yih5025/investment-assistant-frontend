@@ -208,9 +208,13 @@ class NewsApiClient {
       ).toString();
 
       const url = `${this.baseUrl}${endpoint}${queryString ? `?${queryString}` : ''}`;
-      console.log(`🚀 API 요청: ${url}`);
+      
+      // 🔧 슬래시 리다이렉트 방지: URL 끝에 슬래시 추가
+      const finalUrl = url.endsWith('/') ? url : `${url}/`;
+      
+      console.log(`🚀 API 요청: ${finalUrl}`);
 
-      const response = await fetch(url, {
+      const response = await fetch(finalUrl, {
         signal: controller.signal,
         // 🔧 임시: 헤더 제거해서 테스트
         // headers: {
