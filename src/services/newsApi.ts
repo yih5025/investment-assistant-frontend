@@ -166,25 +166,24 @@ class NewsApiClient {
   ): Promise<T> {
     const cacheKey = this.getCacheKey(endpoint, params);
     
-    // 🔧 임시: 캐싱 완전 비활성화
-    // const cached = this.getFromCache<T>(cacheKey);
-    // if (cached) return cached;
+    const cached = this.getFromCache<T>(cacheKey);
+    if (cached) return cached;
 
-    // 🔧 임시: 중복 요청 방지도 비활성화
-    // if (this.pendingRequests.has(cacheKey)) {
-    //   console.log(`⏳ 중복 요청 대기 중: ${endpoint}`);
-    //   return this.pendingRequests.get(cacheKey);
-    // }
+    
+    if (this.pendingRequests.has(cacheKey)) {
+      console.log(`⏳ 중복 요청 대기 중: ${endpoint}`);
+      return this.pendingRequests.get(cacheKey);
+    }
 
     // 실제 요청
     const requestPromise = this.executeRequest<T>(endpoint, params, cacheTtl, cacheKey);
-    // this.pendingRequests.set(cacheKey, requestPromise);
+    this.pendingRequests.set(cacheKey, requestPromise);
 
     try {
       const result = await requestPromise;
       return result;
     } finally {
-      // this.pendingRequests.delete(cacheKey);
+      this.pendingRequests.delete(cacheKey);
     }
   }
 
@@ -216,11 +215,11 @@ class NewsApiClient {
 
       const response = await fetch(finalUrl, {
         signal: controller.signal,
-        // 🔧 임시: 헤더 제거해서 테스트
-        // headers: {
-        //   'Content-Type': 'application/json',
-        //   'Accept': 'application/json'
-        // }
+        
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
       });
 
       if (!response.ok) {
