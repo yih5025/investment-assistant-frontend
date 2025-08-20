@@ -13,7 +13,7 @@ import NewsDetailPage, { NewsItem as DetailNewsItem } from "./components/NewsDet
 import { SNSPage } from "./components/SNSPage";
 import { SNSDetailPage } from "./components/SNSDetailPage";
 import { AIAnalysis } from "./components/AIAnalysis";
-import { EconomicDashboard } from "./components/EconomicDashboard";
+import EconomicDashboard from "./components/EconomicDashboard";
 import { LoginPage } from "./components/auth/LoginPage";
 import { SignupPage } from "./components/auth/SignupPage";
 import { UserProfile } from "./components/user/UserProfile";
