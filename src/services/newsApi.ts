@@ -206,16 +206,15 @@ class NewsApiClient {
         }, {} as Record<string, string>)
       ).toString();
 
-      const url = `${this.baseUrl}${endpoint}${queryString ? `?${queryString}` : ''}`;
-      
       // 🔧 슬래시 리다이렉트 방지: URL 끝에 슬래시 추가
-      const finalUrl = url.endsWith('/') ? url : `${url}/`;
+      const baseUrlWithSlash = `${this.baseUrl}${endpoint}${endpoint.endsWith('/') ? '' : '/'}`;
+      const finalUrl = `${baseUrlWithSlash}${queryString ? `?${queryString}` : ''}`;
       
       console.log(`🚀 API 요청: ${finalUrl}`);
 
       const response = await fetch(finalUrl, {
         signal: controller.signal,
-        
+
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
