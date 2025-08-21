@@ -377,18 +377,35 @@ class WebSocketService {
   }
 
   private getApiUrl(type: WebSocketType): string {
-    const BASE_URL = 'https://api.investment-assistant.site/api/v1';
+    const BASE_URL = 'https://api.investment-assistant.site/api/v1';  // HTTPS 고정
+    
+    let endpoint: string;
+    let queryParams: string;
     
     switch (type) {
       case 'crypto':
-        return `${BASE_URL}/crypto?limit=20`;
+        endpoint = '/crypto';
+        queryParams = 'limit=20';
+        break;
       case 'sp500':
-        return `${BASE_URL}/stocks/sp500?limit=15`;
+        endpoint = '/stocks/sp500';
+        queryParams = 'limit=15';
+        break;
       case 'topgainers':
-        return `${BASE_URL}/stocks/topgainers?limit=10`;
+        endpoint = '/stocks/topgainers';
+        queryParams = 'limit=10';
+        break;
       default:
         throw new Error(`Unknown API type: ${type}`);
     }
+    
+    // 🎯 trailing slash 추가로 리다이렉트 방지 (news API와 동일한 로직)
+    const baseUrlWithSlash = `${BASE_URL}${endpoint}${endpoint.endsWith('/') ? '' : '/'}`;
+    const finalUrl = `${baseUrlWithSlash}?${queryParams}`;
+    
+    console.log(`🚀 ${type} API 요청: ${finalUrl}`);
+    
+    return finalUrl;
   }
 
   private transformApiDataToWebSocketFormat(type: WebSocketType, apiData: any[]): any[] {
@@ -463,7 +480,7 @@ class WebSocketService {
   // ============================================================================
   // WebSocket URL 생성
   // ============================================================================
-
+  
   private buildWebSocketUrl(type: WebSocketType): string {
     const BASE_API_URL = 'https://api.investment-assistant.site/api/v1';
     const wsUrl = `wss://api.investment-assistant.site/api/v1/ws/${this.getWebSocketPath(type)}`;
