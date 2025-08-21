@@ -1,5 +1,5 @@
 // services/webSocketService.ts
-// 안정화된 WebSocket 서비스 - crypto API 제거
+// TopGainers 백엔드 구조에 맞춘 업데이트된 WebSocket 서비스
 
 import { MarketTimeManager } from '../utils/marketTime';
 
@@ -23,16 +23,35 @@ export interface SP500Data {
   source: string;
 }
 
+// 🎯 새로운 TopGainers 데이터 구조 (백엔드 API 응답과 일치)
 export interface TopGainersData {
+  batch_id: number;
   symbol: string;
-  name: string;
-  price: number;
-  change_amount: number;
-  change_percent: number;
-  volume: number;
-  market_cap?: number;
-  sector?: string;
-  source: string;
+  category: 'top_gainers' | 'top_losers' | 'most_actively_traded';
+  last_updated: string;
+  rank_position?: number;
+  price?: number;
+  change_amount?: number;
+  change_percentage?: string;
+  volume?: number;
+  created_at?: string;
+  // 프론트엔드 표시용 추가 필드
+  name?: string;
+  change_percent?: number; // change_percentage에서 파싱된 숫자값
+}
+
+// 🎯 TopGainers 카테고리별 통계 정보
+export interface TopGainersCategoryStats {
+  categories: {
+    top_gainers: number;
+    top_losers: number;
+    most_actively_traded: number;
+  };
+  total: number;
+  batch_id: number;
+  last_updated: string;
+  market_status: 'OPEN' | 'CLOSED';
+  data_source: 'redis' | 'database';
 }
 
 export interface WebSocketMessage {
@@ -41,6 +60,10 @@ export interface WebSocketMessage {
   timestamp: string;
   status?: string;
   subscription_info?: any;
+  // TopGainers 전용 필드들
+  batch_id?: number;
+  data_count?: number;
+  categories?: string[];
   market_status?: {
     is_open: boolean;
     status: string;
@@ -57,6 +80,7 @@ export interface WebSocketEvents {
   'crypto_update': CryptoData[];
   'sp500_update': SP500Data[];
   'topgainers_update': TopGainersData[];
+  'topgainers_category_stats': TopGainersCategoryStats;
   'connection_change': { type: WebSocketType; status: ConnectionStatus; mode: DataMode };
   'error': { type: WebSocketType; error: string };
   'market_status_change': { isOpen: boolean; status: string };
@@ -90,7 +114,11 @@ class WebSocketService {
   private marketTimeManager = new MarketTimeManager();
   private lastDataCache: Map<WebSocketType, any[]> = new Map();
 
-  // 🎯 설정 가능한 옵션들
+  // 🎯 TopGainers 카테고리별 데이터 캐시
+  private topGainersCategories: Map<string, TopGainersData[]> = new Map();
+  private topGainersCategoryStats: TopGainersCategoryStats | null = null;
+
+  // 설정 가능한 옵션들
   private config: ConnectionConfig = {
     maxReconnectAttempts: 3,
     baseReconnectDelay: 2000,
@@ -98,8 +126,8 @@ class WebSocketService {
     marketClosedPollingInterval: 30000, // 30초 - 장 마감 시
     healthCheckInterval: 10000,      // 10초
     enableApiFallback: true,
-    maxConcurrentConnections: 2,     // 최대 동시 연결 수 (안정성을 위해)
-    connectionStabilityDelay: 1000   // 연결 간 안정화 지연 시간
+    maxConcurrentConnections: 2,
+    connectionStabilityDelay: 1000
   };
 
   constructor(customConfig?: Partial<ConnectionConfig>) {
@@ -115,7 +143,12 @@ class WebSocketService {
       this.lastDataCache.set(type, []);
     });
 
-    console.log('🚀 Enhanced WebSocket Service 초기화', this.config);
+    // TopGainers 카테고리 초기화
+    this.topGainersCategories.set('top_gainers', []);
+    this.topGainersCategories.set('top_losers', []);
+    this.topGainersCategories.set('most_actively_traded', []);
+
+    console.log('🚀 Enhanced WebSocket Service 초기화 (TopGainers v2)', this.config);
   }
 
   // ============================================================================
@@ -139,8 +172,26 @@ class WebSocketService {
     // 초기 연결 모드 결정
     this.initializeConnectionModes();
 
+    // 🎯 TopGainers 카테고리 통계 초기 로드
+    this.loadTopGainersCategoryStats();
+
     this.isInitialized = true;
     console.log('✅ Enhanced WebSocket 서비스 초기화 완료');
+  }
+
+  // 🎯 TopGainers 카테고리 통계 로드
+  private async loadTopGainersCategoryStats(): Promise<void> {
+    try {
+      const response = await fetch('https://api.investment-assistant.site/api/v1/topgainers/categories/');
+      if (response.ok) {
+        const stats = await response.json();
+        this.topGainersCategoryStats = stats;
+        this.emitEvent('topgainers_category_stats', stats);
+        console.log('📊 TopGainers 카테고리 통계 로드 완료:', stats);
+      }
+    } catch (error) {
+      console.error('❌ TopGainers 카테고리 통계 로드 실패:', error);
+    }
   }
 
   private async initializeConnectionModes(): Promise<void> {
@@ -155,19 +206,15 @@ class WebSocketService {
     
     for (const type of connectionPriority) {
       if (connectedCount >= this.config.maxConcurrentConnections) {
-        // 최대 연결 수 초과 시 API 모드로 전환
         this.switchToApiMode(type);
       } else {
         if (type === 'crypto') {
-          // 암호화폐는 24시간 거래이므로 항상 WebSocket 시도
           await this.connectWebSocketWithDelay(type);
           connectedCount++;
         } else if (marketStatus.isOpen) {
-          // 주식은 시장 상태에 따라 결정
           await this.connectWebSocketWithDelay(type);
           connectedCount++;
         } else {
-          // 장 마감 시 API 모드로 시작
           this.switchToApiMode(type);
         }
       }
@@ -183,7 +230,6 @@ class WebSocketService {
   }
 
   private async connectWebSocketWithDelay(type: WebSocketType): Promise<void> {
-    // 연결 안정화를 위한 지연
     if (this.connections.size > 0) {
       await new Promise(resolve => setTimeout(resolve, this.config.connectionStabilityDelay));
     }
@@ -193,12 +239,10 @@ class WebSocketService {
   public shutdown(): void {
     console.log('🛑 Enhanced WebSocket 서비스 종료 시작...');
 
-    // 모든 연결 종료
     this.connections.forEach((ws, type) => {
       this.disconnectWebSocket(type);
     });
 
-    // 모든 타이머 정리
     this.reconnectTimeouts.forEach(timeout => clearTimeout(timeout));
     this.reconnectTimeouts.clear();
 
@@ -210,8 +254,9 @@ class WebSocketService {
       this.healthCheckInterval = null;
     }
 
-    // 구독자 정리
     this.subscribers.clear();
+    this.topGainersCategories.clear();
+    this.topGainersCategoryStats = null;
 
     this.isInitialized = false;
     console.log('✅ Enhanced WebSocket 서비스 종료 완료');
@@ -222,14 +267,12 @@ class WebSocketService {
   // ============================================================================
 
   private startMarketStatusMonitoring(): void {
-    // 초기 상태 설정
     const initialStatus = this.marketTimeManager.getCurrentMarketStatus();
     this.emitEvent('market_status_change', {
       isOpen: initialStatus.isOpen,
       status: initialStatus.status
     });
 
-    // 1분마다 시장 상태 체크
     setInterval(() => {
       const currentStatus = this.marketTimeManager.getCurrentMarketStatus();
       const previousStatus = this.lastMarketStatus;
@@ -243,10 +286,9 @@ class WebSocketService {
           status: currentStatus.status
         });
 
-        // 시장 상태 변경에 따른 연결 모드 조정
         this.adjustConnectionModeForMarketStatus(currentStatus.isOpen);
       }
-    }, 60000); // 1분마다
+    }, 60000);
   }
 
   private lastMarketStatus: any = null;
@@ -254,13 +296,11 @@ class WebSocketService {
   private adjustConnectionModeForMarketStatus(isMarketOpen: boolean): void {
     (['sp500', 'topgainers'] as WebSocketType[]).forEach(type => {
       if (isMarketOpen) {
-        // 장 개장 시: WebSocket 모드로 전환
         if (this.dataModes.get(type) === 'api') {
           console.log(`🔄 ${type} 장 개장 - WebSocket 모드로 전환`);
           this.switchToWebSocketMode(type);
         }
       } else {
-        // 장 마감 시: API 모드로 전환 (최신 가격 유지)
         if (this.dataModes.get(type) === 'websocket') {
           console.log(`🕐 ${type} 장 마감 - API 모드로 전환`);
           this.switchToApiMode(type);
@@ -274,31 +314,23 @@ class WebSocketService {
   // ============================================================================
 
   private switchToWebSocketMode(type: WebSocketType): void {
-    // API 폴링 중단
     this.stopApiPolling(type);
-    
-    // WebSocket 연결 시도
     this.dataModes.set(type, 'websocket');
     this.connectWebSocket(type);
   }
 
   private switchToApiMode(type: WebSocketType): void {
-    // WebSocket 연결 중단
     this.disconnectWebSocket(type);
-    
-    // API 폴링 시작
     this.dataModes.set(type, 'api');
     this.setConnectionStatus(type, 'api_mode');
     this.startApiPolling(type);
   }
 
   private startApiPolling(type: WebSocketType): void {
-    // crypto는 API 폴링 하지 않음
     if (type === 'crypto') {
       return;
     }
 
-    // 기존 폴링 중단
     this.stopApiPolling(type);
 
     const marketStatus = this.marketTimeManager.getCurrentMarketStatus();
@@ -316,10 +348,7 @@ class WebSocketService {
       }
     };
 
-    // 즉시 한번 실행
     pollData();
-
-    // 주기적 폴링 시작
     const intervalId = setInterval(pollData, interval);
     this.apiPollingIntervals.set(type, intervalId);
   }
@@ -334,7 +363,6 @@ class WebSocketService {
   }
 
   private async fetchDataFromApi(type: WebSocketType): Promise<void> {
-    // crypto는 API 호출 하지 않음
     if (type === 'crypto') {
       return;
     }
@@ -352,29 +380,33 @@ class WebSocketService {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const result = await response.json();
+      let result;
       
-      if (result.items && Array.isArray(result.items)) {
-        const data = this.transformApiDataToWebSocketFormat(type, result.items);
-        
-        // 데이터 변경 체크 (불필요한 업데이트 방지)
-        if (this.hasDataChanged(type, data)) {
-          this.lastDataCache.set(type, data);
+      if (type === 'topgainers') {
+        // TopGainers는 직접 배열 응답
+        result = await response.json();
+        if (Array.isArray(result)) {
+          const data = this.transformTopGainersApiData(result);
           
-          // 이벤트 발송
-          switch (type) {
-            case 'sp500':
-              this.emitEvent('sp500_update', data as SP500Data[]);
-              break;
-            case 'topgainers':
-              this.emitEvent('topgainers_update', data as TopGainersData[]);
-              break;
+          if (this.hasDataChanged(type, data)) {
+            this.lastDataCache.set(type, data);
+            this.updateTopGainersCategories(data);
+            this.emitEvent('topgainers_update', data);
+            console.log(`📊 ${type} API 데이터 업데이트: ${data.length}개 항목`);
           }
-
-          console.log(`📊 ${type} API 데이터 업데이트: ${data.length}개 항목`);
         }
       } else {
-        console.warn(`⚠️ ${type} API 응답에서 유효하지 않은 데이터:`, result);
+        // SP500은 기존 로직 유지
+        result = await response.json();
+        if (result.items && Array.isArray(result.items)) {
+          const data = this.transformApiDataToWebSocketFormat(type, result.items);
+          
+          if (this.hasDataChanged(type, data)) {
+            this.lastDataCache.set(type, data);
+            this.emitEvent('sp500_update', data as SP500Data[]);
+            console.log(`📊 ${type} API 데이터 업데이트: ${data.length}개 항목`);
+          }
+        }
       }
 
     } catch (error) {
@@ -383,8 +415,51 @@ class WebSocketService {
     }
   }
 
+  // 🎯 TopGainers API 데이터 변환
+  private transformTopGainersApiData(apiData: any[]): TopGainersData[] {
+    return apiData.map(item => {
+      // change_percentage 문자열에서 숫자 추출
+      let changePercent = 0;
+      if (item.change_percentage) {
+        const match = item.change_percentage.toString().match(/-?\d+\.?\d*/);
+        changePercent = match ? parseFloat(match[0]) : 0;
+      }
+
+      return {
+        batch_id: item.batch_id || 0,
+        symbol: item.symbol,
+        category: item.category,
+        last_updated: item.last_updated || new Date().toISOString(),
+        rank_position: item.rank_position,
+        price: item.price,
+        change_amount: item.change_amount,
+        change_percentage: item.change_percentage,
+        volume: item.volume,
+        created_at: item.created_at,
+        // 프론트엔드용 추가 필드
+        name: this.getStockName(item.symbol),
+        change_percent: changePercent,
+      };
+    });
+  }
+
+  // 🎯 TopGainers 카테고리별 데이터 업데이트
+  private updateTopGainersCategories(data: TopGainersData[]): void {
+    // 카테고리별로 데이터 분류
+    const categorizedData = {
+      top_gainers: data.filter(item => item.category === 'top_gainers'),
+      top_losers: data.filter(item => item.category === 'top_losers'),
+      most_actively_traded: data.filter(item => item.category === 'most_actively_traded')
+    };
+
+    // 캐시 업데이트
+    Object.entries(categorizedData).forEach(([category, items]) => {
+      this.topGainersCategories.set(category, items);
+    });
+  }
+
   private getApiUrl(type: WebSocketType): string {
-    const BASE_URL = 'https://api.investment-assistant.site/api/v1';  // HTTPS 고정
+    const BASE_URL = 'https://api.investment-assistant.site/api/v1';
     
     let endpoint: string;
     let queryParams: string;
@@ -395,24 +470,21 @@ class WebSocketService {
         queryParams = 'limit=15';
         break;
       case 'topgainers':
-        endpoint = '/stocks/topgainers';
-        queryParams = 'limit=10';
+        endpoint = '/topgainers';  // 🎯 새로운 엔드포인트
+        queryParams = 'limit=50';  // 전체 50개 조회
         break;
       default:
         throw new Error(`Unknown API type: ${type}`);
     }
     
-    // 🎯 trailing slash 추가로 리다이렉트 방지 (news API와 동일한 로직)
     const baseUrlWithSlash = `${BASE_URL}${endpoint}${endpoint.endsWith('/') ? '' : '/'}`;
     const finalUrl = `${baseUrlWithSlash}?${queryParams}`;
     
     console.log(`🚀 ${type} API 요청: ${finalUrl}`);
-    
     return finalUrl;
   }
 
   private transformApiDataToWebSocketFormat(type: WebSocketType, apiData: any[]): any[] {
-    // API 응답을 WebSocket 메시지 형태로 변환
     switch (type) {
       case 'sp500':
         return apiData.map(item => ({
@@ -424,19 +496,6 @@ class WebSocketService {
           source: 'api_fallback'
         }));
 
-      case 'topgainers':
-        return apiData.map(item => ({
-          symbol: item.symbol,
-          name: item.name || item.symbol,
-          price: item.price,
-          change_amount: item.change_amount,
-          change_percent: item.change_percent || item.change_percentage,
-          volume: item.volume || 0,
-          market_cap: item.market_cap,
-          sector: item.sector,
-          source: 'api_fallback'
-        }));
-
       default:
         return apiData;
     }
@@ -445,7 +504,6 @@ class WebSocketService {
   private hasDataChanged(type: WebSocketType, newData: any[]): boolean {
     const cachedData = this.lastDataCache.get(type) || [];
     
-    // 간단한 데이터 변경 체크 (길이와 첫 번째 항목 비교)
     if (cachedData.length !== newData.length) {
       return true;
     }
@@ -454,7 +512,6 @@ class WebSocketService {
       return false;
     }
 
-    // 첫 번째 항목의 가격 비교
     const oldFirst = cachedData[0];
     const newFirst = newData[0];
 
@@ -473,9 +530,7 @@ class WebSocketService {
   // ============================================================================
   
   private buildWebSocketUrl(type: WebSocketType): string {
-    const BASE_API_URL = 'https://api.investment-assistant.site/api/v1';
     const wsUrl = `wss://api.investment-assistant.site/api/v1/ws/${this.getWebSocketPath(type)}`;
-    
     console.log(`🔗 ${type} WebSocket URL: ${wsUrl}`);
     return wsUrl;
   }
@@ -487,7 +542,7 @@ class WebSocketService {
       case 'sp500':
         return 'stocks/sp500';
       case 'topgainers':
-        return 'stocks/topgainers';
+        return 'stocks/topgainers';  // 🎯 TopGainers 전용 WebSocket
       default:
         throw new Error(`Unknown WebSocket type: ${type}`);
     }
@@ -498,7 +553,6 @@ class WebSocketService {
   // ============================================================================
 
   private connectWebSocket(type: WebSocketType): void {
-    // 기존 연결이 있으면 정리
     this.disconnectWebSocket(type);
 
     const url = this.buildWebSocketUrl(type);
@@ -513,7 +567,7 @@ class WebSocketService {
       ws.onopen = () => {
         console.log(`🟢 ${type} WebSocket 연결 성공`);
         this.setConnectionStatus(type, 'connected');
-        this.reconnectAttempts.set(type, 0); // 재연결 카운터 리셋
+        this.reconnectAttempts.set(type, 0);
       };
 
       ws.onmessage = (event) => {
@@ -558,18 +612,15 @@ class WebSocketService {
     this.connections.delete(type);
     this.setConnectionStatus(type, 'disconnected');
     
-    // WebSocket 모드에서만 재연결 시도
     if (this.dataModes.get(type) === 'websocket') {
       this.scheduleReconnect(type);
     }
   }
 
   private handleConnectionFailure(type: WebSocketType): void {
-    // crypto는 WebSocket만 사용하므로 API 모드로 전환하지 않음
     if (type === 'crypto') {
       this.scheduleReconnect(type);
     } else {
-      // WebSocket 연결 실패 시 API 모드로 전환 (fallback 활성화된 경우)
       if (this.config.enableApiFallback && this.dataModes.get(type) === 'websocket') {
         console.log(`🔄 ${type} WebSocket 실패 - API 모드로 fallback`);
         this.switchToApiMode(type);
@@ -585,7 +636,6 @@ class WebSocketService {
     if (attempts >= this.config.maxReconnectAttempts) {
       console.error(`❌ ${type} WebSocket 최대 재연결 시도 횟수 초과`);
       
-      // crypto가 아닌 경우에만 API fallback 고려
       if (type !== 'crypto' && this.config.enableApiFallback) {
         console.log(`🔄 ${type} 최대 재시도 후 API 모드로 전환`);
         this.switchToApiMode(type);
@@ -593,7 +643,7 @@ class WebSocketService {
       return;
     }
 
-    const delay = this.config.baseReconnectDelay * Math.pow(2, attempts); // 지수 백오프
+    const delay = this.config.baseReconnectDelay * Math.pow(2, attempts);
     console.log(`⏰ ${type} WebSocket ${delay}ms 후 재연결 시도 (${attempts + 1}/${this.config.maxReconnectAttempts})`);
 
     this.reconnectAttempts.set(type, attempts + 1);
@@ -621,12 +671,10 @@ class WebSocketService {
         timestamp: message.timestamp
       });
       
-      // 하트비트 메시지는 무시
       if (message.type === 'heartbeat') {
         return;
       }
 
-      // 상태 메시지 처리
       if (message.type === 'status' || message.status) {
         console.log(`📊 ${type} 상태:`, message);
         return;
@@ -650,8 +698,10 @@ class WebSocketService {
           
         case 'topgainers_update':
           if (type === 'topgainers' && message.data) {
-            this.lastDataCache.set(type, message.data);
-            this.emitEvent('topgainers_update', message.data as TopGainersData[]);
+            const transformedData = this.transformTopGainersWebSocketData(message.data as any[]);
+            this.lastDataCache.set(type, transformedData);
+            this.updateTopGainersCategories(transformedData);
+            this.emitEvent('topgainers_update', transformedData);
           }
           break;
 
@@ -662,6 +712,56 @@ class WebSocketService {
     } catch (error) {
       console.error(`❌ ${type} 메시지 파싱 오류:`, error);
     }
+  }
+
+  // 🎯 TopGainers WebSocket 데이터 변환
+  private transformTopGainersWebSocketData(wsData: any[]): TopGainersData[] {
+    return wsData.map(item => {
+      let changePercent = 0;
+      if (item.change_percentage) {
+        const match = item.change_percentage.toString().match(/-?\d+\.?\d*/);
+        changePercent = match ? parseFloat(match[0]) : 0;
+      }
+
+      return {
+        batch_id: item.batch_id || 0,
+        symbol: item.symbol,
+        category: item.category,
+        last_updated: item.last_updated || new Date().toISOString(),
+        rank_position: item.rank_position,
+        price: item.price,
+        change_amount: item.change_amount,
+        change_percentage: item.change_percentage,
+        volume: item.volume,
+        created_at: item.created_at,
+        name: this.getStockName(item.symbol),
+        change_percent: changePercent,
+      };
+    });
+  }
+
+  // 🎯 주식 이름 매핑 (간단한 버전, 실제로는 API에서 가져와야 함)
+  private getStockName(symbol: string): string {
+    const stockNames: Record<string, string> = {
+      'AAPL': 'Apple Inc.',
+      'MSFT': 'Microsoft Corporation',
+      'GOOGL': 'Alphabet Inc.',
+      'AMZN': 'Amazon.com Inc.',
+      'TSLA': 'Tesla Inc.',
+      'META': 'Meta Platforms Inc.',
+      'NVDA': 'NVIDIA Corporation',
+      'NFLX': 'Netflix Inc.',
+      'GOOG': 'Alphabet Inc.',
+      'BRK.B': 'Berkshire Hathaway',
+      'GXAI': 'Gaxos.ai Inc.',
+      'PRFX': 'PainReform Ltd.',
+      'ADD': 'Color Star Technology Co.',
+      'PLTR': 'Palantir Technologies Inc.',
+      'INTC': 'Intel Corporation',
+      'OPEN': 'Opendoor Technologies Inc.',
+    };
+
+    return stockNames[symbol] || `${symbol} Corp.`;
   }
 
   // ============================================================================
@@ -679,11 +779,9 @@ class WebSocketService {
       const status = this.connectionStatuses.get(type);
       const mode = this.dataModes.get(type);
       
-      // crypto가 아닌 경우에만 API fallback 고려
       if (type !== 'crypto' && mode === 'websocket' && status === 'disconnected' && this.config.enableApiFallback) {
         const reconnectAttempts = this.reconnectAttempts.get(type) || 0;
         
-        // 재연결 시도가 많아지면 API 모드로 전환
         if (reconnectAttempts >= 2) {
           console.log(`🏥 ${type} 헬스체크 - API 모드로 전환 (재연결 실패)`);
           this.switchToApiMode(type);
@@ -733,6 +831,26 @@ class WebSocketService {
   }
 
   // ============================================================================
+  // 🎯 TopGainers 전용 메서드들
+  // ============================================================================
+
+  public getTopGainersByCategory(category: 'top_gainers' | 'top_losers' | 'most_actively_traded'): TopGainersData[] {
+    return this.topGainersCategories.get(category) || [];
+  }
+
+  public getAllTopGainersCategories(): Record<string, TopGainersData[]> {
+    return {
+      top_gainers: this.getTopGainersByCategory('top_gainers'),
+      top_losers: this.getTopGainersByCategory('top_losers'),
+      most_actively_traded: this.getTopGainersByCategory('most_actively_traded')
+    };
+  }
+
+  public getTopGainersCategoryStats(): TopGainersCategoryStats | null {
+    return this.topGainersCategoryStats;
+  }
+
+  // ============================================================================
   // 이벤트 구독/해제
   // ============================================================================
 
@@ -747,7 +865,6 @@ class WebSocketService {
     const callbacks = this.subscribers.get(event)!;
     callbacks.push(callback);
 
-    // 구독 해제 함수 반환
     return () => {
       const index = callbacks.indexOf(callback);
       if (index > -1) {
@@ -771,13 +888,14 @@ class WebSocketService {
       });
     }
   }
+
   // ============================================================================
   // 수동 제어 메소드
   // ============================================================================
 
   public reconnect(type: WebSocketType): void {
     console.log(`🔄 ${type} 수동 재연결 시도`);
-    this.reconnectAttempts.set(type, 0); // 재시도 카운터 리셋
+    this.reconnectAttempts.set(type, 0);
     
     if (this.dataModes.get(type) === 'api') {
       this.switchToWebSocketMode(type);
@@ -838,6 +956,13 @@ class WebSocketService {
           callbacks.length
         ])
       ),
+      topGainersCategories: Object.fromEntries(
+        Array.from(this.topGainersCategories.entries()).map(([category, data]) => [
+          category,
+          data.length
+        ])
+      ),
+      topGainersCategoryStats: this.topGainersCategoryStats,
       config: this.config
     };
   }
@@ -851,5 +976,4 @@ export const webSocketService = new WebSocketService({
   marketClosedPollingInterval: 30000
 });
 
-// 기본 export도 제공
 export default webSocketService;
