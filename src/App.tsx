@@ -3,14 +3,14 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
 
 // WebSocket 서비스 import 추가
-import { websocketService } from './services/websocketService';
+import { webSocketService } from './services/websocketService';
 
 import { BottomNavigation } from "./components/BottomNavigation";
-import TopGainersBanner from "./components/TopGainersBanner"; // 새로운 TopGainers 배너
+import EnhancedTopGainersBanner from "./components/TopGainersBanner"; // Enhanced TopGainers 배너
 import { HomeEventCalendar } from "./components/HomeEventCalendar";
 import { HomeSocialFeed } from "./components/HomeSocialFeed";
 import { HomeNewsList } from "./components/HomeNewsList"; 
-import OptimizedMarketPage from "./components/MarketPage"; // 최적화된 마켓 페이지
+import EnhancedMarketPage from "./components/MarketPage"; // Enhanced 마켓 페이지
 import { NewsPage } from "./components/NewsPage"; 
 import NewsDetailPage, { NewsItem as DetailNewsItem } from "./components/NewsDetailPage";
 import { SNSPage } from "./components/SNSPage";
@@ -140,19 +140,25 @@ function AppContent() {
   const isLoggedIn = authState === "authenticated";
 
   // ============================================================================
-  // WebSocket 서비스 초기화 (앱 시작 시)
+  // WebSocket 서비스 초기화 (앱 시작 시) - crypto, sp500, topgainers 항상 연결
   // ============================================================================
   
   useEffect(() => {
-    console.log('🚀 앱 시작 - WebSocket 서비스 초기화');
+    console.log('🚀 앱 시작 - WebSocket 서비스 초기화 (crypto, sp500, topgainers 연결)');
     
-    // WebSocket 서비스 초기화
-    websocketService.initialize();
+    // WebSocket 서비스 초기화 - 3가지 타입 모두 항상 연결
+    webSocketService.initialize();
+
+    // 연결 상태 모니터링
+    const unsubscribeConnection = webSocketService.subscribe('connection_change', ({ type, status, mode }) => {
+      console.log(`🔄 ${type} 연결 상태: ${status} (${mode} 모드)`);
+    });
 
     // 앱 종료 시 정리
     return () => {
       console.log('🛑 앱 종료 - WebSocket 서비스 정리');
-      websocketService.shutdown();
+      unsubscribeConnection();
+      webSocketService.shutdown();
     };
   }, []);
 
@@ -168,7 +174,7 @@ function AppContent() {
       } else {
         console.log('📱 앱이 포그라운드로 복귀');
         // 필요시 재연결 시도
-        websocketService.reconnectAll();
+        webSocketService.reconnectAll();
       }
     };
 
@@ -490,8 +496,8 @@ function AppContent() {
         return (
           <div className="space-y-4 relative z-10">
             {renderHeader()}
-            {/* 🎯 기존 HomeStockBanner를 TopGainersBanner로 교체 */}
-            <TopGainersBanner />
+            {/* 🎯 Enhanced TopGainersBanner 사용 */}
+            <EnhancedTopGainersBanner />
             <HomeEventCalendar />
             <HomeSocialFeed isLoggedIn={isLoggedIn} onPostClick={handleSNSPostClick} />
             <HomeNewsList onViewAll={() => setActiveTab("news")} />
@@ -509,8 +515,8 @@ function AppContent() {
                 <h1 className="text-2xl font-bold">시장 & 재무</h1>
               </div>
             </div>
-            {/* 🎯 최적화된 MarketPage 사용 */}
-            <OptimizedMarketPage />
+            {/* 🎯 Enhanced MarketPage 사용 */}
+            <EnhancedMarketPage />
           </div>
         );
 

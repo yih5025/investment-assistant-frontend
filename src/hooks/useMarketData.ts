@@ -2,7 +2,16 @@
 // 마켓 데이터 관련 훅들
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { websocketService, CryptoData, SP500Data, TopGainersData, ConnectionStatus, WebSocketType } from '../services/websocketService';
+import { 
+  webSocketService, 
+  CryptoData, 
+  SP500Data, 
+  TopGainersData, 
+  ConnectionStatus, 
+  WebSocketType,
+  DataMode 
+} from '../services/websocketService';
+import { MarketTimeManager } from '../utils/marketTime';
 
 // ============================================================================
 // 공통 마켓 아이템 인터페이스
@@ -73,51 +82,62 @@ const formatPrice = (price: number, type: 'crypto' | 'stock'): string => {
 };
 
 // ============================================================================
-// 1. WebSocket 연결 상태 관리 훅
+// 1. Enhanced WebSocket 연결 상태 관리 훅
 // ============================================================================
 
 export function useWebSocketConnection() {
-  const [connectionStatuses, setConnectionStatuses] = useState<Record<WebSocketType, ConnectionStatus>>({
-    crypto: 'disconnected',
-    sp500: 'disconnected',
-    topgainers: 'disconnected',
+  const [connectionStatuses, setConnectionStatuses] = useState<Record<WebSocketType, { status: ConnectionStatus; mode: DataMode }>>({
+    crypto: { status: 'disconnected', mode: 'websocket' },
+    sp500: { status: 'disconnected', mode: 'websocket' },
+    topgainers: { status: 'disconnected', mode: 'websocket' },
   });
 
+  const [marketTimeManager] = useState(() => new MarketTimeManager());
+
   useEffect(() => {
+    // Enhanced WebSocket 서비스 초기화
+    webSocketService.initialize();
+
     // 초기 상태 설정
-    setConnectionStatuses(websocketService.getAllConnectionStatuses());
+    setConnectionStatuses(webSocketService.getAllConnectionStatuses());
 
     // 연결 상태 변경 구독
-    const unsubscribe = websocketService.subscribe('connection_change', ({ type, status }) => {
+    const unsubscribe = webSocketService.subscribe('connection_change', ({ type, status, mode }) => {
       setConnectionStatuses(prev => ({
         ...prev,
-        [type]: status
+        [type]: { status, mode }
       }));
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+      webSocketService.shutdown();
+    };
   }, []);
 
   const reconnect = useCallback((type: WebSocketType) => {
-    websocketService.reconnect(type);
+    webSocketService.reconnect(type);
   }, []);
 
   const reconnectAll = useCallback(() => {
-    websocketService.reconnectAll();
+    webSocketService.reconnectAll();
   }, []);
 
   const isConnected = useCallback((type: WebSocketType) => {
-    return connectionStatuses[type] === 'connected';
+    const connectionInfo = connectionStatuses[type];
+    return connectionInfo.status === 'connected' || connectionInfo.status === 'api_mode';
   }, [connectionStatuses]);
 
   const isAnyConnected = useMemo(() => {
-    return Object.values(connectionStatuses).some(status => status === 'connected');
+    return Object.values(connectionStatuses).some(info => 
+      info.status === 'connected' || info.status === 'api_mode'
+    );
   }, [connectionStatuses]);
 
   const getOverallStatus = useMemo((): ConnectionStatus => {
-    const statuses = Object.values(connectionStatuses);
+    const statuses = Object.values(connectionStatuses).map(info => info.status);
     
-    if (statuses.every(status => status === 'connected')) return 'connected';
+    if (statuses.every(status => status === 'connected' || status === 'api_mode')) return 'connected';
     if (statuses.some(status => status === 'connecting' || status === 'reconnecting')) return 'connecting';
     if (statuses.every(status => status === 'disconnected')) return 'disconnected';
     
@@ -131,6 +151,7 @@ export function useWebSocketConnection() {
     overallStatus: getOverallStatus,
     reconnect,
     reconnectAll,
+    marketTimeManager,
   };
 }
 
@@ -143,7 +164,7 @@ export function useCryptoData() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   useEffect(() => {
-    const unsubscribe = websocketService.subscribe('crypto_update', (data: CryptoData[]) => {
+    const unsubscribe = webSocketService.subscribe('crypto_update', (data: CryptoData[]) => {
       const items: MarketItem[] = data.map(crypto => {
         const symbol = crypto.market.replace('KRW-', '');
         const name = cryptoNames[crypto.market] || symbol;
@@ -184,7 +205,7 @@ export function useSP500Data() {
   const [previousPrices, setPreviousPrices] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    const unsubscribe = websocketService.subscribe('sp500_update', (data: SP500Data[]) => {
+    const unsubscribe = webSocketService.subscribe('sp500_update', (data: SP500Data[]) => {
       const items: MarketItem[] = data.map(stock => {
         const name = stockNames[stock.symbol] || `${stock.symbol} Corp.`;
         const prevPrice = previousPrices[stock.symbol] || stock.price;
@@ -232,7 +253,7 @@ export function useTopGainersData() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   useEffect(() => {
-    const unsubscribe = websocketService.subscribe('topgainers_update', (data: TopGainersData[]) => {
+    const unsubscribe = webSocketService.subscribe('topgainers_update', (data: TopGainersData[]) => {
       setTopGainersData(data);
       setLastUpdated(new Date());
     });
@@ -516,7 +537,7 @@ export function useWebSocketErrors() {
   const [errors, setErrors] = useState<WebSocketError[]>([]);
 
   useEffect(() => {
-    const unsubscribe = websocketService.subscribe('error', ({ type, error }) => {
+    const unsubscribe = webSocketService.subscribe('error', ({ type, error }) => {
       const errorObj: WebSocketError = {
         type,
         error,
@@ -568,17 +589,17 @@ export function useWebSocketPerformance() {
   });
 
   useEffect(() => {
-    const unsubscribeCrypto = websocketService.subscribe('crypto_update', () => {
+    const unsubscribeCrypto = webSocketService.subscribe('crypto_update', () => {
       setUpdateCounts(prev => ({ ...prev, crypto: prev.crypto + 1 }));
       setLastUpdateTimes(prev => ({ ...prev, crypto: new Date() }));
     });
 
-    const unsubscribeSP500 = websocketService.subscribe('sp500_update', () => {
+    const unsubscribeSP500 = webSocketService.subscribe('sp500_update', () => {
       setUpdateCounts(prev => ({ ...prev, sp500: prev.sp500 + 1 }));
       setLastUpdateTimes(prev => ({ ...prev, sp500: new Date() }));
     });
 
-    const unsubscribeTopGainers = websocketService.subscribe('topgainers_update', () => {
+    const unsubscribeTopGainers = webSocketService.subscribe('topgainers_update', () => {
       setUpdateCounts(prev => ({ ...prev, topgainers: prev.topgainers + 1 }));
       setLastUpdateTimes(prev => ({ ...prev, topgainers: new Date() }));
     });
@@ -633,11 +654,11 @@ export function useWebSocketDebug() {
   }, [isDebugMode]);
 
   const getServiceStatus = useCallback(() => {
-    return websocketService.getStatus();
+    return webSocketService.getStatus();
   }, []);
 
   const logServiceStatus = useCallback(() => {
-    websocketService.logStatus();
+    console.log('WebSocket Service Status:', webSocketService.getStatus());
   }, []);
 
   const toggleDebugMode = useCallback(() => {
