@@ -1,5 +1,5 @@
-// services/enhancedWebSocketService.ts
-// 안정화된 WebSocket 서비스 - API fallback 지원
+// services/webSocketService.ts
+// 안정화된 WebSocket 서비스 - crypto API 제거
 
 import { MarketTimeManager } from '../utils/marketTime';
 
@@ -293,6 +293,11 @@ class WebSocketService {
   }
 
   private startApiPolling(type: WebSocketType): void {
+    // crypto는 API 폴링 하지 않음
+    if (type === 'crypto') {
+      return;
+    }
+
     // 기존 폴링 중단
     this.stopApiPolling(type);
 
@@ -329,6 +334,11 @@ class WebSocketService {
   }
 
   private async fetchDataFromApi(type: WebSocketType): Promise<void> {
+    // crypto는 API 호출 하지 않음
+    if (type === 'crypto') {
+      return;
+    }
+
     try {
       const apiUrl = this.getApiUrl(type);
       const response = await fetch(apiUrl, {
@@ -353,9 +363,6 @@ class WebSocketService {
           
           // 이벤트 발송
           switch (type) {
-            case 'crypto':
-              this.emitEvent('crypto_update', data as CryptoData[]);
-              break;
             case 'sp500':
               this.emitEvent('sp500_update', data as SP500Data[]);
               break;
@@ -383,10 +390,6 @@ class WebSocketService {
     let queryParams: string;
     
     switch (type) {
-      case 'crypto':
-        endpoint = '/crypto';
-        queryParams = 'limit=20';
-        break;
       case 'sp500':
         endpoint = '/stocks/sp500';
         queryParams = 'limit=15';
@@ -411,18 +414,6 @@ class WebSocketService {
   private transformApiDataToWebSocketFormat(type: WebSocketType, apiData: any[]): any[] {
     // API 응답을 WebSocket 메시지 형태로 변환
     switch (type) {
-      case 'crypto':
-        return apiData.map(item => ({
-          market: item.market || item.symbol,
-          trade_price: item.trade_price || item.price,
-          signed_change_rate: item.signed_change_rate || item.change_rate,
-          signed_change_price: item.signed_change_price || item.change_amount,
-          trade_volume: item.trade_volume || item.volume,
-          acc_trade_volume_24h: item.acc_trade_volume_24h || 0,
-          change: item.change || 'EVEN',
-          source: 'api_fallback'
-        }));
-
       case 'sp500':
         return apiData.map(item => ({
           symbol: item.symbol,
@@ -574,12 +565,17 @@ class WebSocketService {
   }
 
   private handleConnectionFailure(type: WebSocketType): void {
-    // WebSocket 연결 실패 시 API 모드로 전환 (fallback 활성화된 경우)
-    if (this.config.enableApiFallback && this.dataModes.get(type) === 'websocket') {
-      console.log(`🔄 ${type} WebSocket 실패 - API 모드로 fallback`);
-      this.switchToApiMode(type);
-    } else {
+    // crypto는 WebSocket만 사용하므로 API 모드로 전환하지 않음
+    if (type === 'crypto') {
       this.scheduleReconnect(type);
+    } else {
+      // WebSocket 연결 실패 시 API 모드로 전환 (fallback 활성화된 경우)
+      if (this.config.enableApiFallback && this.dataModes.get(type) === 'websocket') {
+        console.log(`🔄 ${type} WebSocket 실패 - API 모드로 fallback`);
+        this.switchToApiMode(type);
+      } else {
+        this.scheduleReconnect(type);
+      }
     }
   }
 
@@ -589,8 +585,8 @@ class WebSocketService {
     if (attempts >= this.config.maxReconnectAttempts) {
       console.error(`❌ ${type} WebSocket 최대 재연결 시도 횟수 초과`);
       
-      // API fallback이 활성화된 경우 API 모드로 전환
-      if (this.config.enableApiFallback) {
+      // crypto가 아닌 경우에만 API fallback 고려
+      if (type !== 'crypto' && this.config.enableApiFallback) {
         console.log(`🔄 ${type} 최대 재시도 후 API 모드로 전환`);
         this.switchToApiMode(type);
       }
@@ -683,8 +679,8 @@ class WebSocketService {
       const status = this.connectionStatuses.get(type);
       const mode = this.dataModes.get(type);
       
-      // WebSocket 모드에서 연결 끊어진 경우 API fallback 고려
-      if (mode === 'websocket' && status === 'disconnected' && this.config.enableApiFallback) {
+      // crypto가 아닌 경우에만 API fallback 고려
+      if (type !== 'crypto' && mode === 'websocket' && status === 'disconnected' && this.config.enableApiFallback) {
         const reconnectAttempts = this.reconnectAttempts.get(type) || 0;
         
         // 재연결 시도가 많아지면 API 모드로 전환
@@ -775,7 +771,6 @@ class WebSocketService {
       });
     }
   }
-
   // ============================================================================
   // 수동 제어 메소드
   // ============================================================================
