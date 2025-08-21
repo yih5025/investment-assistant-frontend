@@ -1,46 +1,82 @@
-// components/TopGainersBanner.tsx
-// 홈페이지 상단 TopGainers 배너 컴포넌트 - HomeStockBanner 스타일 완전 적용
+// components/EnhancedTopGainersBanner.tsx
+// 시장 시간 표시가 추가된 TopGainers 배너
 
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, TrendingDown, Activity, Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, Wifi, WifiOff, RefreshCw, Clock } from 'lucide-react';
 import { useTopGainersData, useWebSocketConnection } from '../hooks/useMarketData';
+import { getMarketStatus, getMarketStatusText, getFormattedEasternTime, MarketSession } from '../utils/marketTime';
 
 // ============================================================================
-// FlipBoard 컴포넌트 (HomeStockBanner와 동일한 스타일)
+// 시장 시간 표시 컴포넌트
 // ============================================================================
 
-interface FlipBoardProps {
+interface MarketTimeDisplayProps {
+  session: MarketSession;
+}
+
+const MarketTimeDisplay: React.FC<MarketTimeDisplayProps> = ({ session }) => {
+  const statusInfo = getMarketStatusText(session);
+  
+  return (
+    <div className="flex items-center justify-between text-xs mb-2 px-1">
+      <div className="flex items-center space-x-2">
+        <Clock size={12} className="text-gray-400" />
+        <span className="text-gray-400">{getFormattedEasternTime()}</span>
+      </div>
+      <div className="flex items-center space-x-1">
+        <div className={`w-2 h-2 rounded-full ${
+          statusInfo.isLive ? 'bg-green-400 animate-pulse' : 'bg-gray-400'
+        }`} />
+        <span className={`${statusInfo.color} font-medium`}>
+          {statusInfo.status}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
+// 강화된 FlipBoard 컴포넌트
+// ============================================================================
+
+interface EnhancedFlipBoardProps {
   data: any[];
   color: string;
   bgColor: string;
   onBannerClick: (item: any) => void;
+  isMarketOpen: boolean;
 }
 
-function FlipBoard({ data, color, bgColor, onBannerClick }: FlipBoardProps) {
+function EnhancedFlipBoard({ data, color, bgColor, onBannerClick, isMarketOpen }: EnhancedFlipBoardProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipping, setIsFlipping] = useState(false);
 
   useEffect(() => {
     if (data.length === 0) return;
 
-    const interval = setInterval(() => {
+    // 장 마감 시에는 더 느린 전환 (8초), 장 중에는 빠른 전환 (4초)
+    const interval = isMarketOpen ? 4000 : 8000;
+
+    const flipInterval = setInterval(() => {
       setIsFlipping(true);
       setTimeout(() => {
         const newIndex = (currentIndex + 1) % data.length;
         setCurrentIndex(newIndex);
         setIsFlipping(false);
       }, 300);
-    }, 4000);
+    }, interval);
 
-    return () => clearInterval(interval);
-  }, [currentIndex, data.length]);
+    return () => clearInterval(flipInterval);
+  }, [currentIndex, data.length, isMarketOpen]);
 
   if (data.length === 0) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="text-center">
           <RefreshCw className="animate-spin mx-auto mb-1 opacity-50" size={16} />
-          <div className="text-xs text-foreground/60">로딩 중...</div>
+          <div className="text-xs text-foreground/60">
+            {isMarketOpen ? '실시간 로딩 중...' : '마지막 거래 데이터 로딩 중...'}
+          </div>
         </div>
       </div>
     );
@@ -69,7 +105,14 @@ function FlipBoard({ data, color, bgColor, onBannerClick }: FlipBoardProps) {
       className="h-full flex flex-col cursor-pointer"
       onClick={() => onBannerClick(currentItem)}
     >
-      <div className={`flex-1 ${bgColor} rounded-lg ${isFlipping ? 'scale-95' : 'scale-100'} transition-transform duration-300 overflow-hidden hover:scale-105`}>
+      <div className={`flex-1 ${bgColor} rounded-lg ${isFlipping ? 'scale-95' : 'scale-100'} transition-transform duration-300 overflow-hidden hover:scale-105 relative`}>
+        {/* 데이터 신선도 표시 */}
+        {!isMarketOpen && (
+          <div className="absolute top-1 right-1 text-xs text-gray-400 bg-black/20 px-1 rounded">
+            종가
+          </div>
+        )}
+        
         <div className="flip-container h-full">
           <div className={`flip-content h-full ${isFlipping ? 'flipping' : ''}`}>
             <div className="h-full p-4 flex flex-col justify-center space-y-2">
@@ -90,8 +133,17 @@ function FlipBoard({ data, color, bgColor, onBannerClick }: FlipBoardProps) {
               
               {/* 변화율 */}
               <div className="text-center">
-                <div className={`text-sm font-medium ${currentItem.change_percent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {currentItem.change_percent >= 0 ? '+' : ''}{currentItem.change_percent.toFixed(1)}%
+                <div className={`text-sm font-medium flex items-center justify-center space-x-1 ${
+                  currentItem.change_percent >= 0 ? 'text-green-400' : 'text-red-400'
+                }`}>
+                  {currentItem.change_percent >= 0 ? (
+                    <TrendingUp size={12} />
+                  ) : (
+                    <TrendingDown size={12} />
+                  )}
+                  <span>
+                    {currentItem.change_percent >= 0 ? '+' : ''}{currentItem.change_percent.toFixed(1)}%
+                  </span>
                 </div>
               </div>
               
@@ -110,12 +162,12 @@ function FlipBoard({ data, color, bgColor, onBannerClick }: FlipBoardProps) {
 }
 
 // ============================================================================
-// 메인 TopGainersBanner 컴포넌트
+// 메인 EnhancedTopGainersBanner 컴포넌트
 // ============================================================================
 
-const TopGainersBanner: React.FC = () => {
+const EnhancedTopGainersBanner: React.FC = () => {
   // =========================================================================
-  // 데이터 및 상태 관리
+  // 상태 관리
   // =========================================================================
   
   const { 
@@ -130,11 +182,36 @@ const TopGainersBanner: React.FC = () => {
     reconnect 
   } = useWebSocketConnection();
 
+  // 시장 상태 관리
+  const [marketSession, setMarketSession] = useState<MarketSession>(getMarketStatus());
+
+  // 시장 상태 업데이트 (1분마다)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMarketSession(getMarketStatus());
+    }, 60000); // 1분마다 업데이트
+
+    return () => clearInterval(interval);
+  }, []);
+
   const isTopGainersConnected = isConnected('topgainers');
   const topGainersStatus = connectionStatuses.topgainers;
 
   // =========================================================================
-  // 배너 데이터 분류 (HomeStockBanner와 동일한 구조)
+  // 시장 상태에 따른 데이터 처리
+  // =========================================================================
+
+  // 시장 상태에 따라 다른 메시지 표시
+  const getDataSourceMessage = () => {
+    if (marketSession.isOpen) {
+      return isTopGainersConnected ? '실시간 데이터' : '연결 중...';
+    } else {
+      return '최종 거래가 기준';
+    }
+  };
+
+  // =========================================================================
+  // 배너 데이터 분류
   // =========================================================================
 
   const banners = [
@@ -173,18 +250,21 @@ const TopGainersBanner: React.FC = () => {
   };
 
   const handleBannerClick = (item: any) => {
-    // 마켓 페이지로 이동
-    window.dispatchEvent(new CustomEvent('navigateToMarkets'));
+    // 마켓 페이지로 이동하고 해당 종목으로 스크롤
+    window.dispatchEvent(new CustomEvent('navigateToMarkets', { detail: { symbol: item.symbol } }));
   };
 
   // =========================================================================
   // 렌더링 조건부 로직
   // =========================================================================
 
-  // 로딩 상태
-  if (topGainersStatus === 'connecting' || topGainersStatus === 'reconnecting') {
+  // 연결 중 상태 (시장 시간과 관계없이)
+  if ((topGainersStatus.status === 'connecting' || topGainersStatus.status === 'reconnecting') && isEmpty) {
     return (
       <div className="glass-card rounded-xl overflow-hidden">
+        <div className="p-4">
+          <MarketTimeDisplay session={marketSession} />
+        </div>
         <div className="p-6 text-center">
           <RefreshCw className="animate-spin text-blue-400 mx-auto mb-2" size={24} />
           <div className="font-medium">실시간 데이터 로딩 중...</div>
@@ -194,13 +274,16 @@ const TopGainersBanner: React.FC = () => {
     );
   }
 
-  // 에러 상태
-  if (topGainersStatus === 'disconnected' && isEmpty) {
+  // 연결 실패 상태 (시장 시간 중에만 에러로 표시)
+  if (topGainersStatus.status === 'disconnected' && isEmpty && marketSession.isOpen) {
     return (
       <div className="glass-card rounded-xl overflow-hidden">
+        <div className="p-4">
+          <MarketTimeDisplay session={marketSession} />
+        </div>
         <div className="p-6 text-center">
           <WifiOff className="mx-auto mb-2 text-red-400" size={32} />
-          <div className="font-medium text-red-400 mb-1">연결 실패</div>
+          <div className="font-medium text-red-400 mb-1">실시간 연결 실패</div>
           <div className="text-sm text-foreground/60 mb-3">실시간 데이터를 가져올 수 없습니다</div>
           <button
             onClick={handleRetry}
@@ -213,25 +296,54 @@ const TopGainersBanner: React.FC = () => {
     );
   }
 
-  // 데이터 없음
+  // 장 마감 시간이고 데이터가 없는 경우
+  if (isEmpty && !marketSession.isOpen) {
+    return (
+      <div className="glass-card rounded-xl overflow-hidden">
+        <div className="p-4">
+          <MarketTimeDisplay session={marketSession} />
+        </div>
+        <div className="p-6 text-center">
+          <Activity className="mx-auto mb-2 opacity-50" size={32} />
+          <div className="font-medium">장 마감</div>
+          <div className="text-sm mt-1 text-foreground/60">
+            마지막 거래 데이터 준비 중
+          </div>
+          <div className="text-xs mt-2 text-blue-400">
+            {marketSession.timeUntilNext}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 데이터 없음 (일반적인 경우)
   if (isEmpty) {
     return (
       <div className="glass-card rounded-xl overflow-hidden">
+        <div className="p-4">
+          <MarketTimeDisplay session={marketSession} />
+        </div>
         <div className="p-6 text-center">
           <Activity className="mx-auto mb-2 opacity-50" size={32} />
-          <div>아직 데이터가 없습니다</div>
-          <div className="text-sm mt-1 text-foreground/60">잠시 후 실시간 데이터가 표시됩니다</div>
+          <div>데이터 준비 중</div>
+          <div className="text-sm mt-1 text-foreground/60">잠시 후 표시됩니다</div>
         </div>
       </div>
     );
   }
 
   // =========================================================================
-  // 메인 렌더링 (HomeStockBanner와 완전 동일한 구조)
+  // 메인 렌더링
   // =========================================================================
 
   return (
     <div className="glass-card rounded-xl overflow-hidden">
+      {/* 시장 시간 표시 */}
+      <div className="p-4 border-b border-white/5">
+        <MarketTimeDisplay session={marketSession} />
+      </div>
+
       {/* 메인 배너 섹션 */}
       <div className="grid grid-cols-3 gap-3 p-4">
         {banners.map((banner, index) => {
@@ -246,13 +358,14 @@ const TopGainersBanner: React.FC = () => {
                 </div>
               </div>
               
-              {/* Flip Board */}
+              {/* Enhanced Flip Board */}
               <div className="flex-1">
-                <FlipBoard 
+                <EnhancedFlipBoard 
                   data={banner.data} 
                   color={banner.color}
                   bgColor={banner.bgColor}
                   onBannerClick={handleBannerClick}
+                  isMarketOpen={marketSession.isOpen}
                 />
               </div>
             </div>
@@ -265,34 +378,49 @@ const TopGainersBanner: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {/* 연결 상태 */}
-            {isTopGainersConnected ? (
-              <div className="flex items-center space-x-1">
-                <Wifi className="text-green-400" size={14} />
-                <span className="text-xs text-green-400">실시간</span>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-1">
-                <WifiOff className="text-red-400" size={14} />
-                <span className="text-xs text-red-400">연결 끊김</span>
-              </div>
-            )}
+            <div className="flex items-center space-x-1">
+              {isTopGainersConnected && marketSession.isOpen ? (
+                <>
+                  <Wifi className="text-green-400" size={14} />
+                  <span className="text-xs text-green-400">실시간</span>
+                </>
+              ) : marketSession.isOpen ? (
+                <>
+                  <WifiOff className="text-yellow-400" size={14} />
+                  <span className="text-xs text-yellow-400">연결 중</span>
+                </>
+              ) : (
+                <>
+                  <div className="w-3 h-3 bg-gray-400 rounded-full" />
+                  <span className="text-xs text-gray-400">장 마감</span>
+                </>
+              )}
+            </div>
             
             {/* 데이터 개수 */}
             <span className="text-xs text-foreground/60">
               {topGainersData.length}개 종목
             </span>
             
+            {/* 데이터 소스 */}
+            <span className="text-xs text-foreground/50">
+              {getDataSourceMessage()}
+            </span>
+            
             {/* 마지막 업데이트 시간 */}
             {lastUpdated && (
               <span className="text-xs text-foreground/50">
-                {lastUpdated.toLocaleTimeString('ko-KR')} 업데이트
+                {lastUpdated.toLocaleTimeString('ko-KR', { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })} 업데이트
               </span>
             )}
           </div>
           
           {/* 안내 텍스트 */}
           <div className="text-xs text-foreground/60">
-            배너를 클릭하면 마켓으로 이동
+            클릭하여 상세보기
           </div>
         </div>
       </div>
@@ -300,4 +428,4 @@ const TopGainersBanner: React.FC = () => {
   );
 };
 
-export default TopGainersBanner;
+export default EnhancedTopGainersBanner;
