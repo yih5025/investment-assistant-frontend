@@ -182,7 +182,7 @@ class WebSocketService {
   // 🎯 TopGainers 카테고리 통계 로드
   private async loadTopGainersCategoryStats(): Promise<void> {
     try {
-      const response = await fetch('https://api.investment-assistant.site/api/v1/topgainers/categories/');
+      const response = await fetch('https://api.investment-assistant.site/api/v1/stocks/topgainers/categories/');
       if (response.ok) {
         const stats = await response.json();
         this.topGainersCategoryStats = stats;
@@ -470,7 +470,7 @@ class WebSocketService {
         queryParams = 'limit=15';
         break;
       case 'topgainers':
-        endpoint = '/topgainers';  // 🎯 새로운 엔드포인트
+        endpoint = '/stocks/topgainers';  // 🎯 새로운 엔드포인트
         queryParams = 'limit=50';  // 전체 50개 조회
         break;
       default:
