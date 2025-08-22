@@ -189,13 +189,6 @@ const StockCard: React.FC<StockCardProps> = ({ item, color, formatPrice, formatV
           Vol: {formatVolume(item.volume)}
         </div>
       </div>
-      
-      {/* 순위 표시 (있는 경우) */}
-      {item.rank_position && (
-        <div className="absolute top-1 left-1 text-xs text-white bg-black/30 rounded px-1">
-          #{item.rank_position}
-        </div>
-      )}
     </>
   );
 };
@@ -213,14 +206,12 @@ const TopGainersBanner: React.FC = () => {
     connectionStatus,
     isConnected,
     isRealtime,
-    reconnect,
     isEmpty,
     lastUpdated,
     marketStatus,
     bannerConfigs,
     handleBannerClick,
     getDataSourceMessage,
-    categoryStats
   } = useTopGainersBanner();
 
   // =========================================================================
@@ -255,29 +246,6 @@ const TopGainersBanner: React.FC = () => {
       </div>
     );
   }
-
-  // 연결 실패 상태 (시장 시간 중에만 에러로 표시)
-  if (connectionStatus.status === 'disconnected' && isEmpty && marketStatus.isOpen) {
-    return (
-      <div className="glass-card rounded-xl overflow-hidden">
-        <div className="p-4">
-          <MarketTimeDisplay marketStatus={marketStatus} isRealtime={isRealtime} />
-        </div>
-        <div className="p-6 text-center">
-          <WifiOff className="mx-auto mb-2 text-red-400" size={32} />
-          <div className="font-medium text-red-400 mb-1">실시간 연결 실패</div>
-          <div className="text-sm text-foreground/60 mb-3">실시간 데이터를 가져올 수 없습니다</div>
-          <button
-            onClick={reconnect}
-            className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors text-sm"
-          >
-            다시 시도
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   // 장 마감 시간이고 데이터가 없는 경우
   if (isEmpty && !marketStatus.isOpen) {
     return (
@@ -359,69 +327,6 @@ const TopGainersBanner: React.FC = () => {
             </div>
           );
         })}
-      </div>
-
-      {/* 하단 상태 표시 */}
-      <div className="px-4 py-3 border-t border-white/10 bg-white/[0.02]">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            {/* 연결 상태 */}
-            <div className="flex items-center space-x-1">
-              {isConnected && marketStatus.isOpen ? (
-                <>
-                  <Wifi className="text-green-400" size={14} />
-                  <span className="text-xs text-green-400">
-                    {connectionStatus.mode === 'websocket' ? '실시간' : 'API'}
-                  </span>
-                </>
-              ) : marketStatus.isOpen ? (
-                <>
-                  <WifiOff className="text-yellow-400" size={14} />
-                  <span className="text-xs text-yellow-400">연결 중</span>
-                </>
-              ) : (
-                <>
-                  <div className="w-3 h-3 bg-gray-400 rounded-full" />
-                  <span className="text-xs text-gray-400">장 마감</span>
-                </>
-              )}
-            </div>
-            
-            {/* 총 데이터 개수 */}
-            {categoryStats && (
-              <span className="text-xs text-foreground/60">
-                총 {categoryStats.total}개 종목
-              </span>
-            )}
-            
-            {/* 데이터 소스 */}
-            <span className="text-xs text-foreground/50">
-              {getDataSourceMessage()}
-            </span>
-            
-            {/* 마지막 업데이트 시간 */}
-            {lastUpdated && (
-              <span className="text-xs text-foreground/50">
-                {lastUpdated.toLocaleTimeString('ko-KR', { 
-                  hour: '2-digit', 
-                  minute: '2-digit' 
-                })} 업데이트
-              </span>
-            )}
-            
-            {/* 배치 ID 표시 (디버깅용) */}
-            {categoryStats && process.env.NODE_ENV === 'development' && (
-              <span className="text-xs text-foreground/40">
-                Batch #{categoryStats.batch_id}
-              </span>
-            )}
-          </div>
-          
-          {/* 안내 텍스트 */}
-          <div className="text-xs text-foreground/60">
-            클릭하여 상세보기
-          </div>
-        </div>
       </div>
     </div>
   );
