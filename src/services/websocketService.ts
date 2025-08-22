@@ -182,17 +182,31 @@ class WebSocketService {
   // 🎯 TopGainers 카테고리 통계 로드
   private async loadTopGainersCategoryStats(): Promise<void> {
     try {
-      const response = await fetch('https://api.investment-assistant.site/api/v1/stocks/topgainers/categories/');
+      // ❌ 기존: http://api.investment-assistant.site/...
+      // ✅ 수정: https://api.investment-assistant.site/...
+      const response = await fetch('https://api.investment-assistant.site/api/v1/stocks/topgainers/categories/', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        mode: 'cors',
+        credentials: 'omit'
+      });
+      
       if (response.ok) {
         const stats = await response.json();
         this.topGainersCategoryStats = stats;
         this.emitEvent('topgainers_category_stats', stats);
         console.log('📊 TopGainers 카테고리 통계 로드 완료:', stats);
+      } else {
+        console.warn(`⚠️ TopGainers 카테고리 응답 실패: ${response.status} ${response.statusText}`);
       }
     } catch (error) {
       console.error('❌ TopGainers 카테고리 통계 로드 실패:', error);
     }
   }
+  
 
   private async initializeConnectionModes(): Promise<void> {
     const marketStatus = this.marketTimeManager.getCurrentMarketStatus();
@@ -470,8 +484,8 @@ class WebSocketService {
         queryParams = 'limit=15';
         break;
       case 'topgainers':
-        endpoint = '/stocks/topgainers';  // 🎯 새로운 엔드포인트
-        queryParams = 'limit=50';  // 전체 50개 조회
+        endpoint = '/stocks/topgainers';
+        queryParams = 'limit=50';
         break;
       default:
         throw new Error(`Unknown API type: ${type}`);
@@ -480,7 +494,7 @@ class WebSocketService {
     const baseUrlWithSlash = `${BASE_URL}${endpoint}${endpoint.endsWith('/') ? '' : '/'}`;
     const finalUrl = `${baseUrlWithSlash}?${queryParams}`;
     
-    console.log(`🚀 ${type} API 요청: ${finalUrl}`);
+    console.log(`🚀 ${type} API 요청 (HTTPS): ${finalUrl}`);
     return finalUrl;
   }
 
