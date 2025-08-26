@@ -122,7 +122,7 @@ class WebSocketService {
   private config: ConnectionConfig = {
     maxReconnectAttempts: 3,
     baseReconnectDelay: 2000,
-    apiPollingInterval: 5000,        // 5초 - 개장 시 (미국 주식용)
+    apiPollingInterval: 5000,        // 5초 - 개장 시 (TopGainers: 50개, SP500: 60개)
     marketClosedPollingInterval: 30000, // 30초 - 장 마감 시 (미국 주식용)
     healthCheckInterval: 15000,      // 15초 (폴링 방식이므로 간격 증가)
     enableApiFallback: true,
@@ -472,12 +472,12 @@ class WebSocketService {
     
     switch (type) {
       case 'sp500':
-        endpoint = '/stocks/sp500';
-        queryParams = 'limit=15';
+        endpoint = '/stocks/sp500/polling';  // 폴링 엔드포인트 사용
+        queryParams = 'limit=60&sort_by=volume&order=desc';  // 60개로 고정
         break;
       case 'topgainers':
-        endpoint = '/stocks/topgainers';
-        queryParams = 'limit=50';
+        endpoint = '/stocks/topgainers/polling';  // 폴링 엔드포인트 사용
+        queryParams = 'limit=50';  // 50개로 고정
         break;
       default:
         throw new Error(`Unknown API type: ${type}`);
@@ -1009,7 +1009,7 @@ class WebSocketService {
 export const webSocketService = new WebSocketService({
   enableApiFallback: true,
   maxReconnectAttempts: 3,
-  apiPollingInterval: 5000,           // 5초 - 미국 주식 개장 시
+  apiPollingInterval: 5000,           // 5초 - TopGainers(50개) + SP500(60개)
   marketClosedPollingInterval: 30000, // 30초 - 미국 주식 마감 시
   healthCheckInterval: 15000,         // 15초 - 폴링 방식에 맞춘 헬스체크
   maxConcurrentConnections: 1         // 암호화폐만 WebSocket 사용
