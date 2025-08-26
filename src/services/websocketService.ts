@@ -483,8 +483,7 @@ class WebSocketService {
         throw new Error(`Unknown API type: ${type}`);
     }
     
-    const baseUrlWithSlash = `${BASE_URL}${endpoint}${endpoint.endsWith('/') ? '' : '/'}`;
-    const finalUrl = `${baseUrlWithSlash}?${queryParams}`;
+    const finalUrl = `${BASE_URL}${endpoint}?${queryParams}`;
     
     console.log(`🚀 ${type} API 요청 (HTTPS): ${finalUrl}`);
     return finalUrl;
