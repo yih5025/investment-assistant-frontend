@@ -32,7 +32,7 @@ export interface TopGainersData {
   rank_position?: number;
   price?: number;
   change_amount?: number;
-  change_percentage?: string;
+  change_percentage?: string | number;
   volume?: number;
   created_at?: string;
   // 프론트엔드 표시용 추가 필드
@@ -108,6 +108,7 @@ class WebSocketService {
   private reconnectTimeouts: Map<WebSocketType, NodeJS.Timeout> = new Map();
   private reconnectAttempts: Map<WebSocketType, number> = new Map();
   private apiPollingIntervals: Map<WebSocketType, NodeJS.Timeout> = new Map();
+  private heartbeatIntervals: Map<WebSocketType, NodeJS.Timeout> = new Map();
   private healthCheckInterval: NodeJS.Timeout | null = null;
 
   private isInitialized = false;
@@ -242,6 +243,9 @@ class WebSocketService {
 
     this.apiPollingIntervals.forEach(interval => clearInterval(interval));
     this.apiPollingIntervals.clear();
+
+    this.heartbeatIntervals.forEach(interval => clearInterval(interval));
+    this.heartbeatIntervals.clear();
 
     if (this.healthCheckInterval) {
       clearInterval(this.healthCheckInterval);
@@ -389,10 +393,10 @@ class WebSocketService {
       let result;
       
       if (type === 'topgainers') {
-        // TopGainers는 직접 배열 응답
+        // TopGainers는 {data: [...]} 형식으로 응답
         result = await response.json();
-        if (Array.isArray(result)) {
-          const data = this.transformTopGainersApiData(result);
+        if (result.data && Array.isArray(result.data)) {
+          const data = this.transformTopGainersApiData(result.data);
           
           if (this.hasDataChanged(type, data)) {
             this.lastDataCache.set(type, data);
@@ -400,18 +404,22 @@ class WebSocketService {
             this.emitEvent('topgainers_update', data);
             console.log(`📊 ${type} API 데이터 업데이트: ${data.length}개 항목`);
           }
+        } else {
+          console.warn(`⚠️ ${type} API 응답 형식 오류:`, result);
         }
       } else {
-        // SP500은 기존 로직 유지
+        // SP500도 {data: [...]} 형식으로 변경됨
         result = await response.json();
-        if (result.items && Array.isArray(result.items)) {
-          const data = this.transformApiDataToWebSocketFormat(type, result.items);
+        if (result.data && Array.isArray(result.data)) {
+          const data = this.transformApiDataToWebSocketFormat(type, result.data);
           
           if (this.hasDataChanged(type, data)) {
             this.lastDataCache.set(type, data);
             this.emitEvent('sp500_update', data as SP500Data[]);
             console.log(`📊 ${type} API 데이터 업데이트: ${data.length}개 항목`);
           }
+        } else {
+          console.warn(`⚠️ ${type} API 응답 형식 오류:`, result);
         }
       }
 
@@ -424,9 +432,11 @@ class WebSocketService {
   // 🎯 TopGainers API 데이터 변환
   private transformTopGainersApiData(apiData: any[]): TopGainersData[] {
     return apiData.map(item => {
-      // change_percentage 문자열에서 숫자 추출
+      // 새로운 API 응답 형식에서는 change_percentage가 이미 숫자
       let changePercent = 0;
-      if (item.change_percentage) {
+      if (typeof item.change_percentage === 'number') {
+        changePercent = item.change_percentage;
+      } else if (item.change_percentage) {
         const match = item.change_percentage.toString().match(/-?\d+\.?\d*/);
         changePercent = match ? parseFloat(match[0]) : 0;
       }
@@ -437,14 +447,18 @@ class WebSocketService {
         category: item.category,
         last_updated: item.last_updated || new Date().toISOString(),
         rank_position: item.rank_position,
-        price: item.price,
+        price: item.price || item.current_price, // 새로운 API에서는 current_price 사용
         change_amount: item.change_amount,
-        change_percentage: item.change_percentage,
+        change_percentage: changePercent, // 숫자로 저장
         volume: item.volume,
         created_at: item.created_at,
         // 프론트엔드용 추가 필드
         name: this.getStockName(item.symbol),
         change_percent: changePercent,
+        // 새로운 API 필드들
+        previous_close: item.previous_close,
+        is_positive: item.is_positive,
+        change_color: item.change_color
       };
     });
   }
@@ -573,6 +587,11 @@ class WebSocketService {
         console.log(`🟢 ${type} WebSocket 연결 성공`);
         this.setConnectionStatus(type, 'connected');
         this.reconnectAttempts.set(type, 0);
+        
+        // 연결 성공 시 heartbeat 시작 (crypto만)
+        if (type === 'crypto') {
+          this.startHeartbeat(type, ws);
+        }
       };
 
       ws.onmessage = (event) => {
@@ -609,6 +628,9 @@ class WebSocketService {
       clearTimeout(timeout);
       this.reconnectTimeouts.delete(type);
     }
+
+    // heartbeat 정리
+    this.stopHeartbeat(type);
 
     this.setConnectionStatus(type, 'disconnected');
   }
@@ -648,17 +670,59 @@ class WebSocketService {
       return;
     }
 
-    const delay = this.config.baseReconnectDelay * Math.pow(2, attempts);
+    // 지수 백오프 지연 시간 계산 (최대 30초)
+    const delay = Math.min(this.config.baseReconnectDelay * Math.pow(2, attempts), 30000);
     console.log(`⏰ ${type} WebSocket ${delay}ms 후 재연결 시도 (${attempts + 1}/${this.config.maxReconnectAttempts})`);
 
     this.reconnectAttempts.set(type, attempts + 1);
     this.setConnectionStatus(type, 'reconnecting');
 
     const timeout = setTimeout(() => {
+      // 재연결 시도 전에 현재 상태 확인
+      const currentStatus = this.connectionStatuses.get(type);
+      if (currentStatus === 'connected') {
+        console.log(`⏭️ ${type} 이미 연결됨 - 재연결 시도 건너뜀`);
+        return;
+      }
+      
+      console.log(`🔄 ${type} WebSocket 재연결 시도 중...`);
       this.connectWebSocket(type);
     }, delay);
 
     this.reconnectTimeouts.set(type, timeout);
+  }
+
+  // ============================================================================
+  // Heartbeat 관리
+  // ============================================================================
+
+  private startHeartbeat(type: WebSocketType, ws: WebSocket): void {
+    this.stopHeartbeat(type);
+
+    const heartbeatInterval = setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) {
+        try {
+          ws.send(JSON.stringify({ type: 'ping' }));
+        } catch (error) {
+          console.error(`❌ ${type} heartbeat 전송 실패:`, error);
+          this.handleConnectionClose(type);
+        }
+      } else {
+        console.log(`💔 ${type} WebSocket 연결 상태 이상 (readyState: ${ws.readyState})`);
+        this.stopHeartbeat(type);
+        this.handleConnectionClose(type);
+      }
+    }, 30000); // 30초마다 heartbeat
+
+    this.heartbeatIntervals.set(type, heartbeatInterval);
+  }
+
+  private stopHeartbeat(type: WebSocketType): void {
+    const heartbeatInterval = this.heartbeatIntervals.get(type);
+    if (heartbeatInterval) {
+      clearInterval(heartbeatInterval);
+      this.heartbeatIntervals.delete(type);
+    }
   }
 
   // ============================================================================

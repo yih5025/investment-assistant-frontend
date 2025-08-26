@@ -173,8 +173,16 @@ function AppContent() {
         // WebSocket 연결은 유지하되 로그만 출력
       } else {
         console.log('📱 앱이 포그라운드로 복귀');
-        // 필요시 재연결 시도
-        webSocketService.reconnectAll();
+        // 연결 상태 확인 후 필요시에만 재연결 시도
+        const statuses = webSocketService.getAllConnectionStatuses();
+        const needsReconnection = Object.values(statuses).some(
+          status => status.status === 'disconnected' && status.mode === 'websocket'
+        );
+        
+        if (needsReconnection) {
+          console.log('🔄 연결이 끊어진 WebSocket 재연결 시도');
+          webSocketService.reconnectAll();
+        }
       }
     };
 
