@@ -1,5 +1,5 @@
 // hooks/useMarketData.ts
-// 마켓 데이터 관리를 위한 훅 모음
+// 마켓 데이터 관리를 위한 훅 모음 (Hybrid: Crypto WebSocket + US Stocks HTTP Polling)
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
@@ -86,9 +86,9 @@ const formatPrice = (price: number, type: 'crypto' | 'stock'): string => {
 
 export function useWebSocketConnection() {
   const [connectionStatuses, setConnectionStatuses] = useState<Record<WebSocketType, { status: ConnectionStatus; mode: DataMode }>>({
-    crypto: { status: 'disconnected', mode: 'websocket' },
-    sp500: { status: 'disconnected', mode: 'websocket' },
-    topgainers: { status: 'disconnected', mode: 'websocket' },
+    crypto: { status: 'disconnected', mode: 'websocket' },    // 암호화폐: WebSocket
+    sp500: { status: 'disconnected', mode: 'api' },           // 미국 주식: HTTP 폴링
+    topgainers: { status: 'disconnected', mode: 'api' },      // TopGainers: HTTP 폴링
   });
 
   const [marketTimeManager] = useState(() => new MarketTimeManager());

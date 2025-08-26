@@ -1,5 +1,5 @@
 // hooks/useTopGainers.ts
-// TopGainers 전용 훅
+// TopGainers 전용 훅 (HTTP 폴링 방식)
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
@@ -39,7 +39,7 @@ export interface TopGainersCategoryData {
 export function useTopGainersConnection() {
   const [connectionStatus, setConnectionStatus] = useState<{ status: ConnectionStatus; mode: DataMode }>({
     status: 'disconnected',
-    mode: 'websocket'
+    mode: 'api'  // HTTP 폴링 모드로 변경
   });
 
   const [marketTimeManager] = useState(() => new MarketTimeManager());
@@ -69,7 +69,8 @@ export function useTopGainersConnection() {
 
   const isRealtime = useMemo(() => {
     const marketStatus = marketTimeManager.getCurrentMarketStatus();
-    return marketStatus.isOpen && connectionStatus.status === 'connected';
+    // HTTP 폴링 모드에서도 실시간으로 간주 (5초 간격)
+    return marketStatus.isOpen && (connectionStatus.status === 'connected' || connectionStatus.status === 'api_mode');
   }, [connectionStatus.status, marketTimeManager]);
 
   return {
@@ -344,12 +345,12 @@ export function useTopGainersBanner() {
     }));
   }, []);
 
-  // 데이터 소스 메시지
+  // 데이터 소스 메시지 (HTTP 폴링 방식)
   const getDataSourceMessage = useCallback(() => {
     if (marketStatus.isOpen) {
-      return isConnected ? '실시간 데이터' : '연결 중...';
+      return isConnected ? 'HTTP 폴링 (5초 간격)' : '연결 중...';
     } else {
-      return '최종 거래가 기준';
+      return '최종 거래가 기준 (30초 간격)';
     }
   }, [marketStatus.isOpen, isConnected]);
 

@@ -118,16 +118,16 @@ class WebSocketService {
   private topGainersCategories: Map<string, TopGainersData[]> = new Map();
   private topGainersCategoryStats: TopGainersCategoryStats | null = null;
 
-  // 설정 가능한 옵션들
+  // 설정 가능한 옵션들 (HTTP 폴링 최적화)
   private config: ConnectionConfig = {
     maxReconnectAttempts: 3,
     baseReconnectDelay: 2000,
-    apiPollingInterval: 5000,        // 5초 - 개장 시
-    marketClosedPollingInterval: 30000, // 30초 - 장 마감 시
-    healthCheckInterval: 10000,      // 10초
+    apiPollingInterval: 5000,        // 5초 - 개장 시 (미국 주식용)
+    marketClosedPollingInterval: 30000, // 30초 - 장 마감 시 (미국 주식용)
+    healthCheckInterval: 15000,      // 15초 (폴링 방식이므로 간격 증가)
     enableApiFallback: true,
-    maxConcurrentConnections: 2,
-    connectionStabilityDelay: 1000
+    maxConcurrentConnections: 1,     // 암호화폐만 WebSocket 사용
+    connectionStabilityDelay: 500    // 연결 안정화 시간 단축
   };
 
   constructor(customConfig?: Partial<ConnectionConfig>) {
@@ -148,7 +148,7 @@ class WebSocketService {
     this.topGainersCategories.set('top_losers', []);
     this.topGainersCategories.set('most_actively_traded', []);
 
-    console.log('🚀 Enhanced WebSocket Service 초기화 (TopGainers v2)', this.config);
+    console.log('🚀 Hybrid Service 초기화: Crypto(WebSocket) + US Stocks(HTTP Polling)', this.config);
   }
 
   // ============================================================================
@@ -157,11 +157,11 @@ class WebSocketService {
 
   public initialize(): void {
     if (this.isInitialized) {
-      console.log('⚠️ WebSocket 서비스가 이미 초기화되었습니다.');
+      console.log('⚠️ Hybrid 서비스가 이미 초기화되었습니다.');
       return;
     }
 
-    console.log('🚀 Enhanced WebSocket 서비스 초기화 시작...');
+    console.log('🚀 Hybrid 서비스 초기화 시작: Crypto(WebSocket) + US Stocks(HTTP Polling)...');
     
     // 시장 상태 체크 시작
     this.startMarketStatusMonitoring();
@@ -176,7 +176,7 @@ class WebSocketService {
     this.loadTopGainersCategoryStats();
 
     this.isInitialized = true;
-    console.log('✅ Enhanced WebSocket 서비스 초기화 완료');
+    console.log('✅ Hybrid 서비스 초기화 완료: Crypto(WebSocket) + US Stocks(HTTP Polling)');
   }
 
   // 🎯 TopGainers 카테고리 통계 로드
@@ -211,36 +211,16 @@ class WebSocketService {
   private async initializeConnectionModes(): Promise<void> {
     const marketStatus = this.marketTimeManager.getCurrentMarketStatus();
     
-    // 🎯 연결 안정화를 위한 우선순위 기반 순차 연결
-    const connectionPriority: WebSocketType[] = marketStatus.isOpen 
-      ? ['crypto', 'topgainers'] // 개장 시: 암호화폐 + Top Gainers 우선
-      : ['crypto']; // 장 마감 시: 암호화폐만 WebSocket, 나머지는 API
-
-    let connectedCount = 0;
+    console.log('🔄 연결 모드 초기화: 암호화폐(WebSocket) + 미국주식(HTTP 폴링)');
     
-    for (const type of connectionPriority) {
-      if (connectedCount >= this.config.maxConcurrentConnections) {
-        this.switchToApiMode(type);
-      } else {
-        if (type === 'crypto') {
-          await this.connectWebSocketWithDelay(type);
-          connectedCount++;
-        } else if (marketStatus.isOpen) {
-          await this.connectWebSocketWithDelay(type);
-          connectedCount++;
-        } else {
-          this.switchToApiMode(type);
-        }
-      }
-    }
-
-    // 나머지 타입들은 API 모드로 처리
-    const remainingTypes = (['crypto', 'sp500', 'topgainers'] as WebSocketType[])
-      .filter(type => !connectionPriority.includes(type));
+    // 🎯 암호화폐만 WebSocket으로 연결
+    await this.connectWebSocketWithDelay('crypto');
     
-    for (const type of remainingTypes) {
-      this.switchToApiMode(type);
-    }
+    // 🎯 미국 주식 데이터는 항상 HTTP 폴링으로 처리
+    this.switchToApiMode('topgainers');
+    this.switchToApiMode('sp500');
+    
+    console.log('✅ 연결 모드 초기화 완료: crypto(WebSocket), topgainers/sp500(HTTP 폴링)');
   }
 
   private async connectWebSocketWithDelay(type: WebSocketType): Promise<void> {
@@ -251,7 +231,7 @@ class WebSocketService {
   }
 
   public shutdown(): void {
-    console.log('🛑 Enhanced WebSocket 서비스 종료 시작...');
+    console.log('🛑 Hybrid 서비스 종료 시작...');
 
     this.connections.forEach((ws, type) => {
       this.disconnectWebSocket(type);
@@ -273,7 +253,7 @@ class WebSocketService {
     this.topGainersCategoryStats = null;
 
     this.isInitialized = false;
-    console.log('✅ Enhanced WebSocket 서비스 종료 완료');
+    console.log('✅ Hybrid 서비스 종료 완료');
   }
 
   // ============================================================================
@@ -308,19 +288,31 @@ class WebSocketService {
   private lastMarketStatus: any = null;
 
   private adjustConnectionModeForMarketStatus(isMarketOpen: boolean): void {
+    // 🎯 미국 주식은 시장 상태와 관계없이 항상 HTTP 폴링 유지
     (['sp500', 'topgainers'] as WebSocketType[]).forEach(type => {
-      if (isMarketOpen) {
-        if (this.dataModes.get(type) === 'api') {
-          console.log(`🔄 ${type} 장 개장 - WebSocket 모드로 전환`);
-          this.switchToWebSocketMode(type);
-        }
-      } else {
-        if (this.dataModes.get(type) === 'websocket') {
-          console.log(`🕐 ${type} 장 마감 - API 모드로 전환`);
-          this.switchToApiMode(type);
-        }
+      if (this.dataModes.get(type) !== 'api') {
+        console.log(`🔄 ${type} HTTP 폴링 모드로 고정 (시장 상태: ${isMarketOpen ? '개장' : '마감'})`);
+        this.switchToApiMode(type);
       }
+      
+      // 폴링 간격 조정 (개장 시 5초, 마감 시 30초)
+      this.adjustApiPollingInterval(type, isMarketOpen);
     });
+  }
+
+  // 🎯 API 폴링 간격 조정 메서드
+  private adjustApiPollingInterval(type: WebSocketType, isMarketOpen: boolean): void {
+    const currentInterval = this.apiPollingIntervals.get(type);
+    if (currentInterval) {
+      clearInterval(currentInterval);
+      this.apiPollingIntervals.delete(type);
+      
+      // 새로운 간격으로 다시 시작
+      this.startApiPolling(type);
+      
+      const interval = isMarketOpen ? this.config.apiPollingInterval : this.config.marketClosedPollingInterval;
+      console.log(`🔄 ${type} 폴링 간격 조정: ${interval}ms (${isMarketOpen ? '개장' : '마감'})`);
+    }
   }
 
   // ============================================================================
@@ -633,27 +625,27 @@ class WebSocketService {
 
   private handleConnectionFailure(type: WebSocketType): void {
     if (type === 'crypto') {
+      // 암호화폐만 WebSocket 재연결 시도
       this.scheduleReconnect(type);
     } else {
-      if (this.config.enableApiFallback && this.dataModes.get(type) === 'websocket') {
-        console.log(`🔄 ${type} WebSocket 실패 - API 모드로 fallback`);
-        this.switchToApiMode(type);
-      } else {
-        this.scheduleReconnect(type);
-      }
+      // 미국 주식은 항상 API 모드로 전환
+      console.log(`🔄 ${type} WebSocket 실패 - HTTP 폴링 모드로 전환 (고정)`);
+      this.switchToApiMode(type);
     }
   }
 
   private scheduleReconnect(type: WebSocketType): void {
+    // 미국 주식은 재연결하지 않고 API 모드로 전환
+    if (type !== 'crypto') {
+      console.log(`🔄 ${type} WebSocket 재연결 대신 HTTP 폴링 모드로 전환`);
+      this.switchToApiMode(type);
+      return;
+    }
+
     const attempts = this.reconnectAttempts.get(type) || 0;
     
     if (attempts >= this.config.maxReconnectAttempts) {
       console.error(`❌ ${type} WebSocket 최대 재연결 시도 횟수 초과`);
-      
-      if (type !== 'crypto' && this.config.enableApiFallback) {
-        console.log(`🔄 ${type} 최대 재시도 후 API 모드로 전환`);
-        this.switchToApiMode(type);
-      }
       return;
     }
 
@@ -789,17 +781,30 @@ class WebSocketService {
   }
 
   private performHealthCheck(): void {
-    (['crypto', 'sp500', 'topgainers'] as WebSocketType[]).forEach(type => {
-      const status = this.connectionStatuses.get(type);
-      const mode = this.dataModes.get(type);
+    // 암호화폐만 WebSocket 헬스체크 수행
+    const cryptoStatus = this.connectionStatuses.get('crypto');
+    const cryptoMode = this.dataModes.get('crypto');
+    
+    if (cryptoMode === 'websocket' && cryptoStatus === 'disconnected') {
+      const reconnectAttempts = this.reconnectAttempts.get('crypto') || 0;
       
-      if (type !== 'crypto' && mode === 'websocket' && status === 'disconnected' && this.config.enableApiFallback) {
-        const reconnectAttempts = this.reconnectAttempts.get(type) || 0;
-        
-        if (reconnectAttempts >= 2) {
-          console.log(`🏥 ${type} 헬스체크 - API 모드로 전환 (재연결 실패)`);
-          this.switchToApiMode(type);
-        }
+      if (reconnectAttempts >= 2) {
+        console.log(`🏥 crypto 헬스체크 - 재연결 시도 (현재 시도: ${reconnectAttempts})`);
+        this.reconnect('crypto');
+      }
+    }
+    
+    // 미국 주식은 API 모드 상태만 확인
+    (['sp500', 'topgainers'] as WebSocketType[]).forEach(type => {
+      const mode = this.dataModes.get(type);
+      const status = this.connectionStatuses.get(type);
+      
+      if (mode !== 'api') {
+        console.log(`🏥 ${type} 헬스체크 - HTTP 폴링 모드로 강제 전환`);
+        this.switchToApiMode(type);
+      } else if (status !== 'api_mode') {
+        console.log(`🏥 ${type} 헬스체크 - API 상태 복구`);
+        this.setConnectionStatus(type, 'api_mode');
       }
     });
   }
@@ -911,28 +916,46 @@ class WebSocketService {
     console.log(`🔄 ${type} 수동 재연결 시도`);
     this.reconnectAttempts.set(type, 0);
     
-    if (this.dataModes.get(type) === 'api') {
-      this.switchToWebSocketMode(type);
+    if (type === 'crypto') {
+      // 암호화폐만 WebSocket 재연결
+      if (this.dataModes.get(type) === 'api') {
+        this.switchToWebSocketMode(type);
+      } else {
+        this.connectWebSocket(type);
+      }
     } else {
-      this.connectWebSocket(type);
+      // 미국 주식은 HTTP 폴링 모드로 강제 전환
+      console.log(`🔄 ${type} HTTP 폴링 모드로 재시작`);
+      this.switchToApiMode(type);
     }
   }
 
   public reconnectAll(): void {
     console.log('🔄 모든 연결 재시도');
-    (['crypto', 'sp500', 'topgainers'] as WebSocketType[]).forEach(type => {
-      this.reconnectAttempts.set(type, 0);
-      this.reconnect(type);
+    
+    // 암호화폐는 WebSocket 재연결
+    this.reconnectAttempts.set('crypto', 0);
+    this.reconnect('crypto');
+    
+    // 미국 주식은 HTTP 폴링 재시작
+    (['sp500', 'topgainers'] as WebSocketType[]).forEach(type => {
+      console.log(`🔄 ${type} HTTP 폴링 재시작`);
+      this.switchToApiMode(type);
     });
   }
 
   public forceWebSocketMode(type: WebSocketType): void {
-    console.log(`🔧 ${type} 강제 WebSocket 모드 전환`);
-    this.switchToWebSocketMode(type);
+    if (type === 'crypto') {
+      console.log(`🔧 ${type} 강제 WebSocket 모드 전환`);
+      this.switchToWebSocketMode(type);
+    } else {
+      console.warn(`⚠️ ${type}는 WebSocket 모드를 지원하지 않습니다. HTTP 폴링 모드를 사용합니다.`);
+      this.switchToApiMode(type);
+    }
   }
 
   public forceApiMode(type: WebSocketType): void {
-    console.log(`🔧 ${type} 강제 API 모드 전환`);
+    console.log(`🔧 ${type} 강제 HTTP 폴링 모드 전환`);
     this.switchToApiMode(type);
   }
 
@@ -982,12 +1005,14 @@ class WebSocketService {
   }
 }
 
-// 싱글톤 인스턴스 생성 및 export
+// 싱글톤 인스턴스 생성 및 export (HTTP 폴링 최적화)
 export const webSocketService = new WebSocketService({
   enableApiFallback: true,
   maxReconnectAttempts: 3,
-  apiPollingInterval: 5000,
-  marketClosedPollingInterval: 30000
+  apiPollingInterval: 5000,           // 5초 - 미국 주식 개장 시
+  marketClosedPollingInterval: 30000, // 30초 - 미국 주식 마감 시
+  healthCheckInterval: 15000,         // 15초 - 폴링 방식에 맞춘 헬스체크
+  maxConcurrentConnections: 1         // 암호화폐만 WebSocket 사용
 });
 
 export default webSocketService;
