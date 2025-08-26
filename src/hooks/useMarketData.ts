@@ -164,13 +164,16 @@ export function useCryptoData() {
         const symbol = crypto.market.replace('KRW-', '');
         const name = cryptoNames[crypto.market] || symbol;
         
+        // 24시간 거래량 사용 (원화 기준)
+        const volume24h = crypto.acc_trade_volume_24h || crypto.trade_volume || 0;
+        
         return {
           symbol,
           name,
           price: crypto.trade_price || 0,
           change: crypto.signed_change_price || 0,
           changePercent: (crypto.signed_change_rate || 0) * 100,
-          volume: formatVolume(crypto.acc_trade_volume_24h || 0),
+          volume: formatVolume(volume24h),
           type: 'crypto' as const,
           marketCap: formatVolume((crypto.trade_price || 0) * 21000000)
         };
@@ -197,39 +200,36 @@ export function useCryptoData() {
 export function useSP500Data() {
   const [sp500Data, setSP500Data] = useState<MarketItem[]>([]);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [previousPrices, setPreviousPrices] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const unsubscribe = webSocketService.subscribe('sp500_update', (data: SP500Data[]) => {
       const items: MarketItem[] = data.map(stock => {
         const name = stockNames[stock.symbol] || `${stock.symbol} Corp.`;
-        const prevPrice = previousPrices[stock.symbol] || stock.price;
-        const change = stock.price - prevPrice;
-        const changePercent = prevPrice !== 0 ? (change / prevPrice) * 100 : 0;
+        
+        // 백엔드에서 계산된 변화율 정보 사용
+        const currentPrice = stock.current_price || stock.price || 0;
+        const changeAmount = stock.change_amount || 0;
+        const changePercent = stock.change_percentage || 0;
+        
+        // 변화율 정보는 백엔드에서 전날 종가 기반으로 계산됨
         
         return {
           symbol: stock.symbol,
           name,
-          price: stock.price || 0,
-          change,
+          price: currentPrice,
+          change: changeAmount,
           changePercent,
           volume: formatVolume(stock.volume || 0),
           type: 'stock' as const,
         };
       });
 
-      const newPreviousPrices: Record<string, number> = {};
-      data.forEach(stock => {
-        newPreviousPrices[stock.symbol] = stock.price;
-      });
-      setPreviousPrices(prev => ({ ...prev, ...newPreviousPrices }));
-
       setSP500Data(items);
       setLastUpdated(new Date());
     });
 
     return unsubscribe;
-  }, [previousPrices]);
+  }, []);
 
   return {
     sp500Data,

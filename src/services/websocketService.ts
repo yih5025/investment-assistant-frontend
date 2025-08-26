@@ -21,6 +21,13 @@ export interface SP500Data {
   timestamp_ms: number;
   category?: string;
   source: string;
+  // 변화율 정보 (백엔드에서 계산된 값)
+  current_price?: number;
+  previous_close?: number;
+  change_amount?: number;
+  change_percentage?: number;
+  is_positive?: boolean;
+  change_color?: string;
 }
 
 // 🎯 새로운 TopGainers 데이터 구조 (백엔드 API 응답과 일치)
@@ -930,6 +937,10 @@ class WebSocketService {
 
   public getTopGainersCategoryStats(): TopGainersCategoryStats | null {
     return this.topGainersCategoryStats;
+  }
+
+  public getLastCachedData(type: WebSocketType): any[] | null {
+    return this.lastDataCache.get(type) || null;
   }
 
   // ============================================================================
