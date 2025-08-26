@@ -118,6 +118,44 @@ export function useTopGainersCategoryStats() {
 // 3. TopGainers 메인 데이터 훅
 // ============================================================================
 
+// 카테고리별 데이터 분류 함수 (컴포넌트 외부에서 정의)
+const categorizeTopGainersData = (data: TopGainersData[]): TopGainersCategoryData => {
+  const categorized: TopGainersCategoryData = {
+    top_gainers: [],
+    top_losers: [],
+    most_actively_traded: []
+  };
+
+  data.forEach(item => {
+    const bannerItem: TopGainerBannerItem = {
+      symbol: item.symbol,
+      name: item.name || `${item.symbol} Corp.`,
+      price: item.price || 0,
+      change_amount: item.change_amount || 0,
+      change_percent: item.change_percent || 0,
+      volume: item.volume || 0,
+      category: item.category,
+      rank_position: item.rank_position
+    };
+
+    if (categorized[item.category]) {
+      categorized[item.category].push(bannerItem);
+    }
+  });
+
+  // 각 카테고리를 순위별로 정렬
+  Object.keys(categorized).forEach(category => {
+    categorized[category as keyof TopGainersCategoryData].sort((a, b) => {
+      if (a.rank_position && b.rank_position) {
+        return a.rank_position - b.rank_position;
+      }
+      return b.change_percent - a.change_percent;
+    });
+  });
+
+  return categorized;
+};
+
 export function useTopGainersData() {
   // 초기값으로 WebSocket 서비스의 캐시된 데이터 사용
   const [allTopGainersData, setAllTopGainersData] = useState<TopGainersData[]>(() => {
@@ -141,44 +179,6 @@ export function useTopGainersData() {
     const cachedData = webSocketService.getLastCachedData('topgainers');
     return cachedData && cachedData.length > 0 ? new Date() : null;
   });
-
-  // 카테고리별 데이터 분류 함수
-  const categorizeTopGainersData = (data: TopGainersData[]): TopGainersCategoryData => {
-    const categorized: TopGainersCategoryData = {
-      top_gainers: [],
-      top_losers: [],
-      most_actively_traded: []
-    };
-
-    data.forEach(item => {
-      const bannerItem: TopGainerBannerItem = {
-        symbol: item.symbol,
-        name: item.name || `${item.symbol} Corp.`,
-        price: item.price || 0,
-        change_amount: item.change_amount || 0,
-        change_percent: item.change_percent || 0,
-        volume: item.volume || 0,
-        category: item.category,
-        rank_position: item.rank_position
-      };
-
-      if (categorized[item.category]) {
-        categorized[item.category].push(bannerItem);
-      }
-    });
-
-    // 각 카테고리를 순위별로 정렬
-    Object.keys(categorized).forEach(category => {
-      categorized[category as keyof TopGainersCategoryData].sort((a, b) => {
-        if (a.rank_position && b.rank_position) {
-          return a.rank_position - b.rank_position;
-        }
-        return b.change_percent - a.change_percent;
-      });
-    });
-
-    return categorized;
-  };
 
   useEffect(() => {
     const unsubscribe = webSocketService.subscribe('topgainers_update', (data: TopGainersData[]) => {
