@@ -112,26 +112,26 @@ const MarketTimeDisplay: React.FC<MarketTimeDisplayProps> = ({ marketStatus, isR
   const getConnectionIcon = () => {
     switch (connectionStatus.status) {
       case 'connected':
-        return <Wifi size={12} className="text-green-400" />;
+        return <Wifi size={10} className="text-green-400" />;
       case 'connecting':
       case 'reconnecting':
-        return <RefreshCw size={12} className="text-yellow-400 animate-spin" />;
+        return <RefreshCw size={10} className="text-yellow-400 animate-spin" />;
       default:
-        return <Clock size={12} className="text-gray-400" />;
+        return <Clock size={10} className="text-gray-400" />;
     }
   };
 
   return (
-    <div className="flex items-center justify-between text-xs mb-2 px-1">
-      <div className="flex items-center space-x-2">
+    <div className="flex items-center justify-between text-xs px-1">
+      <div className="flex items-center space-x-1.5">
         {getConnectionIcon()}
-        <span className="text-gray-400">{getFormattedEasternTime()}</span>
+        <span className="text-gray-400 text-xs">{getFormattedEasternTime()}</span>
       </div>
       <div className="flex items-center space-x-1">
-        <div className={`w-2 h-2 rounded-full ${
+        <div className={`w-1.5 h-1.5 rounded-full ${
           marketStatus.isOpen && isRealtime ? 'bg-green-400 animate-pulse' : 'bg-gray-400'
         }`} />
-        <span className={`font-medium ${
+        <span className={`font-medium text-xs ${
           marketStatus.isOpen ? 'text-green-400' : 'text-gray-400'
         }`}>
           {marketStatus.isOpen ? '장중' : '장마감'}
@@ -156,102 +156,21 @@ const TopGainersBanner: React.FC = () => {
     getDataSourceMessage,
   } = useTopGainersBanner();
 
-  // 마스터 애니메이션 상태 (3개 룰렛 동기화)
-  const [masterAnimationSpeed, setMasterAnimationSpeed] = useState(1);
-  const [isPaused, setIsPaused] = useState(false);
-  const [touchStartY, setTouchStartY] = useState(0);
-  const [touchStartTime, setTouchStartTime] = useState(0);
-  const speedTimeoutRef = useRef<NodeJS.Timeout>();
-  const pauseTimeoutRef = useRef<NodeJS.Timeout>();
+  // 통일된 애니메이션 속도 (급하락 기준)
+  const masterAnimationSpeed = 1.0;
+  const isPaused = false;
 
-  // 마스터 터치 이벤트 핸들러들
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    setTouchStartY(touch.clientY);
-    setTouchStartTime(Date.now());
-  }, []);
+  // 배너 확대 모달 상태
+  const [expandedBanner, setExpandedBanner] = useState<number | null>(null);
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (isPaused) return;
-    
-    const touch = e.touches[0];
-    const deltaY = touchStartY - touch.clientY;
-    const deltaTime = Date.now() - touchStartTime;
-    
-    const velocity = Math.abs(deltaY) / Math.max(deltaTime, 1);
-    
-    if (Math.abs(deltaY) > 20 && velocity > 0.3) {
-      const swipeDirection = deltaY > 0 ? 1 : -1;
-      const newSpeed = Math.min(4, Math.max(0.2, 1 + velocity * swipeDirection));
-      
-      setMasterAnimationSpeed(newSpeed);
-      
-      if (speedTimeoutRef.current) {
-        clearTimeout(speedTimeoutRef.current);
-      }
-      
-      speedTimeoutRef.current = setTimeout(() => {
-        const returnToNormal = () => {
-          setMasterAnimationSpeed(prev => {
-            const baseSpeed = 1;
-            const diff = prev - baseSpeed;
-            const newSpeed = prev - diff * 0.1;
-            
-            if (Math.abs(newSpeed - baseSpeed) < 0.05) {
-              return baseSpeed;
-            }
-            
-            requestAnimationFrame(returnToNormal);
-            return newSpeed;
-          });
-        };
-        returnToNormal();
-      }, 300);
-    }
-  }, [touchStartY, touchStartTime, isPaused]);
+  // 배너 탭으로 확대 기능
+  const handleBannerTap = (bannerIndex: number) => {
+    setExpandedBanner(bannerIndex);
+  };
 
-  const handleTouchEnd = useCallback(() => {
-    setTouchStartY(0);
-    setTouchStartTime(0);
-  }, []);
-
-  const handleTouchStartForPause = useCallback((e: React.TouchEvent) => {
-    e.preventDefault();
-    
-    pauseTimeoutRef.current = setTimeout(() => {
-      setIsPaused(true);
-      
-      if ('vibrate' in navigator) {
-        navigator.vibrate(50);
-      }
-    }, 300);
-    
-    handleTouchStart(e);
-  }, [handleTouchStart]);
-
-  const handleTouchEndForPause = useCallback(() => {
-    if (pauseTimeoutRef.current) {
-      clearTimeout(pauseTimeoutRef.current);
-    }
-    
-    if (isPaused) {
-      setIsPaused(false);
-      setMasterAnimationSpeed(1);
-    }
-    
-    handleTouchEnd();
-  }, [isPaused, handleTouchEnd]);
-
-  useEffect(() => {
-    return () => {
-      if (speedTimeoutRef.current) {
-        clearTimeout(speedTimeoutRef.current);
-      }
-      if (pauseTimeoutRef.current) {
-        clearTimeout(pauseTimeoutRef.current);
-      }
-    };
-  }, []);
+  const closeExpandedBanner = () => {
+    setExpandedBanner(null);
+  };
 
   const getIcon = (iconName: string) => {
     switch (iconName) {
@@ -319,75 +238,114 @@ const TopGainersBanner: React.FC = () => {
     );
   }
 
-  // 메인 렌더링 (동기화된 룰렛)
+  // 메인 렌더링
   return (
-    <div className="glass-card rounded-xl overflow-hidden">
-      <div className="p-4 border-b border-white/5">
-        <MarketTimeDisplay 
-          marketStatus={marketStatus} 
-          isRealtime={isRealtime}
-          connectionStatus={connectionStatus}
-        />
-      </div>
-
-      {/* 마스터 터치 컨트롤 영역 */}
-      <div 
-        className="p-3 relative"
-        onTouchStart={handleTouchStartForPause}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEndForPause}
-        style={{ touchAction: 'none' }}
-      >
-        {/* 마스터 스와이프 인디케이터 */}
-        <div className="absolute top-1 right-1 z-20">
-          <div className="text-[8px] text-white/40 flex items-center space-x-1">
-            <span>↕️</span>
-            <span className="font-mono">{masterAnimationSpeed.toFixed(1)}x</span>
-          </div>
+    <>
+      <div className="glass-card rounded-xl overflow-hidden">
+        <div className="px-4 py-2 border-b border-white/5">
+          <MarketTimeDisplay 
+            marketStatus={marketStatus} 
+            isRealtime={isRealtime}
+            connectionStatus={connectionStatus}
+          />
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
-          {bannerConfigs.map((banner, index) => {
-            const Icon = getIcon(banner.icon);
-            
-            return (
-              <div key={index} className="flex flex-col h-32">
-                <div className={`${banner.bgColor} px-2 py-1.5 rounded-t-lg border-b border-white/10 flex-shrink-0`}>
-                  <div className="flex items-center justify-center space-x-1.5">
-                    <Icon size={14} className={banner.color} />
-                    <span className="text-xs font-medium">{banner.title}</span>
+        {/* 메인 배너 영역 */}
+        <div className="p-3">
+          <div className="grid grid-cols-3 gap-2">
+            {bannerConfigs.map((banner, index) => {
+              const Icon = getIcon(banner.icon);
+              
+              return (
+                <div 
+                  key={index} 
+                  className="flex flex-col h-32 cursor-pointer"
+                  onClick={() => handleBannerTap(index)}
+                >
+                  <div className={`${banner.bgColor} px-2 py-1.5 rounded-t-lg border-b border-white/10 flex-shrink-0`}>
+                    <div className="flex items-center justify-center space-x-1.5">
+                      <Icon size={14} className={banner.color} />
+                      <span className="text-xs font-medium">{banner.title}</span>
+                    </div>
+                  </div>
+                  
+                  <div className={`flex-1 ${banner.bgColor} border-l border-r border-white/10 rounded-b-lg overflow-hidden`}>
+                    <SlotReel 
+                      items={banner.items}
+                      color={banner.color}
+                      bgColor={banner.bgColor}
+                      bannerIndex={index}
+                      onClick={handleBannerClick}
+                      masterAnimationSpeed={masterAnimationSpeed}
+                      isPaused={isPaused}
+                      isMarketOpen={marketStatus.isOpen}
+                    />
                   </div>
                 </div>
-                
-                <div className={`flex-1 ${banner.bgColor} border-l border-r border-white/10 rounded-b-lg overflow-hidden`}>
-                  <SlotReel 
-                    items={banner.items}
-                    color={banner.color}
-                    bgColor={banner.bgColor}
-                    bannerIndex={index}
-                    onClick={handleBannerClick}
-                    masterAnimationSpeed={masterAnimationSpeed}
-                    isPaused={isPaused}
-                    isMarketOpen={marketStatus.isOpen}
-                  />
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      <div className="px-3 py-2 border-t border-white/10 bg-white/[0.02]">
-        <div className="flex items-center justify-between text-xs">
-          <div className="text-foreground/60">
-            스와이프: 속도조절 | 꾹 눌러서: 일시정지
-          </div>
-          <div className="text-foreground/50">
-            {getDataSourceMessage()}
+      {/* 배너 확대 모달 */}
+      {expandedBanner !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-gray-900 rounded-xl max-w-md w-full mx-4 max-h-[80vh] overflow-hidden">
+            <div className="p-4 border-b border-white/10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  {(() => {
+                    const Icon = getIcon(bannerConfigs[expandedBanner].icon);
+                    return <Icon size={20} className={bannerConfigs[expandedBanner].color} />;
+                  })()}
+                  <h3 className="text-lg font-semibold">{bannerConfigs[expandedBanner].title}</h3>
+                </div>
+                <button
+                  onClick={closeExpandedBanner}
+                  className="text-gray-400 hover:text-white text-xl"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-4 max-h-96 overflow-y-auto">
+              <div className="space-y-3">
+                {bannerConfigs[expandedBanner].items.map((item, index) => (
+                  <div
+                    key={index}
+                    className="p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+                    onClick={() => {
+                      handleBannerClick(item);
+                      closeExpandedBanner();
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-semibold">{item.symbol}</div>
+                        <div className="text-sm text-gray-400">{item.name || item.symbol}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold">
+                          {item.price < 1 
+                            ? `${item.price.toFixed(4)}` 
+                            : `${item.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                          }
+                        </div>
+                        <div className={`text-sm ${item.change_percent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {item.change_percent >= 0 ? '+' : ''}{item.change_percent.toFixed(1)}%
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 };
 
