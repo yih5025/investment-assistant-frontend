@@ -29,36 +29,6 @@ export interface MarketItem {
 }
 
 // ============================================================================
-// 이름 매핑
-// ============================================================================
-
-const cryptoNames: Record<string, string> = {
-  'KRW-BTC': 'Bitcoin',
-  'KRW-ETH': 'Ethereum',
-  'KRW-ADA': 'Cardano',
-  'KRW-XRP': 'Ripple',
-  'KRW-DOT': 'Polkadot',
-  'KRW-DOGE': 'Dogecoin',
-  'KRW-SOL': 'Solana',
-  'KRW-AVAX': 'Avalanche',
-  'KRW-MATIC': 'Polygon',
-  'KRW-LINK': 'Chainlink',
-};
-
-const stockNames: Record<string, string> = {
-  'AAPL': 'Apple Inc.',
-  'MSFT': 'Microsoft Corporation',
-  'GOOGL': 'Alphabet Inc.',
-  'AMZN': 'Amazon.com Inc.',
-  'TSLA': 'Tesla Inc.',
-  'META': 'Meta Platforms Inc.',
-  'NVDA': 'NVIDIA Corporation',
-  'NFLX': 'Netflix Inc.',
-  'GOOG': 'Alphabet Inc.',
-  'BRK.B': 'Berkshire Hathaway',
-};
-
-// ============================================================================
 // 유틸리티 함수들
 // ============================================================================
 
@@ -162,7 +132,7 @@ export function useCryptoData() {
     const unsubscribe = webSocketService.subscribe('crypto_update', (data: CryptoData[]) => {
       const items: MarketItem[] = data.map(crypto => {
         const symbol = crypto.market.replace('KRW-', '');
-        const name = cryptoNames[crypto.market] || symbol;
+        const name = (crypto as any).crypto_name || crypto.market;
         
         // 24시간 거래량 사용 (원화 기준)
         const volume24h = crypto.acc_trade_volume_24h || crypto.trade_volume || 0;
@@ -204,7 +174,7 @@ export function useSP500Data() {
   useEffect(() => {
     const unsubscribe = webSocketService.subscribe('sp500_update', (data: SP500Data[]) => {
       const items: MarketItem[] = data.map(stock => {
-        const name = stockNames[stock.symbol] || `${stock.symbol} Corp.`;
+        const name = (stock as any).company_name || `${stock.symbol} Inc.`;
         
         // 백엔드에서 계산된 변화율 정보 사용
         const currentPrice = stock.current_price || stock.price || 0;
