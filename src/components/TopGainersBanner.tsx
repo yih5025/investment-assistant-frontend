@@ -10,13 +10,13 @@ interface SlotReelProps {
   color: string;
   bgColor: string;
   bannerIndex: number;
-  onClick: (item: TopGainerBannerItem) => void;
+  onExpandBanner: (bannerIndex: number) => void;
   masterAnimationSpeed: number;
   isPaused: boolean;
   isMarketOpen: boolean;
 }
 
-function SlotReel({ items, color, bgColor, bannerIndex, onClick, masterAnimationSpeed, isPaused, isMarketOpen }: SlotReelProps) {
+function SlotReel({ items, color, bgColor, bannerIndex, onExpandBanner, masterAnimationSpeed, isPaused, isMarketOpen }: SlotReelProps) {
   const reelRef = useRef<HTMLDivElement>(null);
 
   // 무한 스크롤용 데이터 복제
@@ -81,7 +81,7 @@ function SlotReel({ items, color, bgColor, bannerIndex, onClick, masterAnimation
           <div
             key={`${item.symbol}-${index}`}
             className="p-2 cursor-pointer hover:bg-white/10 transition-colors"
-            onClick={() => !isPaused && onClick(item)}
+            onClick={() => !isPaused && onExpandBanner(bannerIndex)}
           >
             <div className="text-center space-y-1">
               <div className="font-bold text-sm">{item.symbol}</div>
@@ -166,7 +166,6 @@ const TopGainersBanner: React.FC = () => {
 
   // 배너 확대 모달 상태
   const [expandedBanner, setExpandedBanner] = useState<number | null>(null);
-
   // 배너 탭으로 확대 기능
   const handleBannerTap = (bannerIndex: number) => {
     setExpandedBanner(bannerIndex);
@@ -263,8 +262,7 @@ const TopGainersBanner: React.FC = () => {
               return (
                 <div 
                   key={index} 
-                  className="flex flex-col h-32 cursor-pointer"
-                  onClick={() => handleBannerTap(index)}
+                  className="flex flex-col h-32"
                 >
                   <div className={`${banner.bgColor} px-2 py-1.5 rounded-t-lg border-b border-white/10 flex-shrink-0`}>
                     <div className="flex items-center justify-center space-x-1.5">
@@ -279,7 +277,7 @@ const TopGainersBanner: React.FC = () => {
                       color={banner.color}
                       bgColor={banner.bgColor}
                       bannerIndex={index}
-                      onClick={handleBannerClick}
+                      onExpandBanner={handleBannerTap}
                       masterAnimationSpeed={masterAnimationSpeed}
                       isPaused={isPaused}
                       isMarketOpen={marketStatus.isOpen}
@@ -321,7 +319,8 @@ const TopGainersBanner: React.FC = () => {
                     key={index}
                     className="p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
                     onClick={() => {
-                      handleBannerClick(item);
+                      // TODO: 기업 상세페이지로 이동하는 기능 구현 예정
+                      console.log('기업 상세페이지로 이동:', item.symbol);
                       closeExpandedBanner();
                     }}
                   >
