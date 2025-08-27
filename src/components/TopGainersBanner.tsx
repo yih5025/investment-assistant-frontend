@@ -123,26 +123,22 @@ const MarketTimeDisplay: React.FC<MarketTimeDisplayProps> = ({ marketStatus, isR
 
   return (
     <div className="flex items-center justify-between text-xs px-1">
-      <div className="flex items-center space-x-1.5">
+      <div className="flex items-center space-x-2">
         {getConnectionIcon()}
-        <div className="flex flex-col">
-          <span className="text-gray-400 text-xs">{getFormattedEasternTime()}</span>
-          <span className="text-gray-500 text-[10px]">미국 동부 시간</span>
-        </div>
+        <span className="text-gray-400 text-xs">{getFormattedEasternTime()}</span>
+        <span className="text-gray-400">미국 동부 시간</span>
       </div>
-      <div className="flex flex-col items-end space-y-0.5">
-        <div className="flex items-center space-x-1">
-          <div className={`w-1.5 h-1.5 rounded-full ${
-            marketStatus.isOpen && isRealtime ? 'bg-green-400 animate-pulse' : 'bg-gray-400'
-          }`} />
-          <span className={`font-medium text-xs ${
-            marketStatus.isOpen ? 'text-green-400' : 'text-gray-400'
-          }`}>
-            {marketStatus.isOpen ? '장중' : '장마감'}
-          </span>
-        </div>
+      <div className="flex items-center space-x-2">
+        <div className={`w-1.5 h-1.5 rounded-full ${
+          marketStatus.isOpen && isRealtime ? 'bg-green-400 animate-pulse' : 'bg-gray-400'
+        }`} />
+        <span className={`font-medium text-xs ${
+          marketStatus.isOpen ? 'text-green-400' : 'text-gray-400'
+        }`}>
+          {marketStatus.isOpen ? '장중' : '장마감'}
+        </span>
         {!marketStatus.isOpen && marketStatus.timeUntilNext && (
-          <span className="text-gray-500 text-[10px]">{marketStatus.timeUntilNext}</span>
+          <span className="text-gray-400 text-xs">{marketStatus.timeUntilNext}</span>
         )}
       </div>
     </div>

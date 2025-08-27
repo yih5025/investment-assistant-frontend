@@ -29,7 +29,7 @@ const MarketTimeHeader: React.FC<MarketTimeHeaderProps> = ({ session }) => {
       <div className="flex items-center space-x-2">
         <Clock size={12} className="text-gray-400" />
         <span className="text-gray-400">{getFormattedEasternTime()}</span>
-        <span className="text-gray-500">미국 동부 시간</span>
+        <span className="text-gray-400">미국 동부 시간</span>
       </div>
       <div className="flex items-center space-x-2">
         <div className={`w-1.5 h-1.5 rounded-full ${
