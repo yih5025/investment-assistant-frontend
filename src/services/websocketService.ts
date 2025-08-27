@@ -494,7 +494,7 @@ class WebSocketService {
     switch (type) {
       case 'sp500':
         endpoint = '/stocks/sp500/polling';  // 폴링 엔드포인트 사용
-        queryParams = 'limit=60&sort_by=volume&order=desc';  // 60개로 고정
+        queryParams = 'limit=100';  // 100개로 고정
         break;
       case 'topgainers':
         endpoint = '/stocks/topgainers/polling';  // 폴링 엔드포인트 사용
