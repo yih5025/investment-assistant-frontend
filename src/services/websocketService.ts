@@ -21,13 +21,13 @@ export interface SP500Data {
   timestamp_ms: number;
   category?: string;
   source: string;
-  // 변화율 정보 (백엔드에서 계산된 값)
   current_price?: number;
   previous_close?: number;
   change_amount?: number;
   change_percentage?: number;
   is_positive?: boolean;
   change_color?: string;
+  company_name?: string;
 }
 
 // 🎯 새로운 TopGainers 데이터 구조 (백엔드 API 응답과 일치)
@@ -439,34 +439,29 @@ class WebSocketService {
   // 🎯 TopGainers API 데이터 변환
   private transformTopGainersApiData(apiData: any[]): TopGainersData[] {
     return apiData.map(item => {
-      // 새로운 API 응답 형식에서는 change_percentage가 이미 숫자
-      let changePercent = 0;
-      if (typeof item.change_percentage === 'number') {
-        changePercent = item.change_percentage;
-      } else if (item.change_percentage) {
-        const match = item.change_percentage.toString().match(/-?\d+\.?\d*/);
-        changePercent = match ? parseFloat(match[0]) : 0;
-      }
+        let changePercent = 0;
+        if (typeof item.change_percentage === 'number') {
+            changePercent = item.change_percentage;
+        } else if (item.change_percentage) {
+            const match = item.change_percentage.toString().match(/-?\d+\.?\d*/);
+            changePercent = match ? parseFloat(match[0]) : 0;
+        }
 
-      return {
-        batch_id: item.batch_id || 0,
-        symbol: item.symbol,
-        category: item.category,
-        last_updated: item.last_updated || new Date().toISOString(),
-        rank_position: item.rank_position,
-        price: item.price || item.current_price, // 새로운 API에서는 current_price 사용
-        change_amount: item.change_amount,
-        change_percentage: changePercent, // 숫자로 저장
-        volume: item.volume,
-        created_at: item.created_at,
-        // 프론트엔드용 추가 필드
-        name: this.getStockName(item.symbol),
-        change_percent: changePercent,
-        // 새로운 API 필드들
-        previous_close: item.previous_close,
-        is_positive: item.is_positive,
-        change_color: item.change_color
-      };
+        return {
+            batch_id: item.batch_id || 0,
+            symbol: item.symbol,
+            category: item.category,
+            last_updated: item.last_updated || new Date().toISOString(),
+            rank_position: item.rank_position,
+            price: item.price || item.current_price,
+            change_amount: item.change_amount,
+            change_percentage: changePercent,
+            volume: item.volume,
+            created_at: item.created_at,
+            // 백엔드 company_name 직접 사용 (하드코딩 제거)
+            name: item.company_name || `${item.symbol} Inc.`,
+            change_percent: changePercent
+        };
     });
   }
 
@@ -512,20 +507,21 @@ class WebSocketService {
 
   private transformApiDataToWebSocketFormat(type: WebSocketType, apiData: any[]): any[] {
     switch (type) {
-      case 'sp500':
-        return apiData.map(item => ({
-          symbol: item.symbol,
-          price: item.price,
-          volume: item.volume || 0,
-          timestamp_ms: item.timestamp_ms || Date.now(),
-          category: item.category,
-          source: 'api_fallback'
-        }));
-
-      default:
-        return apiData;
+        case 'sp500':
+            return apiData.map(item => ({
+                symbol: item.symbol,
+                price: item.price,
+                volume: item.volume || 0,
+                timestamp_ms: item.timestamp_ms || Date.now(),
+                category: item.category,
+                source: 'api_fallback',
+                // 백엔드에서 제공하는 company_name 직접 사용
+                company_name: item.company_name
+            }));
+        default:
+            return apiData;
     }
-  }
+}
 
   private hasDataChanged(type: WebSocketType, newData: any[]): boolean {
     const cachedData = this.lastDataCache.get(type) || [];
@@ -810,34 +806,10 @@ class WebSocketService {
         change_percentage: item.change_percentage,
         volume: item.volume,
         created_at: item.created_at,
-        name: this.getStockName(item.symbol),
+        name: item.company_name,
         change_percent: changePercent,
       };
     });
-  }
-
-  // 🎯 주식 이름 매핑 (간단한 버전, 실제로는 API에서 가져와야 함)
-  private getStockName(symbol: string): string {
-    const stockNames: Record<string, string> = {
-      'AAPL': 'Apple Inc.',
-      'MSFT': 'Microsoft Corporation',
-      'GOOGL': 'Alphabet Inc.',
-      'AMZN': 'Amazon.com Inc.',
-      'TSLA': 'Tesla Inc.',
-      'META': 'Meta Platforms Inc.',
-      'NVDA': 'NVIDIA Corporation',
-      'NFLX': 'Netflix Inc.',
-      'GOOG': 'Alphabet Inc.',
-      'BRK.B': 'Berkshire Hathaway',
-      'GXAI': 'Gaxos.ai Inc.',
-      'PRFX': 'PainReform Ltd.',
-      'ADD': 'Color Star Technology Co.',
-      'PLTR': 'Palantir Technologies Inc.',
-      'INTC': 'Intel Corporation',
-      'OPEN': 'Opendoor Technologies Inc.',
-    };
-
-    return stockNames[symbol] || `${symbol} Corp.`;
   }
 
   // ============================================================================
