@@ -279,7 +279,7 @@ export function getMarketStatusText(session: MarketSession): {
 export function getFormattedEasternTime(): string {
   const now = new Date();
   const easternTime = utcToZonedTime(now, US_EASTERN_TIMEZONE);
-  return format(easternTime, 'MM/dd HH:mm EST');
+  return format(easternTime, 'MM/dd HH:mm');
 }
 
 /**

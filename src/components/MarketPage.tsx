@@ -25,25 +25,24 @@ const MarketTimeHeader: React.FC<MarketTimeHeaderProps> = ({ session }) => {
   const statusInfo = getMarketStatusText(session);
   
   return (
-    <div className="flex items-center justify-between text-sm mb-3">
-      <div className="flex items-center space-x-3">
-        <div className="flex items-center space-x-2">
-          <Clock size={16} className="text-gray-400" />
-          <span className="text-gray-400">{getFormattedEasternTime()}</span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <div className={`w-2 h-2 rounded-full ${
-            statusInfo.isLive ? 'bg-green-400 animate-pulse' : 'bg-gray-400'
-          }`} />
-          <span className={`${statusInfo.color} font-medium`}>
-            미국 증시 {statusInfo.status}
+    <div className="flex items-center justify-between text-xs mb-2">
+      <div className="flex items-center space-x-2">
+        <Clock size={12} className="text-gray-400" />
+        <span className="text-gray-400">{getFormattedEasternTime()}</span>
+        <span className="text-gray-500">미국 동부 시간</span>
+      </div>
+      <div className="flex items-center space-x-2">
+        <div className={`w-1.5 h-1.5 rounded-full ${
+          statusInfo.isLive ? 'bg-green-400 animate-pulse' : 'bg-gray-400'
+        }`} />
+        <span className={`${statusInfo.color} font-medium`}>
+          미국 증시 {statusInfo.status}
+        </span>
+        {statusInfo.time && (
+          <span className="text-gray-400 text-xs">
+            {statusInfo.time}
           </span>
-          {statusInfo.time && (
-            <span className="text-gray-400 text-xs">
-              ({statusInfo.time})
-            </span>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
@@ -306,12 +305,12 @@ const EnhancedMarketPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* 페이지 헤더 */}
-      <div className="glass-card rounded-2xl p-6">
-        <div className="mb-4">
+      <div className="glass-card rounded-2xl p-4">
+        <div className="mb-2">
           {/* 시장 시간 표시 */}
           <MarketTimeHeader session={marketSession} />
           
-          <h2 className="text-2xl font-bold mb-3 flex items-center">
+          <h2 className="text-xl font-bold mb-2 flex items-center">
             📈 실시간 마켓
             {!isEmpty && (
               <span className="ml-3 text-sm font-normal text-foreground/70">
@@ -320,13 +319,13 @@ const EnhancedMarketPage: React.FC = () => {
             )}
           </h2>
           
-          <p className="text-base text-foreground/80 leading-relaxed">
+          <p className="text-sm text-foreground/80 leading-relaxed">
             암호화폐와 미국 주식의 {marketSession.isOpen ? '실시간' : '최종'} 시세를 확인하고, 관심있는 종목을 저장해보세요.
           </p>
         </div>
 
         {/* 검색 */}
-        <div className="glass rounded-xl p-3 flex items-center space-x-3 mb-4">
+        <div className="glass rounded-xl p-2.5 flex items-center space-x-3 mb-2">
           <Search size={20} className="text-foreground/60" />
           <input 
             type="text" 
@@ -358,8 +357,8 @@ const EnhancedMarketPage: React.FC = () => {
         )}
       </div>
 
-      {/* 관심 종목 */}
-      {watchlistCount > 0 && (
+      {/* 관심 종목 - 로그인 기능 완성 시까지 숨김 */}
+      {false && watchlistCount > 0 && (
         <div className="glass-card rounded-2xl p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-medium flex items-center">
