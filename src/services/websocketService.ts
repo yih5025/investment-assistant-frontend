@@ -510,13 +510,20 @@ class WebSocketService {
         case 'sp500':
             return apiData.map(item => ({
                 symbol: item.symbol,
-                price: item.price,
+                price: item.current_price || item.price || 0,
                 volume: item.volume || 0,
                 timestamp_ms: item.timestamp_ms || Date.now(),
                 category: item.category,
                 source: 'api_fallback',
                 // 백엔드에서 제공하는 company_name 직접 사용
-                company_name: item.company_name
+                company_name: item.company_name,
+                // 🎯 변화율 데이터 추가
+                current_price: item.current_price || item.price || 0,
+                previous_close: item.previous_close,
+                change_amount: item.change_amount,
+                change_percentage: item.change_percentage,
+                is_positive: item.is_positive,
+                change_color: item.change_color
             }));
         default:
             return apiData;

@@ -167,44 +167,50 @@ export function useCryptoData() {
 // 3. S&P 500 데이터 훅
 // ============================================================================
 
+// SP500 데이터 훅에서 company_name 직접 사용
 export function useSP500Data() {
   const [sp500Data, setSP500Data] = useState<MarketItem[]>([]);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   useEffect(() => {
-    const unsubscribe = webSocketService.subscribe('sp500_update', (data: SP500Data[]) => {
-      const items: MarketItem[] = data.map(stock => {
-        const name = (stock as any).company_name || `${stock.symbol} Inc.`;
-        
-        // 백엔드에서 계산된 변화율 정보 사용
-        const currentPrice = stock.current_price || stock.price || 0;
-        const changeAmount = stock.change_amount || 0;
-        const changePercent = stock.change_percentage || 0;
-        
-        // 변화율 정보는 백엔드에서 전날 종가 기반으로 계산됨
-        
-        return {
-          symbol: stock.symbol,
-          name,
-          price: currentPrice,
-          change: changeAmount,
-          changePercent,
-          volume: formatVolume(stock.volume || 0),
-          type: 'stock' as const,
-        };
+      const unsubscribe = webSocketService.subscribe('sp500_update', (data: SP500Data[]) => {
+          console.log('📊 SP500 데이터 수신:', data.length, '개 항목');
+          
+          const items: MarketItem[] = data.map(stock => {
+              // 백엔드에서 제공하는 company_name 직접 사용
+              const name = stock.company_name || `${stock.symbol} Inc.`;
+              
+              // 🎯 변화율 데이터 우선 사용
+              const currentPrice = stock.current_price || stock.price || 0;
+              const changeAmount = stock.change_amount || 0;
+              const changePercent = stock.change_percentage || 0;
+              
+              console.log(`📈 ${stock.symbol}: $${currentPrice}, 변화: ${changeAmount} (${changePercent}%)`);
+              
+              return {
+                  symbol: stock.symbol,
+                  name, // 백엔드 데이터 직접 사용
+                  price: currentPrice,
+                  change: changeAmount,
+                  changePercent,
+                  volume: formatVolume(stock.volume || 0),
+                  type: 'stock' as const,
+              };
+          });
+
+          setSP500Data(items);
+          setLastUpdated(new Date());
+          
+          console.log(`✅ SP500 데이터 업데이트 완료: ${items.length}개 항목`);
       });
 
-      setSP500Data(items);
-      setLastUpdated(new Date());
-    });
-
-    return unsubscribe;
+      return unsubscribe;
   }, []);
 
   return {
-    sp500Data,
-    lastUpdated,
-    isEmpty: sp500Data.length === 0,
+      sp500Data,
+      lastUpdated,
+      isEmpty: sp500Data.length === 0,
   };
 }
 
