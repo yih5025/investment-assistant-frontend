@@ -131,8 +131,10 @@ export function useCryptoData() {
   useEffect(() => {
     const unsubscribe = webSocketService.subscribe('crypto_update', (data: CryptoData[]) => {
       const items: MarketItem[] = data.map(crypto => {
-        const symbol = crypto.market.replace('KRW-', '');
-        const name = (crypto as any).crypto_name || crypto.market;
+        // 새로운 스키마 필드 사용 (market_code, symbol, korean_name)
+        const marketCode = (crypto as any).market_code || crypto.market || '';
+        const symbol = (crypto as any).symbol || marketCode.replace('KRW-', '');
+        const name = (crypto as any).korean_name || (crypto as any).crypto_name || marketCode;
         
         // 24시간 거래량 사용 (원화 기준)
         const volume24h = crypto.acc_trade_volume_24h || crypto.trade_volume || 0;
@@ -140,12 +142,12 @@ export function useCryptoData() {
         return {
           symbol,
           name,
-          price: crypto.trade_price || 0,
-          change: crypto.signed_change_price || 0,
-          changePercent: (crypto.signed_change_rate || 0) * 100,
-          volume: formatVolume(volume24h),
+          price: (crypto as any).price || crypto.trade_price || 0,
+          change: (crypto as any).change_24h || crypto.signed_change_price || 0,
+          changePercent: parseFloat(((crypto as any).change_rate_24h || '0%').replace('%', '')) || (crypto.signed_change_rate || 0) * 100,
+          volume: formatVolume((crypto as any).volume || volume24h),
           type: 'crypto' as const,
-          marketCap: formatVolume((crypto.trade_price || 0) * 21000000)
+          marketCap: formatVolume((crypto as any).acc_trade_value_24h || crypto.acc_trade_volume_24h || ((crypto.trade_price || 0) * 21000000))
         };
       });
 
