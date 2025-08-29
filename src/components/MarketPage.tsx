@@ -52,12 +52,7 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick }) => {
           }`}
         >
           <div className="flex items-center justify-center space-x-2">
-            <span>미국 주식</span>
-            <span className={`text-xs px-2 py-1 rounded ${
-              activeTab === 'stocks' ? 'bg-primary/20' : 'bg-foreground/10'
-            }`}>
-              {sp500Data.length}
-            </span>
+            <span>S&P 500</span>
           </div>
         </button>
         
@@ -70,12 +65,7 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick }) => {
           }`}
         >
           <div className="flex items-center justify-center space-x-2">
-            <span>암호화폐</span>
-            <span className={`text-xs px-2 py-1 rounded ${
-              activeTab === 'crypto' ? 'bg-primary/20' : 'bg-foreground/10'
-            }`}>
-              {cryptoData.length}
-            </span>
+            <span>Crypto Currencies</span>
           </div>
         </button>
       </div>
