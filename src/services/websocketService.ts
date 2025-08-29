@@ -130,7 +130,7 @@ class WebSocketService {
   private config: ConnectionConfig = {
     maxReconnectAttempts: 3,
     baseReconnectDelay: 2000,
-    apiPollingInterval: 5000,        // 5초 - 개장 시 (TopGainers: 50개, SP500: 60개)
+    apiPollingInterval: 5000,        // 5초 - 개장 시
     marketClosedPollingInterval: 30000, // 30초 - 장 마감 시 (미국 주식용)
     healthCheckInterval: 15000,      // 15초 (폴링 방식이므로 간격 증가)
     enableApiFallback: true,
@@ -190,8 +190,6 @@ class WebSocketService {
   // 🎯 TopGainers 카테고리 통계 로드
   private async loadTopGainersCategoryStats(): Promise<void> {
     try {
-      // ❌ 기존: http://api.investment-assistant.site/...
-      // ✅ 수정: https://api.investment-assistant.site/...
       const response = await fetch('https://api.investment-assistant.site/api/v1/stocks/topgainers/categories/', {
         method: 'GET',
         headers: {
@@ -489,7 +487,7 @@ class WebSocketService {
     switch (type) {
       case 'sp500':
         endpoint = '/stocks/sp500/polling';  // 폴링 엔드포인트 사용
-        queryParams = 'limit=100';  // 100개로 고정
+        queryParams = 'limit=500';  // 500개로 고정
         break;
       case 'topgainers':
         endpoint = '/stocks/topgainers/polling';  // 폴링 엔드포인트 사용
