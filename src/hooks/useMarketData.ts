@@ -244,6 +244,12 @@ export function useMarketData() {
     );
   }, [allMarketData]);
 
+  // 수동 새로고침 함수
+  const refreshData = useCallback(() => {
+    console.log('🔄 마켓 데이터 수동 새로고침');
+    webSocketService.reconnectAll();
+  }, []);
+
   return {
     allMarketData,
     cryptoData,
@@ -256,6 +262,7 @@ export function useMarketData() {
     searchItems,
     formatPrice,
     formatVolume,
+    refreshData, // 새로고침 함수 추가
     isEmpty: allMarketData.length === 0,
     cryptoCount: cryptoData.length,
     stockCount: sp500Data.length,

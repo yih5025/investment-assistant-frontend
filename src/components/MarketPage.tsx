@@ -19,7 +19,8 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick }) => {
     cryptoData,
     sp500Data,
     overallStatus,
-    isEmpty
+    isEmpty,
+    refreshData
   } = useMarketData();
 
   // 주식 클릭 핸들러
@@ -28,6 +29,12 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick }) => {
       onStockClick(symbol);
     }
   }, [onStockClick]);
+
+  // 페이지 마운트 시 데이터 새로고침
+  useEffect(() => {
+    console.log('📊 MarketPage 마운트 - 데이터 새로고침');
+    refreshData();
+  }, [refreshData]);
 
   return (
     <div className="space-y-6">

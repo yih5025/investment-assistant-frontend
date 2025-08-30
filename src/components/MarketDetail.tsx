@@ -228,31 +228,31 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
             </div>
           </Card>
 
-          {/* 실시간 주가 차트 - 차트 데이터가 있을 때만 표시 */}
-          {chartData.length > 0 && (
-            <Card className="glass-card p-4">
-              <h3 className="font-bold mb-3 flex items-center">
-                <Clock size={16} className="mr-2" />
-                주가 차트
-              </h3>
-              
-              <div className="flex space-x-2 mb-4">
-                {(['1H', '1D', '1W', '1M'] as const).map((timeframe) => (
-                  <button
-                    key={timeframe}
-                    onClick={() => changeTimeframe(timeframe)}
-                    className={`px-3 py-1 rounded-lg text-xs transition-all ${
-                      selectedTimeframe === timeframe 
-                        ? 'glass-strong text-primary' 
-                        : 'glass-subtle hover:glass'
-                    }`}
-                  >
-                    {timeframe}
-                  </button>
-                ))}
-              </div>
+          {/* 실시간 주가 차트 - 항상 표시 */}
+          <Card className="glass-card p-4">
+            <h3 className="font-bold mb-3 flex items-center">
+              <Clock size={16} className="mr-2" />
+              주가 차트
+            </h3>
+            
+            <div className="flex space-x-2 mb-4">
+              {(['1H', '1D', '1W', '1M'] as const).map((timeframe) => (
+                <button
+                  key={timeframe}
+                  onClick={() => changeTimeframe(timeframe)}
+                  className={`px-3 py-1 rounded-lg text-xs transition-all ${
+                    selectedTimeframe === timeframe 
+                      ? 'glass-strong text-primary' 
+                      : 'glass-subtle hover:glass'
+                  }`}
+                >
+                  {timeframe}
+                </button>
+              ))}
+            </div>
 
-              <div className="h-48">
+            <div className="h-48">
+              {chartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartData}>
                     <defs>
@@ -287,9 +287,22 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
                     />
                   </AreaChart>
                 </ResponsiveContainer>
-              </div>
-            </Card>
-          )}
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center">
+                    <Loader2 className="animate-spin mx-auto mb-2" size={24} />
+                    <p className="text-sm text-foreground/70">차트 데이터 로딩 중...</p>
+                    <button 
+                      onClick={() => changeTimeframe(selectedTimeframe)}
+                      className="mt-2 text-xs text-primary hover:underline"
+                    >
+                      다시 시도
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
 
           {!isExpertMode ? (
             /* 투자 인사이트 모드 */
