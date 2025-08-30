@@ -73,9 +73,18 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
   } = useMarketDetail(symbol);
 
   // 유틸리티 함수들
-  const formatCurrency = (value: number) => `$${value.toFixed(2)}`;
-  const formatBillion = (value: number) => `$${(value / 1e9).toFixed(2)}B`;
-  const formatPercent = (value: number) => `${value.toFixed(1)}%`;
+  const formatCurrency = (value: number | null | undefined) => {
+    if (value === null || value === undefined || isNaN(value)) return '$0.00';
+    return `$${value.toFixed(2)}`;
+  };
+  const formatBillion = (value: number | null | undefined) => {
+    if (value === null || value === undefined || isNaN(value)) return '$0.00B';
+    return `$${(value / 1e9).toFixed(2)}B`;
+  };
+  const formatPercent = (value: number | null | undefined) => {
+    if (value === null || value === undefined || isNaN(value)) return '0.0%';
+    return `${value.toFixed(1)}%`;
+  };
 
   const getGradeColor = (grade: string) => {
     switch (grade.charAt(0)) {
@@ -206,13 +215,13 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
                 {formatCurrency(stockPrice.current_price)}
               </div>
               <div className={`flex items-center justify-center space-x-1 ${
-                stockPrice.change_percentage >= 0 ? 'text-green-400' : 'text-red-400'
+                (stockPrice.change_percentage || 0) >= 0 ? 'text-green-400' : 'text-red-400'
               }`}>
-                {stockPrice.change_percentage >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                {(stockPrice.change_percentage || 0) >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
                 <span className="font-medium">
-                  {stockPrice.change_percentage >= 0 ? '+' : ''}
+                  {(stockPrice.change_percentage || 0) >= 0 ? '+' : ''}
                   {formatCurrency(stockPrice.change_amount)} 
-                  ({stockPrice.change_percentage >= 0 ? '+' : ''}
+                  ({(stockPrice.change_percentage || 0) >= 0 ? '+' : ''}
                   {formatPercent(stockPrice.change_percentage)})
                 </span>
               </div>
@@ -322,7 +331,7 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
                         </Badge>
                       </div>
                       <div className="text-xs text-foreground/70">
-                        유동비율 {ratios?.currentRatio.toFixed(2)}
+                        유동비율 {ratios?.currentRatio?.toFixed(2) || 'N/A'}
                         <br />부채비율 {formatPercent((ratios?.debtToAssetRatio || 0) * 100)}
                       </div>
                     </div>
@@ -339,10 +348,10 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
                         {sectorComparison && (
                           sectorComparison.pe_vs_sector > 0 ? 
                             <span className="text-red-400 ml-1">
-                              (업계 +{sectorComparison.pe_vs_sector.toFixed(1)})
+                              (업계 +{sectorComparison.pe_vs_sector?.toFixed(1) || 'N/A'})
                             </span> :
                             <span className="text-green-400 ml-1">
-                              (업계 {sectorComparison.pe_vs_sector.toFixed(1)})
+                              (업계 {sectorComparison.pe_vs_sector?.toFixed(1) || 'N/A'})
                             </span>
                         )}
                       </div>
@@ -479,7 +488,7 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
                           <HelpCircle size={12} />
                         </button>
                       </div>
-                      <span className="font-medium">{ratios.currentRatio.toFixed(2)}</span>
+                      <span className="font-medium">{ratios.currentRatio?.toFixed(2) || 'N/A'}</span>
                     </div>
                     
                     <div className="flex justify-between items-center">
@@ -619,7 +628,7 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
                             ? 'bg-green-500/20 text-green-400' 
                             : 'bg-red-500/20 text-red-400'
                         }`}>
-                          {sectorComparison.roe_vs_sector > 0 ? '+' : ''}{sectorComparison.roe_vs_sector.toFixed(1)}%p
+                          {sectorComparison.roe_vs_sector > 0 ? '+' : ''}{sectorComparison.roe_vs_sector?.toFixed(1) || 'N/A'}%p
                         </span>
                       </div>
                     </div>
@@ -633,7 +642,7 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
                             ? 'bg-red-500/20 text-red-400' 
                             : 'bg-green-500/20 text-green-400'
                         }`}>
-                          {sectorComparison.pe_vs_sector > 0 ? '+' : ''}{sectorComparison.pe_vs_sector.toFixed(1)}
+                          {sectorComparison.pe_vs_sector > 0 ? '+' : ''}{sectorComparison.pe_vs_sector?.toFixed(1) || 'N/A'}
                         </span>
                       </div>
                     </div>
@@ -647,7 +656,7 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
                             ? 'bg-red-500/20 text-red-400' 
                             : 'bg-green-500/20 text-green-400'
                         }`}>
-                          {sectorComparison.debt_vs_sector > 0 ? '+' : ''}{sectorComparison.debt_vs_sector.toFixed(1)}%p
+                          {sectorComparison.debt_vs_sector > 0 ? '+' : ''}{sectorComparison.debt_vs_sector?.toFixed(1) || 'N/A'}%p
                         </span>
                       </div>
                     </div>
