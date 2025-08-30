@@ -5,7 +5,7 @@ import { Badge } from "./ui/badge";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { useMarketDetail } from '../hooks/useMarketDetail'; // 위에서 만든 훅
 
-interface StockDetailPageProps {
+interface MarketDetailPageProps {
   symbol: string;
   onBack: () => void;
 }
@@ -46,7 +46,7 @@ const LoadingSkeleton = () => (
   </div>
 );
 
-export function StockDetailPage({ symbol, onBack }: StockDetailPageProps) {
+export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
   const [isExpertMode, setIsExpertMode] = useState(false);
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
   

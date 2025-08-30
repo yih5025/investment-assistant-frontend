@@ -94,7 +94,7 @@ interface StockMarketTabProps {
 const StockMarketTab: React.FC<StockMarketTabProps> = ({ stockData, onStockClick }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'price' | 'change' | 'volume'>('change');
-  const [displayCount, setDisplayCount] = useState(50); // 초기 50개 표시
+  const [displayCount, setDisplayCount] = useState(100); // 초기 100개 표시
 
   const filteredAndSortedStocks = useMemo(() => {
     let result = stockData;
@@ -132,7 +132,7 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({ stockData, onStockClick
   const hasMore = displayCount < filteredAndSortedStocks.length;
 
   const handleLoadMore = () => {
-    setDisplayCount(prev => prev + 50);
+    setDisplayCount(prev => prev + 100);
   };
 
   return (
