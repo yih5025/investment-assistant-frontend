@@ -398,12 +398,16 @@ export function useMarketDetail(symbol: string): UseMarketDetailReturn {
     }
   }, [symbol]);
 
-  // 초기 데이터 로드
+  // 초기 주식 데이터 로드 (symbol 변경 시에만)
   useEffect(() => {
     fetchStockData();
-    fetchChartData(selectedTimeframe);
     loadFavoriteStatus();
-  }, [fetchStockData, fetchChartData, loadFavoriteStatus, selectedTimeframe]);
+  }, [fetchStockData, loadFavoriteStatus]);
+
+  // 차트 데이터 별도 로드 (timeframe 변경 시에만)
+  useEffect(() => {
+    fetchChartData(selectedTimeframe);
+  }, [fetchChartData, selectedTimeframe]);
 
   // 액션 함수들
   const refreshData = useCallback(async () => {

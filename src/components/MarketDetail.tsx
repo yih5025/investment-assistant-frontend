@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, memo, useCallback } from "react";
 import { ArrowLeft, Star, TrendingUp, TrendingDown, AlertTriangle, Building, DollarSign, BarChart3, PieChart, Activity, Clock, Info, HelpCircle, Loader2 } from "lucide-react";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -46,6 +46,117 @@ const LoadingSkeleton = () => (
   </div>
 );
 
+// 차트 컴포넌트 분리 (React.memo로 최적화)
+interface StockChartProps {
+  chartData: any[];
+  chartLoading: boolean;
+  selectedTimeframe: string;
+  onTimeframeChange: (timeframe: '1H' | '1D' | '1W' | '1MO') => void;
+  formatCurrency: (value: number) => string;
+  formatTimestampForChart: (timestamp: string, timeframe: string) => string;
+}
+
+const StockChart = memo<StockChartProps>(({ 
+  chartData, 
+  chartLoading, 
+  selectedTimeframe, 
+  onTimeframeChange,
+  formatCurrency,
+  formatTimestampForChart
+}) => {
+  return (
+    <Card className="glass-card p-4">
+      <h3 className="font-bold mb-3 flex items-center">
+        <Clock size={16} className="mr-2" />
+        주가 차트
+      </h3>
+      
+      <div className="flex space-x-2 mb-4">
+        {(['1H', '1D', '1W', '1MO'] as const).map((timeframe) => (
+          <button
+            key={timeframe}
+            onClick={() => onTimeframeChange(timeframe)}
+            disabled={chartLoading}
+            className={`px-3 py-1 rounded-lg text-xs transition-all ${
+              selectedTimeframe === timeframe 
+                ? 'glass-strong text-primary' 
+                : 'glass-subtle hover:glass'
+            } ${chartLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            {timeframe === '1MO' ? '1M' : timeframe}
+          </button>
+        ))}
+      </div>
+
+      <div className="h-48 relative">
+        {chartLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <Loader2 className="animate-spin mx-auto mb-2" size={24} />
+              <p className="text-sm text-foreground/70">차트 데이터 로딩 중...</p>
+            </div>
+          </div>
+        ) : chartData.length > 0 ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData}>
+              <defs>
+                <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#60a5fa" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#60a5fa" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+              <XAxis 
+                dataKey="timestamp" 
+                axisLine={false} 
+                tickLine={false}
+                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }}
+                tickFormatter={(timestamp) => formatTimestampForChart(timestamp, selectedTimeframe)}
+              />
+              <YAxis 
+                axisLine={false} 
+                tickLine={false}
+                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }}
+                domain={['dataMin - 0.5', 'dataMax + 0.5']}
+              />
+              <Tooltip 
+                formatter={(value) => [formatCurrency(Number(value)), '주가']}
+                labelFormatter={(label) => `시간: ${formatTimestampForChart(label, selectedTimeframe)}`}
+                contentStyle={{ 
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)', 
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '8px',
+                  color: 'white'
+                }}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="price" 
+                stroke="#60a5fa" 
+                strokeWidth={2}
+                fill="url(#priceGradient)" 
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <Loader2 className="animate-spin mx-auto mb-2" size={24} />
+              <p className="text-sm text-foreground/70">차트 데이터 로딩 중...</p>
+              <button 
+                onClick={() => onTimeframeChange(selectedTimeframe as '1H' | '1D' | '1W' | '1MO')}
+                className="mt-2 text-xs text-primary hover:underline"
+              >
+                다시 시도
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+});
+
 export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
   const [isExpertMode, setIsExpertMode] = useState(false);
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
@@ -73,22 +184,24 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
     selectedTimeframe
   } = useMarketDetail(symbol);
 
-  // 유틸리티 함수들
-  const formatCurrency = (value: number | null | undefined) => {
+  // 유틸리티 함수들 (useCallback으로 최적화)
+  const formatCurrency = useCallback((value: number | null | undefined) => {
     if (value === null || value === undefined || isNaN(value)) return '$0.00';
     return `$${value.toFixed(2)}`;
-  };
-  const formatBillion = (value: number | null | undefined) => {
+  }, []);
+
+  const formatBillion = useCallback((value: number | null | undefined) => {
     if (value === null || value === undefined || isNaN(value)) return '$0.00B';
     return `$${(value / 1e9).toFixed(2)}B`;
-  };
-  const formatPercent = (value: number | null | undefined) => {
+  }, []);
+
+  const formatPercent = useCallback((value: number | null | undefined) => {
     if (value === null || value === undefined || isNaN(value)) return '0.0%';
     return `${value.toFixed(1)}%`;
-  };
+  }, []);
 
-  // 차트용 timestamp 포맷팅 함수
-  const formatTimestampForChart = (timestamp: string, timeframe: string) => {
+  // 차트용 timestamp 포맷팅 함수 (useCallback으로 최적화)
+  const formatTimestampForChart = useCallback((timestamp: string, timeframe: string) => {
     if (!timestamp) return '';
     
     try {
@@ -131,7 +244,7 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
       console.error('Timestamp formatting error:', error);
       return timestamp;
     }
-  };
+  }, []);
 
   const getGradeColor = (grade: string) => {
     switch (grade.charAt(0)) {
@@ -276,95 +389,14 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
           </Card>
 
           {/* 실시간 주가 차트 - 항상 표시 */}
-          <Card className="glass-card p-4">
-            <h3 className="font-bold mb-3 flex items-center">
-              <Clock size={16} className="mr-2" />
-              주가 차트
-            </h3>
-            
-            <div className="flex space-x-2 mb-4">
-              {(['1H', '1D', '1W', '1MO'] as const).map((timeframe) => (
-                <button
-                  key={timeframe}
-                  onClick={() => changeTimeframe(timeframe)}
-                  disabled={chartLoading}
-                  className={`px-3 py-1 rounded-lg text-xs transition-all ${
-                    selectedTimeframe === timeframe 
-                      ? 'glass-strong text-primary' 
-                      : 'glass-subtle hover:glass'
-                  } ${chartLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  {timeframe === '1MO' ? '1M' : timeframe}
-                </button>
-              ))}
-            </div>
-
-            <div className="h-48 relative">
-              {chartLoading ? (
-                <div className="flex items-center justify-center h-full">
-                  <div className="text-center">
-                    <Loader2 className="animate-spin mx-auto mb-2" size={24} />
-                    <p className="text-sm text-foreground/70">차트 데이터 로딩 중...</p>
-                  </div>
-                </div>
-              ) : chartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData}>
-                    <defs>
-                      <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#60a5fa" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#60a5fa" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                    <XAxis 
-                      dataKey="timestamp" 
-                      axisLine={false} 
-                      tickLine={false}
-                      tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }}
-                      tickFormatter={(timestamp) => formatTimestampForChart(timestamp, selectedTimeframe)}
-                    />
-                    <YAxis 
-                      axisLine={false} 
-                      tickLine={false}
-                      tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }}
-                      domain={['dataMin - 0.5', 'dataMax + 0.5']}
-                    />
-                    <Tooltip 
-                      formatter={(value) => [formatCurrency(Number(value)), '주가']}
-                      labelFormatter={(label) => `시간: ${formatTimestampForChart(label, selectedTimeframe)}`}
-                      contentStyle={{ 
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)', 
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                        borderRadius: '8px',
-                        color: 'white'
-                      }}
-                    />
-                    <Area 
-                      type="monotone" 
-                      dataKey="price" 
-                      stroke="#60a5fa" 
-                      strokeWidth={2}
-                      fill="url(#priceGradient)" 
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <div className="text-center">
-                    <Loader2 className="animate-spin mx-auto mb-2" size={24} />
-                    <p className="text-sm text-foreground/70">차트 데이터 로딩 중...</p>
-                    <button 
-                      onClick={() => changeTimeframe(selectedTimeframe)}
-                      className="mt-2 text-xs text-primary hover:underline"
-                    >
-                      다시 시도
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </Card>
+          <StockChart 
+            chartData={chartData}
+            chartLoading={chartLoading}
+            selectedTimeframe={selectedTimeframe}
+            onTimeframeChange={changeTimeframe}
+            formatCurrency={formatCurrency}
+            formatTimestampForChart={formatTimestampForChart}
+          />
 
           {!isExpertMode ? (
             /* 투자 인사이트 모드 */
