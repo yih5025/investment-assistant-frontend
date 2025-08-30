@@ -1,7 +1,7 @@
 // components/MarketContainer.tsx (새로 생성)
 import React, { useState } from 'react';
-import EnhancedMarketTabs from './MarketPage';
-import { StockDetailPage } from './MarketDetail';
+import MarketPage from './MarketPage';
+import { MarketDetailPage } from './MarketDetail';
 
 const MarketContainer: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<'market' | 'detail'>('market');
@@ -19,7 +19,7 @@ const MarketContainer: React.FC = () => {
 
   if (currentPage === 'detail' && selectedSymbol) {
     return (
-      <StockDetailPage
+      <MarketDetailPage
         symbol={selectedSymbol}
         onBack={handleBackToMarket}
       />
@@ -27,7 +27,7 @@ const MarketContainer: React.FC = () => {
   }
 
   return (
-    <EnhancedMarketTabs onStockClick={handleStockClick} />
+    <MarketPage onStockClick={handleStockClick} />
   );
 };
 

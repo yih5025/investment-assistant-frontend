@@ -381,7 +381,7 @@ const CryptoMarketTab: React.FC<CryptoMarketTabProps> = ({ cryptoData }) => {
       )}
 
       <div className="glass-card rounded-xl p-3 text-center text-sm text-foreground/60">
-        총 {filteredAndSortedCrypto.length}개 코인 중 {displayedCrypto.length}개 표시
+        총 {filteredAndSortedCrypto.length}EnhancedMarketTabs개 코인 중 {displayedCrypto.length}개 표시
         {searchQuery && <span> · 검색: "{searchQuery}"</span>}
       </div>
     </div>
