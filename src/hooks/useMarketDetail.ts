@@ -300,7 +300,7 @@ export function useMarketDetail(symbol: string): UseMarketDetailReturn {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`/api/v1/stocks/sp500/symbol/${symbol}`);
+      const response = await fetch(`/api/stocks/sp500/symbol/${symbol}`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -366,7 +366,7 @@ export function useMarketDetail(symbol: string): UseMarketDetailReturn {
   // 차트 데이터 가져오기
   const fetchChartData = useCallback(async (timeframe: '1H' | '1D' | '1W' | '1M') => {
     try {
-      const chartResponse = await fetch(`/api/v1/stocks/sp500/chart/${symbol}?timeframe=${timeframe}`);
+      const chartResponse = await fetch(`/api/stocks/sp500/chart/${symbol}?timeframe=${timeframe}`);
       
       if (!chartResponse.ok) {
         console.warn(`Chart API error! status: ${chartResponse.status}`);
