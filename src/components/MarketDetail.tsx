@@ -53,6 +53,7 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
   // 훅 사용 - 단일 API 호출로 모든 데이터 관리
   const {
     loading,
+    chartLoading,
     error,
     dataCase,
     stockPrice,
@@ -117,7 +118,7 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
             month: '2-digit', 
             day: '2-digit' 
           });
-        case '1M':
+        case '1MO':
           // 월별: MM/DD 형식
           return date.toLocaleDateString('ko-KR', { 
             month: '2-digit', 
@@ -282,23 +283,31 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
             </h3>
             
             <div className="flex space-x-2 mb-4">
-              {(['1H', '1D', '1W', '1M'] as const).map((timeframe) => (
+              {(['1H', '1D', '1W', '1MO'] as const).map((timeframe) => (
                 <button
                   key={timeframe}
                   onClick={() => changeTimeframe(timeframe)}
+                  disabled={chartLoading}
                   className={`px-3 py-1 rounded-lg text-xs transition-all ${
                     selectedTimeframe === timeframe 
                       ? 'glass-strong text-primary' 
                       : 'glass-subtle hover:glass'
-                  }`}
+                  } ${chartLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  {timeframe}
+                  {timeframe === '1MO' ? '1M' : timeframe}
                 </button>
               ))}
             </div>
 
-            <div className="h-48">
-              {chartData.length > 0 ? (
+            <div className="h-48 relative">
+              {chartLoading ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center">
+                    <Loader2 className="animate-spin mx-auto mb-2" size={24} />
+                    <p className="text-sm text-foreground/70">차트 데이터 로딩 중...</p>
+                  </div>
+                </div>
+              ) : chartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartData}>
                     <defs>

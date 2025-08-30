@@ -132,6 +132,7 @@ interface DataAvailability {
 interface UseMarketDetailReturn {
   // 로딩 및 에러 상태
   loading: boolean;
+  chartLoading: boolean; // 차트 전용 로딩 상태
   error: string | null;
   
   // 데이터 케이스
@@ -154,12 +155,12 @@ interface UseMarketDetailReturn {
   
   // 액션 함수들
   refreshData: () => Promise<void>;
-  changeTimeframe: (timeframe: '1H' | '1D' | '1W' | '1M') => Promise<void>;
+  changeTimeframe: (timeframe: '1H' | '1D' | '1W' | '1MO') => Promise<void>;
   toggleFavorite: () => void;
   
   // UI 상태
   isFavorite: boolean;
-  selectedTimeframe: '1H' | '1D' | '1W' | '1M';
+  selectedTimeframe: '1H' | '1D' | '1W' | '1MO';
   
   // 통합 분석 정보
   integratedAnalysis: {
@@ -174,6 +175,7 @@ interface UseMarketDetailReturn {
 export function useMarketDetail(symbol: string): UseMarketDetailReturn {
   // 기본 상태들
   const [loading, setLoading] = useState(true);
+  const [chartLoading, setChartLoading] = useState(false); // 차트 전용 로딩 상태
   const [error, setError] = useState<string | null>(null);
   const [dataCase, setDataCase] = useState<'complete_data' | 'company_only' | 'financial_only' | 'basic_only'>('basic_only');
   
@@ -200,7 +202,7 @@ export function useMarketDetail(symbol: string): UseMarketDetailReturn {
   
   // UI 상태들
   const [isFavorite, setIsFavorite] = useState(false);
-  const [selectedTimeframe, setSelectedTimeframe] = useState<'1H' | '1D' | '1W' | '1M'>('1D');
+  const [selectedTimeframe, setSelectedTimeframe] = useState<'1H' | '1D' | '1W' | '1MO'>('1D');
 
   // 재무비율 계산 함수
   const calculateFinancialRatios = useCallback((financial: APIFinancialData): FinancialRatios => {
@@ -364,8 +366,9 @@ export function useMarketDetail(symbol: string): UseMarketDetailReturn {
   }, [symbol, calculateFinancialRatios, calculateInvestmentGrade, analyzeInvestmentRisks, getSectorComparison]);
 
   // 차트 데이터 가져오기
-  const fetchChartData = useCallback(async (timeframe: '1H' | '1D' | '1W' | '1M') => {
+  const fetchChartData = useCallback(async (timeframe: '1H' | '1D' | '1W' | '1MO') => {
     try {
+      setChartLoading(true); // 차트 로딩 시작
       const chartResponse = await fetch(`/api/stocks/sp500/chart/${symbol}?timeframe=${timeframe}`);
       
       if (!chartResponse.ok) {
@@ -380,6 +383,8 @@ export function useMarketDetail(symbol: string): UseMarketDetailReturn {
     } catch (err) {
       console.error('차트 데이터 로딩 실패:', err);
       setChartData([]);
+    } finally {
+      setChartLoading(false); // 차트 로딩 완료
     }
   }, [symbol]);
 
@@ -406,7 +411,7 @@ export function useMarketDetail(symbol: string): UseMarketDetailReturn {
     await fetchChartData(selectedTimeframe);
   }, [fetchStockData, fetchChartData, selectedTimeframe]);
 
-  const changeTimeframe = useCallback(async (timeframe: '1H' | '1D' | '1W' | '1M') => {
+  const changeTimeframe = useCallback(async (timeframe: '1H' | '1D' | '1W' | '1MO') => {
     setSelectedTimeframe(timeframe);
     await fetchChartData(timeframe);
   }, [fetchChartData]);
@@ -428,6 +433,7 @@ export function useMarketDetail(symbol: string): UseMarketDetailReturn {
   return {
     // 로딩 및 에러 상태
     loading,
+    chartLoading,
     error,
     
     // 데이터 케이스
