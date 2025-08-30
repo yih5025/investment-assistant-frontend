@@ -86,6 +86,52 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
     return `${value.toFixed(1)}%`;
   };
 
+  // 차트용 timestamp 포맷팅 함수
+  const formatTimestampForChart = (timestamp: string, timeframe: string) => {
+    if (!timestamp) return '';
+    
+    try {
+      const date = new Date(timestamp);
+      
+      switch (timeframe) {
+        case '1H':
+          // 시간별: HH:MM 형식
+          return date.toLocaleTimeString('ko-KR', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: false
+          });
+        case '1D':
+          // 일별: MM/DD HH:MM 형식
+          return date.toLocaleDateString('ko-KR', { 
+            month: '2-digit', 
+            day: '2-digit' 
+          }) + ' ' + date.toLocaleTimeString('ko-KR', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: false
+          });
+        case '1W':
+          // 주별: MM/DD 형식
+          return date.toLocaleDateString('ko-KR', { 
+            month: '2-digit', 
+            day: '2-digit' 
+          });
+        case '1M':
+          // 월별: MM/DD 형식
+          return date.toLocaleDateString('ko-KR', { 
+            month: '2-digit', 
+            day: '2-digit' 
+          });
+        default:
+          return timestamp;
+      }
+    } catch (error) {
+      console.error('Timestamp formatting error:', error);
+      return timestamp;
+    }
+  };
+
   const getGradeColor = (grade: string) => {
     switch (grade.charAt(0)) {
       case 'A': return 'text-green-400 bg-green-500/20';
@@ -267,6 +313,7 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
                       axisLine={false} 
                       tickLine={false}
                       tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }}
+                      tickFormatter={(timestamp) => formatTimestampForChart(timestamp, selectedTimeframe)}
                     />
                     <YAxis 
                       axisLine={false} 
@@ -276,7 +323,13 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
                     />
                     <Tooltip 
                       formatter={(value) => [formatCurrency(Number(value)), '주가']}
-                      labelFormatter={(label) => `시간: ${label}`}
+                      labelFormatter={(label) => `시간: ${formatTimestampForChart(label, selectedTimeframe)}`}
+                      contentStyle={{ 
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)', 
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '8px',
+                        color: 'white'
+                      }}
                     />
                     <Area 
                       type="monotone" 
