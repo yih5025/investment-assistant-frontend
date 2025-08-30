@@ -10,7 +10,8 @@ import EnhancedTopGainersBanner from "./components/TopGainersBanner"; // Enhance
 import { HomeEventCalendar } from "./components/HomeEventCalendar";
 import { HomeSocialFeed } from "./components/HomeSocialFeed";
 import { HomeNewsList } from "./components/HomeNewsList"; 
-import EnhancedMarketPage from "./components/MarketPage"; // Enhanced 마켓 페이지
+import MarketPage from "./components/MarketPage"; // 마켓 페이지
+import { MarketDetailPage } from "./components/MarketDetail"; // 주식 상세 페이지 추가
 import { NewsPage } from "./components/NewsPage"; 
 import NewsDetailPage, { NewsItem as DetailNewsItem } from "./components/NewsDetailPage";
 import { SNSPage } from "./components/SNSPage";
@@ -84,7 +85,7 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
 // ============================================================================
 
 type AuthState = "guest" | "login" | "signup" | "authenticated";
-type ViewState = "main" | "auth" | "profile" | "sns-detail" | "stock-news" | "news-detail";
+type ViewState = "main" | "auth" | "profile" | "sns-detail" | "stock-news" | "news-detail" | "stock-detail";
 
 interface SNSPost {
   id: string;
@@ -125,6 +126,7 @@ function AppContent() {
   const [selectedSNSPost, setSelectedSNSPost] = useState<SNSPost | null>(null);
   const [selectedStockNews, setSelectedStockNews] = useState<{ news: StockNewsItem[], symbol: string } | null>(null);
   const [selectedNewsItem, setSelectedNewsItem] = useState<DetailNewsItem | null>(null);
+  const [selectedStockSymbol, setSelectedStockSymbol] = useState<string | null>(null);
   
   // 모의 사용자 데이터
   const [user] = useState({
@@ -257,6 +259,7 @@ function AppContent() {
     setViewState("main");
     setSelectedSNSPost(null);
     setSelectedStockNews(null);
+    setSelectedStockSymbol(null);
     if (!isLoggedIn) {
       setAuthState("guest");
     }
@@ -277,6 +280,11 @@ function AppContent() {
   const handleNewsClick = (newsItem: DetailNewsItem) => {
     setSelectedNewsItem(newsItem);
     setViewState("news-detail");
+  };
+
+  const handleStockClick = (symbol: string) => {
+    setSelectedStockSymbol(symbol);
+    setViewState("stock-detail");
   };
 
   const formatTimestamp = (timestamp: string) => {
@@ -424,6 +432,21 @@ function AppContent() {
     );
   }
 
+  // 마켓 상세 페이지
+  if (viewState === "stock-detail" && selectedStockSymbol) {
+    return (
+      <div className="min-h-screen relative z-10">
+        <MarketDetailPage
+          symbol={selectedStockSymbol}
+          onBack={() => {
+            setViewState("main");
+            setSelectedStockSymbol(null);
+          }}
+        />
+      </div>
+    );
+  }
+
   // 사용자 프로필 페이지
   if (viewState === "profile" && isLoggedIn) {
     return (
@@ -523,8 +546,8 @@ function AppContent() {
                 <h1 className="text-2xl font-bold">시장 & 재무</h1>
               </div>
             </div>
-            {/* 🎯 Enhanced MarketPage 사용 */}
-            <EnhancedMarketPage />
+            {/* 🎯 MarketPage 사용 */}
+            <MarketPage onStockClick={handleStockClick} />
           </div>
         );
 
