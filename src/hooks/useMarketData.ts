@@ -244,10 +244,18 @@ export function useMarketData() {
     );
   }, [allMarketData]);
 
-  // 수동 새로고침 함수
+  // 수동 새로고침 함수 (즉시 로딩 최적화)
   const refreshData = useCallback(() => {
-    console.log('🔄 마켓 데이터 수동 새로고침');
+    console.log('🔄 마켓 데이터 수동 새로고침 - 즉시 시작');
     webSocketService.reconnectAll();
+  }, []);
+
+  // 🎯 초기 데이터 로딩 최적화: 서비스 초기화 시 바로 시작
+  useEffect(() => {
+    if (!webSocketService.getStatus().initialized) {
+      console.log('🚀 WebSocket 서비스 초기화 및 즉시 데이터 로딩 시작');
+      webSocketService.initialize();
+    }
   }, []);
 
   return {

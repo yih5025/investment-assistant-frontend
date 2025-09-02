@@ -105,6 +105,7 @@ interface ConnectionConfig {
   enableApiFallback: boolean;
   maxConcurrentConnections: number;
   connectionStabilityDelay: number;
+  cacheMaxAge: number; // 🎯 캐시 유효 시간 (밀리초)
 }
 
 class WebSocketService {
@@ -121,6 +122,7 @@ class WebSocketService {
   private isInitialized = false;
   private marketTimeManager = new MarketTimeManager();
   private lastDataCache: Map<WebSocketType, any[]> = new Map();
+  private dataTimestamps: Map<WebSocketType, number> = new Map(); // 🎯 캐시 타임스탬프 추가
 
   // 🎯 TopGainers 카테고리별 데이터 캐시
   private topGainersCategories: Map<string, TopGainersData[]> = new Map();
@@ -130,12 +132,13 @@ class WebSocketService {
   private config: ConnectionConfig = {
     maxReconnectAttempts: 3,
     baseReconnectDelay: 2000,
-    apiPollingInterval: 5000,        // 5초 - 개장 시
-    marketClosedPollingInterval: 30000, // 30초 - 장 마감 시 (미국 주식용)
+    apiPollingInterval: 3000,        // 3초 - 개장 시 (5초에서 단축)
+    marketClosedPollingInterval: 10000, // 10초 - 장 마감 시 (30초에서 단축)
     healthCheckInterval: 15000,      // 15초 (폴링 방식이므로 간격 증가)
     enableApiFallback: true,
     maxConcurrentConnections: 1,     // 암호화폐만 WebSocket 사용
-    connectionStabilityDelay: 500    // 연결 안정화 시간 단축
+    connectionStabilityDelay: 500,   // 연결 안정화 시간 단축
+    cacheMaxAge: 30000              // 🎯 30초 캐시 유효 시간
   };
 
   constructor(customConfig?: Partial<ConnectionConfig>) {
@@ -217,16 +220,23 @@ class WebSocketService {
   private async initializeConnectionModes(): Promise<void> {
     const marketStatus = this.marketTimeManager.getCurrentMarketStatus();
     
-    console.log('🔄 연결 모드 초기화: 암호화폐(WebSocket) + 미국주식(HTTP 폴링)');
+    console.log('🔄 연결 모드 초기화: 암호화폐(WebSocket) + 미국주식(HTTP 폴링) - 병렬 시작');
     
-    // 🎯 암호화폐만 WebSocket으로 연결
-    await this.connectWebSocketWithDelay('crypto');
+    // 🎯 병렬 초기화: 암호화폐 WebSocket + 미국주식 HTTP 폴링 동시 시작
+    const initPromises = [
+      // 암호화폐 WebSocket 연결
+      this.connectWebSocketWithDelay('crypto'),
+      
+      // 미국 주식 HTTP 폴링 (병렬 시작)
+      Promise.resolve().then(() => {
+        this.switchToApiMode('topgainers');
+        this.switchToApiMode('sp500');
+      })
+    ];
     
-    // 🎯 미국 주식 데이터는 항상 HTTP 폴링으로 처리
-    this.switchToApiMode('topgainers');
-    this.switchToApiMode('sp500');
+    await Promise.allSettled(initPromises);
     
-    console.log('✅ 연결 모드 초기화 완료: crypto(WebSocket), topgainers/sp500(HTTP 폴링)');
+    console.log('✅ 연결 모드 초기화 완료: crypto(WebSocket), topgainers/sp500(HTTP 폴링) - 병렬 완료');
   }
 
   private async connectWebSocketWithDelay(type: WebSocketType): Promise<void> {
@@ -353,7 +363,7 @@ class WebSocketService {
       ? this.config.apiPollingInterval 
       : this.config.marketClosedPollingInterval;
 
-    console.log(`🔄 ${type} API 폴링 시작 (${interval}ms 간격)`);
+    console.log(`🔄 ${type} API 폴링 시작 (${interval}ms 간격) - 캐시 우선 로딩 적용`);
 
     const pollData = async () => {
       try {
@@ -363,9 +373,39 @@ class WebSocketService {
       }
     };
 
-    pollData();
+    // 🎯 캐시 우선 로딩: 유효한 캐시가 있으면 즉시 emit, 백그라운드에서 업데이트
+    this.loadWithCachePriority(type, pollData);
+    
+    // 설정된 간격으로 주기적 폴링 시작
     const intervalId = setInterval(pollData, interval);
     this.apiPollingIntervals.set(type, intervalId);
+  }
+
+  // 🎯 캐시 우선 로딩 메서드
+  private async loadWithCachePriority(type: WebSocketType, fetchFn: () => Promise<void>): Promise<void> {
+    const cachedData = this.lastDataCache.get(type);
+    const cacheTimestamp = this.dataTimestamps.get(type);
+    const now = Date.now();
+
+    // 캐시가 있고 유효한 경우 (30초 이내)
+    if (cachedData && cacheTimestamp && (now - cacheTimestamp) < this.config.cacheMaxAge) {
+      console.log(`📦 ${type} 캐시 데이터 즉시 표시 (${Math.round((now - cacheTimestamp) / 1000)}초 전)`);
+      
+      // 즉시 캐시된 데이터 emit
+      if (type === 'topgainers') {
+        this.emitEvent('topgainers_update', cachedData as TopGainersData[]);
+      } else if (type === 'sp500') {
+        this.emitEvent('sp500_update', cachedData as SP500Data[]);
+      }
+      
+      // 백그라운드에서 최신 데이터 가져오기
+      console.log(`🔄 ${type} 백그라운드에서 최신 데이터 업데이트 중...`);
+      setTimeout(() => fetchFn(), 100); // 100ms 후 백그라운드 업데이트
+    } else {
+      // 캐시가 없거나 만료된 경우 즉시 fetch
+      console.log(`🆕 ${type} 캐시 없음 또는 만료 - 즉시 fetch 실행`);
+      await fetchFn();
+    }
   }
 
   private stopApiPolling(type: WebSocketType): void {
@@ -405,6 +445,7 @@ class WebSocketService {
           
           if (this.hasDataChanged(type, data)) {
             this.lastDataCache.set(type, data);
+            this.dataTimestamps.set(type, Date.now()); // 🎯 캐시 타임스탬프 업데이트
             this.updateTopGainersCategories(data);
             this.emitEvent('topgainers_update', data);
             console.log(`📊 ${type} API 데이터 업데이트: ${data.length}개 항목`);
@@ -420,6 +461,7 @@ class WebSocketService {
           
           if (this.hasDataChanged(type, data)) {
             this.lastDataCache.set(type, data);
+            this.dataTimestamps.set(type, Date.now()); // 🎯 캐시 타임스탬프 업데이트
             this.emitEvent('sp500_update', data as SP500Data[]);
             console.log(`📊 ${type} API 데이터 업데이트: ${data.length}개 항목`);
           }
@@ -762,6 +804,7 @@ class WebSocketService {
         case 'crypto_update':
           if (type === 'crypto' && message.data) {
             this.lastDataCache.set(type, message.data);
+            this.dataTimestamps.set(type, Date.now()); // 🎯 캐시 타임스탬프 업데이트
             this.emitEvent('crypto_update', message.data as CryptoData[]);
           }
           break;
@@ -769,6 +812,7 @@ class WebSocketService {
         case 'sp500_update':
           if (type === 'sp500' && message.data) {
             this.lastDataCache.set(type, message.data);
+            this.dataTimestamps.set(type, Date.now()); // 🎯 캐시 타임스탬프 업데이트
             this.emitEvent('sp500_update', message.data as SP500Data[]);
           }
           break;
@@ -777,6 +821,7 @@ class WebSocketService {
           if (type === 'topgainers' && message.data) {
             const transformedData = this.transformTopGainersWebSocketData(message.data as any[]);
             this.lastDataCache.set(type, transformedData);
+            this.dataTimestamps.set(type, Date.now()); // 🎯 캐시 타임스탬프 업데이트
             this.updateTopGainersCategories(transformedData);
             this.emitEvent('topgainers_update', transformedData);
           }
@@ -1060,10 +1105,11 @@ class WebSocketService {
 export const webSocketService = new WebSocketService({
   enableApiFallback: true,
   maxReconnectAttempts: 3,
-  apiPollingInterval: 5000,           // 5초 - TopGainers(50개) + SP500(60개)
-  marketClosedPollingInterval: 30000, // 30초 - 미국 주식 마감 시
+  apiPollingInterval: 3000,           // 3초 - TopGainers(50개) + SP500(60개) (5초에서 단축)
+  marketClosedPollingInterval: 10000, // 10초 - 미국 주식 마감 시 (30초에서 단축)
   healthCheckInterval: 15000,         // 15초 - 폴링 방식에 맞춘 헬스체크
-  maxConcurrentConnections: 1         // 암호화폐만 WebSocket 사용
+  maxConcurrentConnections: 1,        // 암호화폐만 WebSocket 사용
+  cacheMaxAge: 30000                  // 🎯 30초 캐시 유효 시간
 });
 
 export default webSocketService;

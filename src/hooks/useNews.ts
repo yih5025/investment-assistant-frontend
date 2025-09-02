@@ -70,9 +70,9 @@ const DEFAULT_FILTERS: NewsFilters = {
 
 const DEFAULT_OPTIONS: UseNewsOptions = {
   enabled: true,
-  refetchInterval: 60000,  // 1분마다 자동 새로고침
-  staleTime: 30000,        // 30초 동안 fresh 상태 유지
-  cacheTime: 300000        // 5분 동안 캐시 보관
+  refetchInterval: 120000, // 2분마다 자동 새로고침 (1분에서 연장)
+  staleTime: 60000,        // 60초 동안 fresh 상태 유지 (30초에서 연장)
+  cacheTime: 600000        // 10분 동안 캐시 보관 (5분에서 연장)
 };
 
 // ============================================================================
