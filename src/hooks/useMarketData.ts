@@ -125,8 +125,35 @@ export function useWebSocketConnection() {
 // ============================================================================
 
 export function useCryptoData() {
-  const [cryptoData, setCryptoData] = useState<MarketItem[]>([]);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  // 🎯 캐시된 데이터로 초기화
+  const [cryptoData, setCryptoData] = useState<MarketItem[]>(() => {
+    const cachedData = webSocketService.getLastCachedData('crypto');
+    if (cachedData && cachedData.length > 0) {
+      console.log('📦 Crypto 캐시된 데이터로 초기화:', cachedData.length, '개');
+      return cachedData.map(crypto => {
+        const marketCode = (crypto as any).market_code || crypto.market || '';
+        const symbol = (crypto as any).symbol || marketCode.replace('KRW-', '');
+        const name = (crypto as any).korean_name || (crypto as any).crypto_name || marketCode;
+        const volume24h = crypto.acc_trade_volume_24h || crypto.trade_volume || 0;
+        
+        return {
+          symbol,
+          name,
+          price: (crypto as any).price || crypto.trade_price || 0,
+          change: (crypto as any).change_24h || crypto.signed_change_price || 0,
+          changePercent: parseFloat(((crypto as any).change_rate_24h || '0%').replace('%', '')) || (crypto.signed_change_rate || 0) * 100,
+          volume: formatVolume((crypto as any).volume || volume24h),
+          type: 'crypto' as const,
+          marketCap: formatVolume((crypto as any).acc_trade_value_24h || crypto.acc_trade_volume_24h || ((crypto.trade_price || 0) * 21000000))
+        };
+      });
+    }
+    return [];
+  });
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(() => {
+    const cachedData = webSocketService.getLastCachedData('crypto');
+    return cachedData && cachedData.length > 0 ? new Date() : null;
+  });
 
   useEffect(() => {
     const unsubscribe = webSocketService.subscribe('crypto_update', (data: CryptoData[]) => {
@@ -171,12 +198,38 @@ export function useCryptoData() {
 
 // SP500 데이터 훅에서 company_name 직접 사용
 export function useSP500Data() {
-  const [sp500Data, setSP500Data] = useState<MarketItem[]>([]);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  // 🎯 캐시된 데이터로 초기화
+  const [sp500Data, setSP500Data] = useState<MarketItem[]>(() => {
+    const cachedData = webSocketService.getLastCachedData('sp500');
+    if (cachedData && cachedData.length > 0) {
+      console.log('📦 SP500 캐시된 데이터로 초기화:', cachedData.length, '개');
+      return cachedData.map(stock => {
+        const name = stock.company_name || `${stock.symbol} Inc.`;
+        const currentPrice = stock.current_price || stock.price || 0;
+        const changeAmount = stock.change_amount || 0;
+        const changePercent = stock.change_percentage || 0;
+        
+        return {
+          symbol: stock.symbol,
+          name,
+          price: currentPrice,
+          change: changeAmount,
+          changePercent,
+          volume: formatVolume(stock.volume || 0),
+          type: 'stock' as const,
+        };
+      });
+    }
+    return [];
+  });
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(() => {
+    const cachedData = webSocketService.getLastCachedData('sp500');
+    return cachedData && cachedData.length > 0 ? new Date() : null;
+  });
 
   useEffect(() => {
       const unsubscribe = webSocketService.subscribe('sp500_update', (data: SP500Data[]) => {
-          console.log('📊 SP500 데이터 수신:', data.length, '개 항목');
+          //console.log('📊 SP500 데이터 수신:', data.length, '개 항목');
           
           const items: MarketItem[] = data.map(stock => {
               // 백엔드에서 제공하는 company_name 직접 사용
@@ -187,7 +240,7 @@ export function useSP500Data() {
               const changeAmount = stock.change_amount || 0;
               const changePercent = stock.change_percentage || 0;
               
-              console.log(`📈 ${stock.symbol}: $${currentPrice}, 변화: ${changeAmount} (${changePercent}%)`);
+              //console.log(`📈 ${stock.symbol}: $${currentPrice}, 변화: ${changeAmount} (${changePercent}%)`);
               
               return {
                   symbol: stock.symbol,
@@ -203,7 +256,7 @@ export function useSP500Data() {
           setSP500Data(items);
           setLastUpdated(new Date());
           
-          console.log(`✅ SP500 데이터 업데이트 완료: ${items.length}개 항목`);
+          //console.log(`✅ SP500 데이터 업데이트 완료: ${items.length}개 항목`);
       });
 
       return unsubscribe;
@@ -246,7 +299,7 @@ export function useMarketData() {
 
   // 수동 새로고침 함수 (즉시 로딩 최적화)
   const refreshData = useCallback(() => {
-    console.log('🔄 마켓 데이터 수동 새로고침 - 즉시 시작');
+    //console.log('🔄 마켓 데이터 수동 새로고침 - 즉시 시작');
     webSocketService.reconnectAll();
   }, []);
 
@@ -255,6 +308,20 @@ export function useMarketData() {
     if (!webSocketService.getStatus().initialized) {
       console.log('🚀 WebSocket 서비스 초기화 및 즉시 데이터 로딩 시작');
       webSocketService.initialize();
+    } else {
+      console.log('🔄 WebSocket 서비스 이미 초기화됨 - 연결 상태 확인');
+      // 서비스가 이미 초기화되었지만 데이터가 없으면 재연결 시도
+      const sp500Status = webSocketService.getAllConnectionStatuses().sp500;
+      const cryptoStatus = webSocketService.getAllConnectionStatuses().crypto;
+      
+      if (sp500Status.status !== 'connected' && sp500Status.status !== 'api_mode') {
+        console.log('🔧 SP500 연결 상태 이상 - 재연결 시도');
+        webSocketService.reconnect('sp500');
+      }
+      if (cryptoStatus.status !== 'connected' && cryptoStatus.status !== 'api_mode') {
+        console.log('🔧 Crypto 연결 상태 이상 - 재연결 시도');
+        webSocketService.reconnect('crypto');
+      }
     }
   }, []);
 

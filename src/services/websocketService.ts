@@ -106,6 +106,8 @@ interface ConnectionConfig {
   maxConcurrentConnections: number;
   connectionStabilityDelay: number;
   cacheMaxAge: number; // 🎯 캐시 유효 시간 (밀리초)
+  errorBackoffInterval: number; // 🎯 에러 발생 시 백오프 간격
+  maxConsecutiveErrors: number; // 🎯 최대 연속 에러 허용 횟수
 }
 
 class WebSocketService {
@@ -123,6 +125,7 @@ class WebSocketService {
   private marketTimeManager = new MarketTimeManager();
   private lastDataCache: Map<WebSocketType, any[]> = new Map();
   private dataTimestamps: Map<WebSocketType, number> = new Map(); // 🎯 캐시 타임스탬프 추가
+  private consecutiveErrors: Map<WebSocketType, number> = new Map(); // 🎯 연속 에러 카운터
 
   // 🎯 TopGainers 카테고리별 데이터 캐시
   private topGainersCategories: Map<string, TopGainersData[]> = new Map();
@@ -138,7 +141,9 @@ class WebSocketService {
     enableApiFallback: true,
     maxConcurrentConnections: 1,     // 암호화폐만 WebSocket 사용
     connectionStabilityDelay: 500,   // 연결 안정화 시간 단축
-    cacheMaxAge: 30000              // 🎯 30초 캐시 유효 시간
+    cacheMaxAge: 30000,             // 🎯 30초 캐시 유효 시간
+    errorBackoffInterval: 30000,    // 🎯 에러 발생 시 30초 백오프
+    maxConsecutiveErrors: 3         // 🎯 최대 3회 연속 에러 허용
   };
 
   constructor(customConfig?: Partial<ConnectionConfig>) {
@@ -152,6 +157,7 @@ class WebSocketService {
       this.dataModes.set(type, 'websocket');
       this.reconnectAttempts.set(type, 0);
       this.lastDataCache.set(type, []);
+      this.consecutiveErrors.set(type, 0); // 🎯 에러 카운터 초기화
     });
 
     // TopGainers 카테고리 초기화
@@ -428,10 +434,20 @@ class WebSocketService {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
+        mode: 'cors',
+        credentials: 'omit',
+        // 🎯 타임아웃 설정 (15초)
+        signal: AbortSignal.timeout(15000)
       });
 
       if (!response.ok) {
+        // 🎯 524 에러 (CloudFlare 타임아웃) 특별 처리
+        if (response.status === 524) {
+          console.warn(`⚠️ ${type} CloudFlare 타임아웃 (524) - 다음 폴링에서 재시도`);
+          return;
+        }
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
@@ -446,6 +462,7 @@ class WebSocketService {
           if (this.hasDataChanged(type, data)) {
             this.lastDataCache.set(type, data);
             this.dataTimestamps.set(type, Date.now()); // 🎯 캐시 타임스탬프 업데이트
+            this.consecutiveErrors.set(type, 0); // 🎯 성공 시 에러 카운터 리셋
             this.updateTopGainersCategories(data);
             this.emitEvent('topgainers_update', data);
             console.log(`📊 ${type} API 데이터 업데이트: ${data.length}개 항목`);
@@ -462,6 +479,7 @@ class WebSocketService {
           if (this.hasDataChanged(type, data)) {
             this.lastDataCache.set(type, data);
             this.dataTimestamps.set(type, Date.now()); // 🎯 캐시 타임스탬프 업데이트
+            this.consecutiveErrors.set(type, 0); // 🎯 성공 시 에러 카운터 리셋
             this.emitEvent('sp500_update', data as SP500Data[]);
             console.log(`📊 ${type} API 데이터 업데이트: ${data.length}개 항목`);
           }
@@ -471,9 +489,33 @@ class WebSocketService {
       }
 
     } catch (error) {
-      console.error(`❌ ${type} API 호출 실패:`, error);
+      // 🎯 연속 에러 카운터 증가
+      const currentErrors = this.consecutiveErrors.get(type) || 0;
+      this.consecutiveErrors.set(type, currentErrors + 1);
+      
+      console.error(`❌ ${type} API 호출 실패 (${currentErrors + 1}회):`, error);
+      
+      // 🎯 연속 에러가 많으면 백오프 적용
+      if (currentErrors >= this.config.maxConsecutiveErrors) {
+        console.warn(`⚠️ ${type} 연속 에러 ${currentErrors + 1}회 - 백오프 모드 활성화`);
+        this.applyErrorBackoff(type);
+      }
+      
       this.emitEvent('error', { type, error: error instanceof Error ? error.message : String(error) });
     }
+  }
+
+  // 🎯 에러 백오프 적용
+  private applyErrorBackoff(type: WebSocketType): void {
+    // 현재 폴링 중단
+    this.stopApiPolling(type);
+    
+    // 백오프 시간 후 재시작
+    setTimeout(() => {
+      console.log(`🔄 ${type} 백오프 완료 - 폴링 재시작`);
+      this.consecutiveErrors.set(type, 0); // 에러 카운터 리셋
+      this.startApiPolling(type);
+    }, this.config.errorBackoffInterval);
   }
 
   // 🎯 TopGainers API 데이터 변환
@@ -1109,7 +1151,9 @@ export const webSocketService = new WebSocketService({
   marketClosedPollingInterval: 10000, // 10초 - 미국 주식 마감 시 (30초에서 단축)
   healthCheckInterval: 15000,         // 15초 - 폴링 방식에 맞춘 헬스체크
   maxConcurrentConnections: 1,        // 암호화폐만 WebSocket 사용
-  cacheMaxAge: 30000                  // 🎯 30초 캐시 유효 시간
+  cacheMaxAge: 30000,                 // 🎯 30초 캐시 유효 시간
+  errorBackoffInterval: 30000,        // 🎯 에러 발생 시 30초 백오프
+  maxConsecutiveErrors: 3             // 🎯 최대 3회 연속 에러 허용
 });
 
 export default webSocketService;
