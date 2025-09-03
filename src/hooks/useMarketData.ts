@@ -1,5 +1,5 @@
 // hooks/useMarketData.ts
-// 마켓 데이터 관리를 위한 훅 모음 (Hybrid: Crypto WebSocket + US Stocks HTTP Polling)
+// 페이지 독립적 마켓 데이터 관리 훅
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
@@ -51,20 +51,36 @@ const formatPrice = (price: number, type: 'crypto' | 'stock'): string => {
 };
 
 // ============================================================================
-// 1. WebSocket 연결 상태 관리 훅
+// 🎯 앱 수준 연결 상태 관리 훅 (페이지 독립적)
 // ============================================================================
 
 export function useWebSocketConnection() {
-  const [connectionStatuses, setConnectionStatuses] = useState<Record<WebSocketType, { status: ConnectionStatus; mode: DataMode }>>({
-    crypto: { status: 'disconnected', mode: 'websocket' },    // 암호화폐: WebSocket
-    sp500: { status: 'disconnected', mode: 'api' },           // 미국 주식: HTTP 폴링
-    topgainers: { status: 'disconnected', mode: 'api' },      // TopGainers: HTTP 폴링
+  const [connectionStatuses, setConnectionStatuses] = useState<Record<WebSocketType, { status: ConnectionStatus; mode: DataMode }>>(() => {
+    // 🎯 서비스가 이미 초기화되어 있으면 현재 상태 사용
+    if (webSocketService.getStatus().initialized) {
+      return webSocketService.getAllConnectionStatuses();
+    }
+    
+    // 초기 상태
+    return {
+      crypto: { status: 'disconnected', mode: 'websocket' },
+      sp500: { status: 'disconnected', mode: 'api' },
+      topgainers: { status: 'disconnected', mode: 'api' },
+    };
   });
 
   const [marketTimeManager] = useState(() => new MarketTimeManager());
 
   useEffect(() => {
-    webSocketService.initialize();
+    // 🎯 서비스가 아직 초기화되지 않은 경우에만 초기화
+    if (!webSocketService.getStatus().initialized) {
+      console.log('🚀 앱 수준에서 WebSocket 서비스 초기화 중...');
+      webSocketService.initialize();
+    } else {
+      console.log('✅ WebSocket 서비스 이미 초기화됨 - 기존 연결 활용');
+    }
+
+    // 현재 연결 상태 동기화
     setConnectionStatuses(webSocketService.getAllConnectionStatuses());
 
     const unsubscribe = webSocketService.subscribe('connection_change', ({ type, status, mode }) => {
@@ -74,17 +90,21 @@ export function useWebSocketConnection() {
       }));
     });
 
+    // 🎯 컴포넌트 언마운트 시 연결을 끊지 않음 - 앱 수준에서 관리
     return () => {
       unsubscribe();
-      webSocketService.shutdown();
+      console.log('📦 useWebSocketConnection 언마운트 - 연결 유지');
+      // webSocketService.shutdown() 호출하지 않음!
     };
-  }, []);
+  }, []); // 🎯 빈 의존성 배열 - 한 번만 실행
 
   const reconnect = useCallback((type: WebSocketType) => {
+    console.log(`🔄 사용자 요청: ${type} 재연결`);
     webSocketService.reconnect(type);
   }, []);
 
   const reconnectAll = useCallback(() => {
+    console.log('🔄 사용자 요청: 전체 재연결');
     webSocketService.reconnectAll();
   }, []);
 
@@ -121,15 +141,15 @@ export function useWebSocketConnection() {
 }
 
 // ============================================================================
-// 2. 암호화폐 데이터 훅
+// 🎯 페이지 독립적 데이터 훅들
 // ============================================================================
 
 export function useCryptoData() {
-  // 🎯 캐시된 데이터로 초기화
+  // 🎯 캐시된 데이터로 초기화 - 페이지 전환 시 즉시 표시
   const [cryptoData, setCryptoData] = useState<MarketItem[]>(() => {
     const cachedData = webSocketService.getLastCachedData('crypto');
     if (cachedData && cachedData.length > 0) {
-      console.log('📦 Crypto 캐시된 데이터로 초기화:', cachedData.length, '개');
+      console.log('📦 Crypto 캐시된 데이터로 즉시 초기화:', cachedData.length, '개');
       return cachedData.map(crypto => {
         const marketCode = (crypto as any).market_code || crypto.market || '';
         const symbol = (crypto as any).symbol || marketCode.replace('KRW-', '');
@@ -150,6 +170,7 @@ export function useCryptoData() {
     }
     return [];
   });
+
   const [lastUpdated, setLastUpdated] = useState<Date | null>(() => {
     const cachedData = webSocketService.getLastCachedData('crypto');
     return cachedData && cachedData.length > 0 ? new Date() : null;
@@ -158,12 +179,9 @@ export function useCryptoData() {
   useEffect(() => {
     const unsubscribe = webSocketService.subscribe('crypto_update', (data: CryptoData[]) => {
       const items: MarketItem[] = data.map(crypto => {
-        // 새로운 스키마 필드 사용 (market_code, symbol, korean_name)
         const marketCode = (crypto as any).market_code || crypto.market || '';
         const symbol = (crypto as any).symbol || marketCode.replace('KRW-', '');
         const name = (crypto as any).korean_name || (crypto as any).crypto_name || marketCode;
-        
-        // 24시간 거래량 사용 (원화 기준)
         const volume24h = crypto.acc_trade_volume_24h || crypto.trade_volume || 0;
         
         return {
@@ -183,7 +201,7 @@ export function useCryptoData() {
     });
 
     return unsubscribe;
-  }, []);
+  }, []); // 🎯 빈 의존성 배열 - 한 번만 구독
 
   return {
     cryptoData,
@@ -192,17 +210,12 @@ export function useCryptoData() {
   };
 }
 
-// ============================================================================
-// 3. S&P 500 데이터 훅
-// ============================================================================
-
-// SP500 데이터 훅에서 company_name 직접 사용
 export function useSP500Data() {
   // 🎯 캐시된 데이터로 초기화
   const [sp500Data, setSP500Data] = useState<MarketItem[]>(() => {
     const cachedData = webSocketService.getLastCachedData('sp500');
     if (cachedData && cachedData.length > 0) {
-      console.log('📦 SP500 캐시된 데이터로 초기화:', cachedData.length, '개');
+      console.log('📦 SP500 캐시된 데이터로 즉시 초기화:', cachedData.length, '개');
       return cachedData.map(stock => {
         const name = stock.company_name || `${stock.symbol} Inc.`;
         const currentPrice = stock.current_price || stock.price || 0;
@@ -222,55 +235,47 @@ export function useSP500Data() {
     }
     return [];
   });
+
   const [lastUpdated, setLastUpdated] = useState<Date | null>(() => {
     const cachedData = webSocketService.getLastCachedData('sp500');
     return cachedData && cachedData.length > 0 ? new Date() : null;
   });
 
   useEffect(() => {
-      const unsubscribe = webSocketService.subscribe('sp500_update', (data: SP500Data[]) => {
-          //console.log('📊 SP500 데이터 수신:', data.length, '개 항목');
-          
-          const items: MarketItem[] = data.map(stock => {
-              // 백엔드에서 제공하는 company_name 직접 사용
-              const name = stock.company_name || `${stock.symbol} Inc.`;
-              
-              // 🎯 변화율 데이터 우선 사용
-              const currentPrice = stock.current_price || stock.price || 0;
-              const changeAmount = stock.change_amount || 0;
-              const changePercent = stock.change_percentage || 0;
-              
-              //console.log(`📈 ${stock.symbol}: $${currentPrice}, 변화: ${changeAmount} (${changePercent}%)`);
-              
-              return {
-                  symbol: stock.symbol,
-                  name, // 백엔드 데이터 직접 사용
-                  price: currentPrice,
-                  change: changeAmount,
-                  changePercent,
-                  volume: formatVolume(stock.volume || 0),
-                  type: 'stock' as const,
-              };
-          });
-
-          setSP500Data(items);
-          setLastUpdated(new Date());
-          
-          //console.log(`✅ SP500 데이터 업데이트 완료: ${items.length}개 항목`);
+    const unsubscribe = webSocketService.subscribe('sp500_update', (data: SP500Data[]) => {
+      const items: MarketItem[] = data.map(stock => {
+        const name = stock.company_name || `${stock.symbol} Inc.`;
+        const currentPrice = stock.current_price || stock.price || 0;
+        const changeAmount = stock.change_amount || 0;
+        const changePercent = stock.change_percentage || 0;
+        
+        return {
+          symbol: stock.symbol,
+          name,
+          price: currentPrice,
+          change: changeAmount,
+          changePercent,
+          volume: formatVolume(stock.volume || 0),
+          type: 'stock' as const,
+        };
       });
 
-      return unsubscribe;
-  }, []);
+      setSP500Data(items);
+      setLastUpdated(new Date());
+    });
+
+    return unsubscribe;
+  }, []); // 🎯 빈 의존성 배열 - 한 번만 구독
 
   return {
-      sp500Data,
-      lastUpdated,
-      isEmpty: sp500Data.length === 0,
+    sp500Data,
+    lastUpdated,
+    isEmpty: sp500Data.length === 0,
   };
 }
 
 // ============================================================================
-// 4. 통합 마켓 데이터 훅
+// 🎯 통합 마켓 데이터 훅 (최적화됨)
 // ============================================================================
 
 export function useMarketData() {
@@ -297,44 +302,14 @@ export function useMarketData() {
     );
   }, [allMarketData]);
 
-  // 수동 새로고침 함수 (안정성 개선: 연결된 상태 유지)
+  // 🎯 최적화된 새로고침 - 연결 끊지 않고 데이터만 갱신
   const refreshData = useCallback(() => {
-    console.log('🔄 마켓 데이터 수동 새로고침 - 기존 연결 유지하며 데이터만 갱신');
-    
-    // 연결을 끊지 않고 데이터만 즉시 갱신
-    const statuses = webSocketService.getAllConnectionStatuses();
-    
-    // 각 타입별로 상태에 따라 적절한 액션만 수행
-    Object.entries(statuses).forEach(([type, statusInfo]) => {
-      if (statusInfo.status === 'connected' || statusInfo.status === 'api_mode') {
-        // 이미 연결된 상태면 재연결하지 않고 데이터만 요청
-        console.log(`✅ ${type} 이미 연결됨 - 데이터 갱신만 수행`);
-      } else if (statusInfo.status === 'disconnected') {
-        // 연결이 끊어진 상태만 재연결
-        console.log(`🔄 ${type} 연결 끊어짐 - 재연결 시도`);
-        webSocketService.reconnect(type as any);
-      }
-    });
+    console.log('🔄 데이터 수동 새로고침 - 기존 연결 유지');
+    webSocketService.refreshData();
   }, []);
 
-  // 🎯 데이터 로딩 최적화: 이미 App.tsx에서 초기화됨, 여기서는 상태만 확인
-  useEffect(() => {
-    console.log('🔍 useMarketData 마운트 - 서비스 상태 확인만 수행');
-    
-    // App.tsx에서 이미 초기화했으므로, 여기서는 초기화하지 않음
-    if (!webSocketService.getStatus().initialized) {
-      console.log('⚠️ WebSocket 서비스 미초기화 상태 감지 - App.tsx 초기화 대기');
-      return;
-    }
-    
-    // 연결 상태만 로깅하고 불필요한 재연결 시도 제거
-    const statuses = webSocketService.getAllConnectionStatuses();
-    Object.entries(statuses).forEach(([type, status]) => {
-      console.log(`📡 ${type} 현재 상태: ${status.status} (${status.mode} 모드)`);
-    });
-    
-    console.log('✅ useMarketData 준비 완료 - 기존 연결 활용');
-  }, []); // 🎯 한번만 실행, 재연결 로직 제거
+  // 🎯 불필요한 초기화 로직 제거 - App.tsx에서 이미 처리됨
+  // useEffect 없음: 페이지 마운트/언마운트와 독립적
 
   return {
     allMarketData,
@@ -348,7 +323,7 @@ export function useMarketData() {
     searchItems,
     formatPrice,
     formatVolume,
-    refreshData, // 새로고침 함수 추가
+    refreshData,
     isEmpty: allMarketData.length === 0,
     cryptoCount: cryptoData.length,
     stockCount: sp500Data.length,
@@ -357,29 +332,31 @@ export function useMarketData() {
 }
 
 // ============================================================================
-// 5. 관심종목 관리 훅
+// 🎯 페이지 독립적 관심종목 관리 훅
 // ============================================================================
 
 export function useWatchlist(initialWatchlist: string[] = ['AAPL', 'BTC']) {
-  const [watchlist, setWatchlist] = useState<string[]>(initialWatchlist);
-
-  useEffect(() => {
+  const [watchlist, setWatchlist] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('investment-assistant-watchlist');
-      if (saved) {
-        setWatchlist(JSON.parse(saved));
-      }
+      return saved ? JSON.parse(saved) : initialWatchlist;
     } catch (error) {
       console.error('관심종목 불러오기 실패:', error);
+      return initialWatchlist;
     }
-  }, []);
+  });
 
+  // 🎯 디바운스된 localStorage 저장
   useEffect(() => {
-    try {
-      localStorage.setItem('investment-assistant-watchlist', JSON.stringify(watchlist));
-    } catch (error) {
-      console.error('관심종목 저장 실패:', error);
-    }
+    const timeoutId = setTimeout(() => {
+      try {
+        localStorage.setItem('investment-assistant-watchlist', JSON.stringify(watchlist));
+      } catch (error) {
+        console.error('관심종목 저장 실패:', error);
+      }
+    }, 500); // 500ms 디바운스
+
+    return () => clearTimeout(timeoutId);
   }, [watchlist]);
 
   const addToWatchlist = useCallback((symbol: string) => {
@@ -421,7 +398,7 @@ export function useWatchlist(initialWatchlist: string[] = ['AAPL', 'BTC']) {
 }
 
 // ============================================================================
-// 6. 마켓 필터링 훅
+// 🎯 최적화된 마켓 필터링 훅
 // ============================================================================
 
 export interface MarketFilters {
@@ -440,9 +417,11 @@ export function useMarketFilter(marketData: MarketItem[], initialFilters?: Parti
     ...initialFilters,
   });
 
+  // 🎯 메모이제이션으로 필터링 성능 최적화
   const filteredData = useMemo(() => {
     let result = [...marketData];
 
+    // 검색 필터
     if (filters.search.trim()) {
       const query = filters.search.toLowerCase();
       result = result.filter(item => 
@@ -451,10 +430,12 @@ export function useMarketFilter(marketData: MarketItem[], initialFilters?: Parti
       );
     }
 
+    // 타입 필터
     if (filters.type !== 'all') {
       result = result.filter(item => item.type === filters.type);
     }
 
+    // 정렬
     result.sort((a, b) => {
       let aValue: any;
       let bValue: any;
@@ -535,7 +516,7 @@ export function useMarketFilter(marketData: MarketItem[], initialFilters?: Parti
 }
 
 // ============================================================================
-// 7. 에러 처리 훅
+// 🎯 간소화된 에러 처리 훅
 // ============================================================================
 
 export interface WebSocketError {
@@ -555,7 +536,7 @@ export function useWebSocketErrors() {
         timestamp: new Date(),
       };
 
-      setErrors(prev => [...prev.slice(-9), errorObj]);
+      setErrors(prev => [...prev.slice(-9), errorObj]); // 최대 10개 에러만 유지
     });
 
     return unsubscribe;

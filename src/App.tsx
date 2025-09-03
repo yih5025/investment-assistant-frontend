@@ -2,22 +2,22 @@ import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
 
-// WebSocket 서비스 import 추가
+// 🎯 최적화된 WebSocket 서비스 import
 import { webSocketService } from './services/websocketService';
 
 import { BottomNavigation } from "./components/BottomNavigation";
-import EnhancedTopGainersBanner from "./components/TopGainersBanner"; // Enhanced TopGainers 배너
+import EnhancedTopGainersBanner from "./components/TopGainersBanner";
 import { HomeEventCalendar } from "./components/HomeEventCalendar";
 import { HomeSocialFeed } from "./components/HomeSocialFeed";
 import { HomeNewsList } from "./components/HomeNewsList"; 
-import MarketPage from "./components/MarketPage"; // 마켓 페이지
-import { MarketDetailPage } from "./components/MarketDetail"; // 주식 상세 페이지 추가
+import MarketPage from "./components/MarketPage";
+import { MarketDetailPage } from "./components/MarketDetail";
 import { NewsPage } from "./components/NewsPage"; 
 import NewsDetailPage, { NewsItem as DetailNewsItem } from "./components/NewsDetailPage";
 import { SNSPage } from "./components/SNSPage";
 import { SNSDetailPage } from "./components/SNSDetailPage";
 import { AIAnalysis } from "./components/AIAnalysis";
-import OptimizedEconomicDashboard from "./components/EconomicDashboard"; // 최적화된 경제 대시보드
+import OptimizedEconomicDashboard from "./components/EconomicDashboard";
 import { LoginPage } from "./components/auth/LoginPage";
 import { SignupPage } from "./components/auth/SignupPage";
 import { UserProfile } from "./components/user/UserProfile";
@@ -25,31 +25,25 @@ import { NotificationSystem } from "./components/notifications/NotificationSyste
 import { TrendingUp, MessageSquare, Newspaper, Bot, BarChart3, Bell, User, LogIn, ArrowLeft } from "lucide-react";
 
 // ============================================================================
-// React Query 클라이언트 설정
+// React Query 클라이언트 설정 (기존과 동일)
 // ============================================================================
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // 캐싱 설정
-      staleTime: 30000,        // 30초 동안 fresh 상태
-      cacheTime: 300000,       // 5분 동안 캐시 보관
-      
-      // 재시도 설정
+      staleTime: 30000,
+      cacheTime: 300000,
       retry: (failureCount, error) => {
-        // 404, 401, 403은 재시도하지 않음
         if (error && typeof error === 'object' && 'status' in error) {
           const status = (error as any).status;
           if ([404, 401, 403].includes(status)) return false;
         }
-        return failureCount < 2; // 최대 2번 재시도
+        return failureCount < 2;
       },
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-      
-      // 자동 새로고침 설정
-      refetchOnWindowFocus: true,   // 윈도우 포커스 시
-      refetchOnReconnect: true,     // 네트워크 재연결 시
-      refetchInterval: 300000,      // 5분마다 백그라운드 새로고침
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
+      refetchInterval: 300000,
       refetchOnMount: 'always',
     },
     mutations: {
@@ -59,7 +53,7 @@ const queryClient = new QueryClient({
   }
 });
 
-// 개발환경 디버깅
+// 개발환경 디버깅 (기존과 동일)
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   (window as any).__REACT_QUERY_CLIENT__ = queryClient;
   (window as any).debugQueryCache = () => {
@@ -142,47 +136,69 @@ function AppContent() {
   const isLoggedIn = authState === "authenticated";
 
   // ============================================================================
-  // WebSocket 서비스 초기화 (앱 시작 시) - crypto, sp500, topgainers 항상 연결
+  // 🎯 최적화된 WebSocket 서비스 초기화 (앱 수준 - 한 번만 실행)
   // ============================================================================
   
   useEffect(() => {
-    console.log('🚀 앱 시작 - WebSocket 서비스 초기화 (crypto, sp500, topgainers 연결)');
+    console.log('🚀 App 시작 - WebSocket 서비스 앱 수준 초기화');
     
-    // WebSocket 서비스 초기화 - 3가지 타입 모두 항상 연결
-    webSocketService.initialize();
+    // 🎯 서비스가 아직 초기화되지 않은 경우에만 초기화
+    if (!webSocketService.getStatus().initialized) {
+      console.log('🔧 WebSocket 서비스 초기화 중...');
+      webSocketService.initialize();
+    } else {
+      console.log('✅ WebSocket 서비스 이미 초기화됨 - 기존 연결 활용');
+    }
 
-    // 연결 상태 모니터링
+    // 🎯 연결 상태 모니터링 (선택사항)
     const unsubscribeConnection = webSocketService.subscribe('connection_change', ({ type, status, mode }) => {
       console.log(`🔄 ${type} 연결 상태: ${status} (${mode} 모드)`);
     });
 
-    // 앱 종료 시 정리
-    return () => {
-      console.log('🛑 앱 종료 - WebSocket 서비스 정리');
-      unsubscribeConnection();
+    // 🎯 앱 완전 종료 시에만 서비스 정리
+    const handleBeforeUnload = () => {
+      console.log('🛑 브라우저/앱 종료 - WebSocket 서비스 정리');
       webSocketService.shutdown();
     };
-  }, []);
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      console.log('📦 App 컴포넌트 정리 - WebSocket 연결은 유지');
+      unsubscribeConnection();
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      // 🎯 여기서 webSocketService.shutdown() 호출하지 않음!
+      // 페이지 전환 시에도 연결 유지
+    };
+  }, []); // 🎯 빈 의존성 배열 - 앱 생명주기 동안 한 번만 실행
 
   // ============================================================================
-  // 페이지 visibility 처리 (선택사항)
+  // 🎯 페이지 Visibility 최적화 (백그라운드/포그라운드 처리)
   // ============================================================================
   
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        console.log('📱 앱이 백그라운드로 이동 (WebSocket 연결 유지)');
-        // WebSocket 연결은 유지하되 로그만 출력
+        console.log('📱 앱 백그라운드 이동 - 연결 유지 (최적화됨)');
+        // 🎯 연결을 끊지 않고 유지
       } else {
-        console.log('📱 앱이 포그라운드로 복귀');
-        // 연결 상태 확인 후 필요시에만 재연결 시도
+        console.log('📱 앱 포그라운드 복귀');
+        
+        // 🎯 필요한 경우에만 재연결 (끊어진 연결이 있는지 확인)
         const statuses = webSocketService.getAllConnectionStatuses();
-        const needsReconnection = Object.values(statuses).some(
-          status => status.status === 'disconnected' && status.mode === 'websocket'
-        );
+        const needsReconnection = Object.entries(statuses).some(([type, info]) => {
+          // crypto는 WebSocket이 끊어진 경우, 나머지는 API 폴링이 멈춘 경우
+          if (type === 'crypto' && info.mode === 'websocket' && info.status === 'disconnected') {
+            return true;
+          }
+          if (type !== 'crypto' && info.mode === 'api' && info.status !== 'api_mode') {
+            return true;
+          }
+          return false;
+        });
         
         if (needsReconnection) {
-          console.log('🔄 연결이 끊어진 WebSocket 재연결 시도');
+          console.log('🔄 필요한 연결만 복구');
           webSocketService.reconnectAll();
         }
       }
@@ -195,23 +211,23 @@ function AppContent() {
     };
   }, []);
 
-  // =========================================================================
-  // 이벤트 핸들러들 (기존과 동일)
-  // =========================================================================
+  // ============================================================================
+  // 🎯 이벤트 핸들러들 (기존과 동일)
+  // ============================================================================
 
   useEffect(() => {
     const handleNavigateToSNS = () => setActiveTab("sns");
     const handleNavigateToNews = () => setActiveTab("news");
-    const handleNavigateToMarkets = () => setActiveTab("markets"); // 마켓 페이지 이동 추가
+    const handleNavigateToMarkets = () => setActiveTab("markets");
 
     window.addEventListener('navigateToSNS', handleNavigateToSNS);
     window.addEventListener('navigateToNews', handleNavigateToNews);
-    window.addEventListener('navigateToMarkets', handleNavigateToMarkets); // 이벤트 리스너 추가
+    window.addEventListener('navigateToMarkets', handleNavigateToMarkets);
     
     return () => {
       window.removeEventListener('navigateToSNS', handleNavigateToSNS);
       window.removeEventListener('navigateToNews', handleNavigateToNews);
-      window.removeEventListener('navigateToMarkets', handleNavigateToMarkets); // 정리
+      window.removeEventListener('navigateToMarkets', handleNavigateToMarkets);
     };
   }, []);
 
@@ -305,9 +321,9 @@ function AppContent() {
     }
   };
 
-  // =========================================================================
-  // 렌더링 함수들 (대부분 기존과 동일)
-  // =========================================================================
+  // ============================================================================
+  // 렌더링 함수들 (기존과 동일)
+  // ============================================================================
 
   // 인증 페이지 렌더링
   if (viewState === "auth") {
@@ -527,7 +543,6 @@ function AppContent() {
         return (
           <div className="space-y-4 relative z-10">
             {renderHeader()}
-            {/* 🎯 Enhanced TopGainersBanner 사용 */}
             <EnhancedTopGainersBanner />
             <HomeEventCalendar />
             <HomeSocialFeed isLoggedIn={isLoggedIn} onPostClick={handleSNSPostClick} />
@@ -546,7 +561,6 @@ function AppContent() {
                 <h1 className="text-2xl font-bold">시장 & 재무</h1>
               </div>
             </div>
-            {/* 🎯 MarketPage 사용 */}
             <MarketPage onStockClick={handleStockClick} />
           </div>
         );
@@ -581,8 +595,6 @@ function AppContent() {
                 <h1 className="text-2xl font-bold">뉴스</h1>
               </div>
             </div>
-            
-            {/* 🎯 핵심 변경: 최적화된 NewsPage 사용 */}
             <NewsPage 
               isLoggedIn={isLoggedIn} 
               onLoginPrompt={handleLoginClick} 
@@ -625,7 +637,6 @@ function AppContent() {
                 <h1 className="text-2xl font-bold">경제 지표</h1>
               </div>
             </div>
-            {/* 🎯 최적화된 EconomicDashboard 사용 */}
             <OptimizedEconomicDashboard isLoggedIn={true} onLoginPrompt={handleLoginClick} />
           </div>
         );
@@ -664,7 +675,6 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <AppContent />
       
-      {/* 개발환경에서만 React Query DevTools 표시 */}
       {process.env.NODE_ENV === 'development' && (
         <ReactQueryDevtools 
           initialIsOpen={false}
