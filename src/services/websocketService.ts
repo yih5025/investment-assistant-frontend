@@ -351,6 +351,16 @@ class WebSocketService {
   }
 
   private switchToApiMode(type: WebSocketType): void {
+    // 이미 API 모드이고 폴링이 활성화되어 있으면 중복 실행 방지
+    const currentMode = this.dataModes.get(type);
+    const hasActivePolling = this.apiPollingIntervals.has(type);
+    
+    if (currentMode === 'api' && hasActivePolling) {
+      console.log(`⚠️ ${type} 이미 API 모드에서 폴링 중 - 중복 실행 방지`);
+      return;
+    }
+    
+    console.log(`🔄 ${type} API 모드로 전환 시작`);
     this.disconnectWebSocket(type);
     this.dataModes.set(type, 'api');
     this.setConnectionStatus(type, 'api_mode');
@@ -756,9 +766,17 @@ class WebSocketService {
     }
 
     const attempts = this.reconnectAttempts.get(type) || 0;
+    const currentStatus = this.connectionStatuses.get(type);
+    
+    // 이미 재연결 중이거나 연결된 상태면 중복 실행 방지
+    if (currentStatus === 'reconnecting' || currentStatus === 'connecting' || currentStatus === 'connected') {
+      console.log(`⚠️ ${type} 이미 ${currentStatus} 상태 - 재연결 스케줄링 중단`);
+      return;
+    }
     
     if (attempts >= this.config.maxReconnectAttempts) {
-      console.error(`❌ ${type} WebSocket 최대 재연결 시도 횟수 초과`);
+      console.error(`❌ ${type} WebSocket 최대 재연결 시도 횟수 초과 - API 모드로 전환`);
+      this.switchToApiMode(type);
       return;
     }
 
@@ -774,6 +792,11 @@ class WebSocketService {
       const currentStatus = this.connectionStatuses.get(type);
       if (currentStatus === 'connected') {
         console.log(`⏭️ ${type} 이미 연결됨 - 재연결 시도 건너뜀`);
+        return;
+      }
+      
+      if (currentStatus !== 'reconnecting') {
+        console.log(`🚫 ${type} 재연결 취소 - 현재 상태: ${currentStatus}`);
         return;
       }
       
@@ -1069,16 +1092,33 @@ class WebSocketService {
   }
 
   public reconnectAll(): void {
-    console.log('🔄 모든 연결 재시도');
+    console.log('🔄 모든 연결 상태 점검 및 필요시 재시도');
     
-    // 암호화폐는 WebSocket 재연결
-    this.reconnectAttempts.set('crypto', 0);
-    this.reconnect('crypto');
+    const statuses = this.getAllConnectionStatuses();
     
-    // 미국 주식은 HTTP 폴링 재시작
-    (['sp500', 'topgainers'] as WebSocketType[]).forEach(type => {
-      console.log(`🔄 ${type} HTTP 폴링 재시작`);
-      this.switchToApiMode(type);
+    // 각 타입별로 현재 상태를 확인하고 필요한 경우만 재연결
+    Object.entries(statuses).forEach(([type, statusInfo]) => {
+      const wsType = type as WebSocketType;
+      
+      if (wsType === 'crypto') {
+        // 크립토는 WebSocket이 끊어진 경우만 재연결
+        if (statusInfo.status === 'disconnected') {
+          console.log(`🔄 ${type} WebSocket 재연결 필요`);
+          this.reconnectAttempts.set('crypto', 0);
+          this.reconnect('crypto');
+        } else {
+          console.log(`✅ ${type} 이미 연결됨 (${statusInfo.status}) - 재연결 불필요`);
+        }
+      } else {
+        // 미국 주식은 API 모드가 아니거나 폴링이 중단된 경우만 재시작
+        const hasActivePolling = this.apiPollingIntervals.has(wsType);
+        if (statusInfo.status !== 'api_mode' || !hasActivePolling) {
+          console.log(`🔄 ${type} HTTP 폴링 재시작 필요`);
+          this.switchToApiMode(wsType);
+        } else {
+          console.log(`✅ ${type} 이미 폴링 중 (${statusInfo.status}) - 재시작 불필요`);
+        }
+      }
     });
   }
 

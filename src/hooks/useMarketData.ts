@@ -297,10 +297,24 @@ export function useMarketData() {
     );
   }, [allMarketData]);
 
-  // 수동 새로고침 함수 (즉시 로딩 최적화)
+  // 수동 새로고침 함수 (안정성 개선: 연결된 상태 유지)
   const refreshData = useCallback(() => {
-    //console.log('🔄 마켓 데이터 수동 새로고침 - 즉시 시작');
-    webSocketService.reconnectAll();
+    console.log('🔄 마켓 데이터 수동 새로고침 - 기존 연결 유지하며 데이터만 갱신');
+    
+    // 연결을 끊지 않고 데이터만 즉시 갱신
+    const statuses = webSocketService.getAllConnectionStatuses();
+    
+    // 각 타입별로 상태에 따라 적절한 액션만 수행
+    Object.entries(statuses).forEach(([type, statusInfo]) => {
+      if (statusInfo.status === 'connected' || statusInfo.status === 'api_mode') {
+        // 이미 연결된 상태면 재연결하지 않고 데이터만 요청
+        console.log(`✅ ${type} 이미 연결됨 - 데이터 갱신만 수행`);
+      } else if (statusInfo.status === 'disconnected') {
+        // 연결이 끊어진 상태만 재연결
+        console.log(`🔄 ${type} 연결 끊어짐 - 재연결 시도`);
+        webSocketService.reconnect(type as any);
+      }
+    });
   }, []);
 
   // 🎯 초기 데이터 로딩 최적화: 서비스 초기화 시 바로 시작
