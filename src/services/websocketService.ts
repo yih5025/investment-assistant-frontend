@@ -252,35 +252,6 @@ class WebSocketService {
     this.connectWebSocket(type);
   }
 
-  public shutdown(): void {
-    console.log('🛑 Hybrid 서비스 종료 시작...');
-
-    this.connections.forEach((ws, type) => {
-      this.disconnectWebSocket(type);
-    });
-
-    this.reconnectTimeouts.forEach(timeout => clearTimeout(timeout));
-    this.reconnectTimeouts.clear();
-
-    this.apiPollingIntervals.forEach(interval => clearInterval(interval));
-    this.apiPollingIntervals.clear();
-
-    this.heartbeatIntervals.forEach(interval => clearInterval(interval));
-    this.heartbeatIntervals.clear();
-
-    if (this.healthCheckInterval) {
-      clearInterval(this.healthCheckInterval);
-      this.healthCheckInterval = null;
-    }
-
-    this.subscribers.clear();
-    this.topGainersCategories.clear();
-    this.topGainersCategoryStats = null;
-
-    this.isInitialized = false;
-    console.log('✅ Hybrid 서비스 종료 완료');
-  }
-
   // ============================================================================
   // 🎯 시장 상태 모니터링
   // ============================================================================
@@ -1180,6 +1151,67 @@ class WebSocketService {
       topGainersCategoryStats: this.topGainersCategoryStats,
       config: this.config
     };
+  }
+
+  // ============================================================================
+  // 서비스 종료 및 정리
+  // ============================================================================
+
+  public shutdown(): void {
+    console.log('🛑 WebSocket 서비스 종료 시작');
+    
+    // 모든 WebSocket 연결 종료
+    this.connections.forEach((ws, type) => {
+      console.log(`🔌 ${type} WebSocket 연결 종료`);
+      ws.close(1000, 'Service shutdown');
+    });
+    this.connections.clear();
+    
+    // 모든 폴링 인터벌 정리
+    this.apiPollingIntervals.forEach((intervalId, type) => {
+      console.log(`⏹️ ${type} API 폴링 중단`);
+      clearInterval(intervalId);
+    });
+    this.apiPollingIntervals.clear();
+    
+    // 재연결 타임아웃 정리
+    this.reconnectTimeouts.forEach((timeoutId, type) => {
+      console.log(`⏱️ ${type} 재연결 타임아웃 취소`);
+      clearTimeout(timeoutId);
+    });
+    this.reconnectTimeouts.clear();
+    
+    // 하트비트 인터벌 정리
+    this.heartbeatIntervals.forEach((intervalId, type) => {
+      console.log(`💓 ${type} 하트비트 중단`);
+      clearInterval(intervalId);
+    });
+    this.heartbeatIntervals.clear();
+    
+    // 헬스체크 인터벌 정리 (올바른 속성명 사용)
+    if (this.healthCheckInterval) {
+      console.log('🏥 헬스체크 중단');
+      clearInterval(this.healthCheckInterval);
+      this.healthCheckInterval = null;
+    }
+    
+    // 상태 초기화
+    this.connectionStatuses.clear();
+    this.dataModes.clear();
+    this.reconnectAttempts.clear();
+    this.consecutiveErrors.clear();
+    this.dataTimestamps.clear();
+    this.lastDataCache.clear();
+    
+    // TopGainers 관련 데이터 정리
+    this.topGainersCategories.clear();
+    this.topGainersCategoryStats = null;
+    
+    // 이벤트 구독자 정리 (올바른 속성명 사용)
+    this.subscribers.clear();
+    
+    this.isInitialized = false;
+    console.log('✅ WebSocket 서비스 종료 완료');
   }
 }
 

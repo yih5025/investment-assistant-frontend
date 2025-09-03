@@ -30,11 +30,21 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick }) => {
     }
   }, [onStockClick]);
 
-  // 페이지 마운트 시 데이터 새로고침
+  // 페이지 마운트 시 연결 상태 확인 (재연결 방지)
   useEffect(() => {
-    console.log('📊 MarketPage 마운트 - 데이터 새로고침');
-    refreshData();
-  }, [refreshData]);
+    console.log('📊 MarketPage 마운트 - 연결 상태 확인');
+    
+    // WebSocket 서비스가 초기화되지 않은 경우에만 새로고침
+    const status = overallStatus;
+    const hasData = !isEmpty;
+    
+    if (status === 'disconnected' || (!hasData && status !== 'connecting')) {
+      console.log('🔄 연결 또는 데이터 없음 - 새로고침 필요');
+      refreshData();
+    } else {
+      console.log('✅ 이미 연결되고 데이터 있음 - 새로고침 불필요');
+    }
+  }, []); // 🎯 빈 의존성 배열로 변경 - 마운트 시 한번만 실행
 
   return (
     <div className="space-y-6">

@@ -317,27 +317,24 @@ export function useMarketData() {
     });
   }, []);
 
-  // 🎯 초기 데이터 로딩 최적화: 서비스 초기화 시 바로 시작
+  // 🎯 데이터 로딩 최적화: 이미 App.tsx에서 초기화됨, 여기서는 상태만 확인
   useEffect(() => {
+    console.log('🔍 useMarketData 마운트 - 서비스 상태 확인만 수행');
+    
+    // App.tsx에서 이미 초기화했으므로, 여기서는 초기화하지 않음
     if (!webSocketService.getStatus().initialized) {
-      console.log('🚀 WebSocket 서비스 초기화 및 즉시 데이터 로딩 시작');
-      webSocketService.initialize();
-    } else {
-      console.log('🔄 WebSocket 서비스 이미 초기화됨 - 연결 상태 확인');
-      // 서비스가 이미 초기화되었지만 데이터가 없으면 재연결 시도
-      const sp500Status = webSocketService.getAllConnectionStatuses().sp500;
-      const cryptoStatus = webSocketService.getAllConnectionStatuses().crypto;
-      
-      if (sp500Status.status !== 'connected' && sp500Status.status !== 'api_mode') {
-        console.log('🔧 SP500 연결 상태 이상 - 재연결 시도');
-        webSocketService.reconnect('sp500');
-      }
-      if (cryptoStatus.status !== 'connected' && cryptoStatus.status !== 'api_mode') {
-        console.log('🔧 Crypto 연결 상태 이상 - 재연결 시도');
-        webSocketService.reconnect('crypto');
-      }
+      console.log('⚠️ WebSocket 서비스 미초기화 상태 감지 - App.tsx 초기화 대기');
+      return;
     }
-  }, []);
+    
+    // 연결 상태만 로깅하고 불필요한 재연결 시도 제거
+    const statuses = webSocketService.getAllConnectionStatuses();
+    Object.entries(statuses).forEach(([type, status]) => {
+      console.log(`📡 ${type} 현재 상태: ${status.status} (${status.mode} 모드)`);
+    });
+    
+    console.log('✅ useMarketData 준비 완료 - 기존 연결 활용');
+  }, []); // 🎯 한번만 실행, 재연결 로직 제거
 
   return {
     allMarketData,
