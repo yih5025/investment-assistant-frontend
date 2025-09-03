@@ -848,12 +848,12 @@ class WebSocketService {
     try {
       const message: WebSocketMessage = JSON.parse(event.data);
       
-      console.log(`📨 ${type} 메시지 수신:`, {
-        messageType: message.type,
-        hasData: !!message.data,
-        dataLength: Array.isArray(message.data) ? message.data.length : 0,
-        timestamp: message.timestamp
-      });
+      // console.log(`📨 ${type} 메시지 수신:`, {
+      //   messageType: message.type,
+      //   hasData: !!message.data,
+      //   dataLength: Array.isArray(message.data) ? message.data.length : 0,
+      //   timestamp: message.timestamp
+      // });
       
       if (message.type === 'heartbeat') {
         return;
