@@ -136,12 +136,12 @@ class WebSocketService {
 
   private config: ConnectionConfig = {
     maxReconnectAttempts: 3,
-    baseReconnectDelay: 2000,
-    apiPollingInterval: 3000,
-    marketClosedPollingInterval: 10000,
-    healthCheckInterval: 30000,     // 30초로 증가 (불필요한 체크 감소)
+    baseReconnectDelay: 5000,        // 2초 → 5초로 증가
+    apiPollingInterval: 5000,        // 3초 → 5초로 증가  
+    marketClosedPollingInterval: 15000, // 10초 → 15초로 증가
+    healthCheckInterval: 60000,      // 30초 → 60초로 증가
     cacheMaxAge: 30000,
-    errorBackoffInterval: 30000,
+    errorBackoffInterval: 60000,     // 30초 → 60초로 증가
     maxConsecutiveErrors: 3
   };
 
@@ -292,6 +292,12 @@ class WebSocketService {
       return;
     }
 
+    const existingWs = this.connections.get(type);
+    if (existingWs && existingWs.readyState === WebSocket.OPEN) {
+      console.log(`✅ ${type} 이미 연결되어 있음 - 재연결 중단`);
+      return;
+    }
+    this.lastReconnectTime.set(type, Date.now());
     this.disconnectWebSocket(type);
 
     const url = this.buildWebSocketUrl(type);
@@ -388,7 +394,14 @@ class WebSocketService {
 
     const attempts = this.reconnectAttempts.get(type) || 0;
     const currentStatus = this.connectionStatuses.get(type);
-    
+
+    const lastReconnectTime = this.lastReconnectTime?.get(type) || 0;
+    const timeSinceLastReconnect = Date.now() - lastReconnectTime;
+
+    if (timeSinceLastReconnect < 10000) { // 10초 내 재연결 시도 방지
+      console.log(`⚠️ ${type} 너무 빠른 재연결 시도 - 10초 대기`);
+      return;
+    }
     // 중복 재연결 방지
     if (currentStatus === 'reconnecting' || currentStatus === 'connecting' || currentStatus === 'connected') {
       console.log(`⚠️ ${type} 이미 ${currentStatus} 상태 - 재연결 중단`);
@@ -430,6 +443,7 @@ class WebSocketService {
   // ============================================================================
   // Heartbeat 관리 (crypto 전용)
   // ============================================================================
+  private lastReconnectTime: Map<WebSocketType, number> = new Map();
 
   private startHeartbeat(type: WebSocketType, ws: WebSocket): void {
     this.stopHeartbeat(type);
@@ -447,7 +461,7 @@ class WebSocketService {
         this.stopHeartbeat(type);
         this.handleConnectionClose(type);
       }
-    }, 30000);
+    }, 60000);
 
     this.heartbeatIntervals.set(type, heartbeatInterval);
   }
