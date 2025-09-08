@@ -1070,13 +1070,13 @@ class WebSocketService {
 
 export const webSocketService = new WebSocketService({
   maxReconnectAttempts: 3,
-  baseReconnectDelay: 2000,
-  apiPollingInterval: 3000,           // 3초 - 개장 시
-  marketClosedPollingInterval: 10000, // 10초 - 마감 시
-  healthCheckInterval: 30000,         // 30초 - 헬스체크 간격 증가
-  cacheMaxAge: 30000,                 // 30초 캐시 유효 시간
-  errorBackoffInterval: 30000,        // 30초 백오프
-  maxConsecutiveErrors: 3             // 최대 3회 연속 에러
+  baseReconnectDelay: 5000,           // 2000 → 5000
+  apiPollingInterval: 5000,           // 3000 → 5000
+  marketClosedPollingInterval: 15000, // 10000 → 15000  
+  healthCheckInterval: 60000,         // 30000 → 60000
+  cacheMaxAge: 30000,                 
+  errorBackoffInterval: 60000,        // 30000 → 60000
+  maxConsecutiveErrors: 3             
 });
 
 export default webSocketService;
