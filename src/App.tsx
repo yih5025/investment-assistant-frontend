@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
 
-// 🎯 최적화된 WebSocket 서비스 import
+// 최적화된 WebSocket 서비스 import
 import { webSocketService } from './services/websocketService';
 
 import { BottomNavigation } from "./components/BottomNavigation";
@@ -12,6 +12,7 @@ import { HomeSocialFeed } from "./components/HomeSocialFeed";
 import { HomeNewsList } from "./components/HomeNewsList"; 
 import MarketPage from "./components/MarketPage";
 import { MarketDetailPage } from "./components/MarketDetail";
+import { CryptoDetailPage } from "./components/CryptoDetailPage"; // 추가
 import { NewsPage } from "./components/NewsPage"; 
 import NewsDetailPage, { NewsItem as DetailNewsItem } from "./components/NewsDetailPage";
 import { SNSPage } from "./components/SNSPage";
@@ -25,7 +26,7 @@ import { NotificationSystem } from "./components/notifications/NotificationSyste
 import { TrendingUp, MessageSquare, Newspaper, Bot, BarChart3, Bell, User, LogIn, ArrowLeft } from "lucide-react";
 
 // ============================================================================
-// React Query 클라이언트 설정 (기존과 동일)
+// React Query 클라이언트 설정
 // ============================================================================
 
 const queryClient = new QueryClient({
@@ -53,7 +54,7 @@ const queryClient = new QueryClient({
   }
 });
 
-// 개발환경 디버깅 (기존과 동일)
+// 개발환경 디버깅
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   (window as any).__REACT_QUERY_CLIENT__ = queryClient;
   (window as any).debugQueryCache = () => {
@@ -75,11 +76,11 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
 }
 
 // ============================================================================
-// 타입 정의 (기존과 동일)
+// 타입 정의
 // ============================================================================
 
 type AuthState = "guest" | "login" | "signup" | "authenticated";
-type ViewState = "main" | "auth" | "profile" | "sns-detail" | "stock-news" | "news-detail" | "stock-detail";
+type ViewState = "main" | "auth" | "profile" | "sns-detail" | "stock-news" | "news-detail" | "stock-detail" | "crypto-detail";
 
 interface SNSPost {
   id: string;
@@ -121,6 +122,7 @@ function AppContent() {
   const [selectedStockNews, setSelectedStockNews] = useState<{ news: StockNewsItem[], symbol: string } | null>(null);
   const [selectedNewsItem, setSelectedNewsItem] = useState<DetailNewsItem | null>(null);
   const [selectedStockSymbol, setSelectedStockSymbol] = useState<string | null>(null);
+  const [selectedCryptoSymbol, setSelectedCryptoSymbol] = useState<string | null>(null); // 추가
   
   // 모의 사용자 데이터
   const [user] = useState({
@@ -136,13 +138,13 @@ function AppContent() {
   const isLoggedIn = authState === "authenticated";
 
   // ============================================================================
-  // 🎯 최적화된 WebSocket 서비스 초기화 (앱 수준 - 한 번만 실행)
+  // 최적화된 WebSocket 서비스 초기화 (앱 수준 - 한 번만 실행)
   // ============================================================================
   
   useEffect(() => {
     console.log('🚀 App 시작 - WebSocket 서비스 앱 수준 초기화');
     
-    // 🎯 서비스가 아직 초기화되지 않은 경우에만 초기화
+    // 서비스가 아직 초기화되지 않은 경우에만 초기화
     if (!webSocketService.getStatus().initialized) {
       console.log('🔧 WebSocket 서비스 초기화 중...');
       webSocketService.initialize();
@@ -150,12 +152,12 @@ function AppContent() {
       console.log('✅ WebSocket 서비스 이미 초기화됨 - 기존 연결 활용');
     }
 
-    // 🎯 연결 상태 모니터링 (선택사항)
+    // 연결 상태 모니터링 (선택사항)
     const unsubscribeConnection = webSocketService.subscribe('connection_change', ({ type, status, mode }) => {
       console.log(`🔄 ${type} 연결 상태: ${status} (${mode} 모드)`);
     });
 
-    // 🎯 앱 완전 종료 시에만 서비스 정리
+    // 앱 완전 종료 시에만 서비스 정리
     const handleBeforeUnload = () => {
       console.log('🛑 브라우저/앱 종료 - WebSocket 서비스 정리');
       webSocketService.shutdown();
@@ -167,24 +169,24 @@ function AppContent() {
       console.log('📦 App 컴포넌트 정리 - WebSocket 연결은 유지');
       unsubscribeConnection();
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      // 🎯 여기서 webSocketService.shutdown() 호출하지 않음!
+      // 여기서 webSocketService.shutdown() 호출하지 않음!
       // 페이지 전환 시에도 연결 유지
     };
-  }, []); // 🎯 빈 의존성 배열 - 앱 생명주기 동안 한 번만 실행
+  }, []); // 빈 의존성 배열 - 앱 생명주기 동안 한 번만 실행
 
   // ============================================================================
-  // 🎯 페이지 Visibility 최적화 (백그라운드/포그라운드 처리)
+  // 페이지 Visibility 최적화 (백그라운드/포그라운드 처리)
   // ============================================================================
   
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         console.log('📱 앱 백그라운드 이동 - 연결 유지 (최적화됨)');
-        // 🎯 연결을 끊지 않고 유지
+        // 연결을 끊지 않고 유지
       } else {
         console.log('📱 앱 포그라운드 복귀');
         
-        // 🎯 필요한 경우에만 재연결 (끊어진 연결이 있는지 확인)
+        // 필요한 경우에만 재연결 (끊어진 연결이 있는지 확인)
         const statuses = webSocketService.getAllConnectionStatuses();
         const needsReconnection = Object.entries(statuses).some(([type, info]) => {
           // crypto는 WebSocket이 끊어진 경우, 나머지는 API 폴링이 멈춘 경우
@@ -212,7 +214,7 @@ function AppContent() {
   }, []);
 
   // ============================================================================
-  // 🎯 이벤트 핸들러들 (기존과 동일)
+  // 이벤트 핸들러들
   // ============================================================================
 
   useEffect(() => {
@@ -276,6 +278,7 @@ function AppContent() {
     setSelectedSNSPost(null);
     setSelectedStockNews(null);
     setSelectedStockSymbol(null);
+    setSelectedCryptoSymbol(null); // 추가
     if (!isLoggedIn) {
       setAuthState("guest");
     }
@@ -303,6 +306,12 @@ function AppContent() {
     setViewState("stock-detail");
   };
 
+  // 암호화폐 클릭 핸들러 추가
+  const handleCryptoClick = (symbol: string) => {
+    setSelectedCryptoSymbol(symbol);
+    setViewState("crypto-detail");
+  };
+
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -322,7 +331,7 @@ function AppContent() {
   };
 
   // ============================================================================
-  // 렌더링 함수들 (기존과 동일)
+  // 렌더링 함수들
   // ============================================================================
 
   // 인증 페이지 렌더링
@@ -448,7 +457,7 @@ function AppContent() {
     );
   }
 
-  // 마켓 상세 페이지
+  // 마켓 상세 페이지 (주식)
   if (viewState === "stock-detail" && selectedStockSymbol) {
     return (
       <div className="min-h-screen relative z-10">
@@ -457,6 +466,21 @@ function AppContent() {
           onBack={() => {
             setViewState("main");
             setSelectedStockSymbol(null);
+          }}
+        />
+      </div>
+    );
+  }
+
+  // 암호화폐 상세 페이지 추가
+  if (viewState === "crypto-detail" && selectedCryptoSymbol) {
+    return (
+      <div className="min-h-screen relative z-10">
+        <CryptoDetailPage
+          symbol={selectedCryptoSymbol}
+          onBack={() => {
+            setViewState("main");
+            setSelectedCryptoSymbol(null);
           }}
         />
       </div>
@@ -561,7 +585,10 @@ function AppContent() {
                 <h1 className="text-2xl font-bold">시장 & 재무</h1>
               </div>
             </div>
-            <MarketPage onStockClick={handleStockClick} />
+            <MarketPage 
+              onStockClick={handleStockClick} 
+              onCryptoClick={handleCryptoClick} // 추가
+            />
           </div>
         );
 
