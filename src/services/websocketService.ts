@@ -213,7 +213,7 @@ class WebSocketService {
 
   private async loadTopGainersCategoryStats(): Promise<void> {
     try {
-      const response = await fetch('https://api.investment-assistant.site/api/v1/stocks/topgainers/categories/', {
+      const response = await fetch('https://api.investment-assistant.site/api/v1/stocks/topgainers/categories', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
