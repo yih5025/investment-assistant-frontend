@@ -14,7 +14,7 @@
 class ApiClient {
     private baseURL: string;
   
-    constructor(baseURL: string = '/api/v1/crypto/details') {
+    constructor(baseURL: string = 'https://api.investment-assistant.site/api/v1/crypto/details') {
       this.baseURL = baseURL;
     }
   
