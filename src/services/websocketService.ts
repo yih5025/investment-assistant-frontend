@@ -119,6 +119,9 @@ class WebSocketService {
   private apiPollingIntervals: Map<WebSocketType, NodeJS.Timeout> = new Map();
   private heartbeatIntervals: Map<WebSocketType, NodeJS.Timeout> = new Map();
   private healthCheckInterval: NodeJS.Timeout | null = null;
+  
+  // 🚀 중복 요청 방지
+  private ongoingRequests: Map<WebSocketType, Promise<void>> = new Map();
 
   // 🎯 앱 수준 연결 관리 - 페이지 전환과 독립적
   private isInitialized = false;
@@ -532,6 +535,27 @@ class WebSocketService {
       return;
     }
 
+    // 🚀 중복 요청 방지: 이미 진행 중인 요청이 있으면 대기
+    const ongoingRequest = this.ongoingRequests.get(type);
+    if (ongoingRequest) {
+      console.log(`⏳ ${type} 요청이 이미 진행 중입니다. 대기...`);
+      await ongoingRequest;
+      return;
+    }
+
+    // 새 요청 시작
+    const requestPromise = this._performApiRequest(type);
+    this.ongoingRequests.set(type, requestPromise);
+
+    try {
+      await requestPromise;
+    } finally {
+      // 요청 완료 후 정리
+      this.ongoingRequests.delete(type);
+    }
+  }
+
+  private async _performApiRequest(type: WebSocketType): Promise<void> {
     try {
       const apiUrl = this.getApiUrl(type);
       const response = await fetch(apiUrl, {
@@ -542,7 +566,7 @@ class WebSocketService {
         },
         mode: 'cors',
         credentials: 'omit',
-        signal: AbortSignal.timeout(15000)
+        signal: AbortSignal.timeout(30000)
       });
 
       if (!response.ok) {
