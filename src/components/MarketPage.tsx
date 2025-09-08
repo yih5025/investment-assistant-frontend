@@ -2,16 +2,17 @@
 // 클릭 이벤트가 추가된 탭 기반 마켓 페이지
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { Search, TrendingUp, TrendingDown, Star, Clock } from 'lucide-react';
+import { Search, TrendingUp, TrendingDown, Star, Clock, BarChart3, Coins } from 'lucide-react';
 import { useMarketData } from '../hooks/useMarketData';
 
 interface MarketPageProps {
   onStockClick?: (symbol: string) => void;
+  onCryptoClick?: (symbol: string) => void;
 }
 
 type TabType = 'crypto' | 'stocks';
 
-const MarketPage: React.FC<MarketPageProps> = ({ onStockClick }) => {
+const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick }) => {
   const [activeTab, setActiveTab] = useState<TabType>('stocks');
   
   const {
@@ -29,6 +30,13 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick }) => {
       onStockClick(symbol);
     }
   }, [onStockClick]);
+
+  // 암호화폐 클릭 핸들러
+  const handleCryptoClick = useCallback((symbol: string) => {
+    if (onCryptoClick) {
+      onCryptoClick(symbol);
+    }
+  }, [onCryptoClick]);
 
   // 페이지 마운트 시 연결 상태 확인 (재연결 방지)
   useEffect(() => {
@@ -50,12 +58,23 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick }) => {
     <div className="space-y-6">
       {/* 헤더 */}
       <div className="glass-card rounded-2xl p-4">
-        <h2 className="text-xl font-bold mb-2 flex items-center">
-          실시간 마켓
-          <span className="ml-3 text-sm font-normal text-foreground/70">
-            암호화폐 {cryptoData.length}개 · 미국주식 {sp500Data.length}개
-          </span>
+        <h2 className="text-xl font-bold mb-3 flex items-center">
+          <BarChart3 className="mr-2" size={24} />
+          S&P 500 & Crypto Currency
         </h2>
+        <div className="text-sm text-foreground/70 leading-relaxed">
+          {activeTab === 'stocks' ? (
+            <p>
+              S&P 500 기업들의 실시간 주가 데이터를 확인하고, 각 기업의 상세 정보와 재무 상태를 분석할 수 있습니다.<br />
+              관심 있는 주식을 클릭하여 심층적인 투자 정보를 확인해보세요.
+            </p>
+          ) : (
+            <p>
+              주요 암호화폐의 실시간 가격 데이터를 모니터링하고, 각 코인의 프로젝트 정보와 기술적 분석을 확인할 수 있습니다.<br />
+              24시간 실시간 거래되는 암호화폐 시장의 동향을 파악해보세요.
+            </p>
+          )}
+        </div>
       </div>
 
       {/* 탭 네비게이션 */}
@@ -69,6 +88,7 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick }) => {
           }`}
         >
           <div className="flex items-center justify-center space-x-2">
+            <BarChart3 size={16} />
             <span>S&P 500</span>
           </div>
         </button>
@@ -82,6 +102,7 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick }) => {
           }`}
         >
           <div className="flex items-center justify-center space-x-2">
+            <Coins size={16} />
             <span>Crypto Currencies</span>
           </div>
         </button>
@@ -96,6 +117,7 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick }) => {
       ) : (
         <CryptoMarketTab 
           cryptoData={cryptoData}
+          onCryptoClick={handleCryptoClick}
         />
       )}
     </div>
@@ -240,16 +262,10 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({ stockData, onStockClick
             onClick={handleLoadMore}
             className="flex items-center space-x-2 mx-auto px-6 py-3 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors"
           >
-            <span>더보기 ({filteredAndSortedStocks.length - displayCount}개 더)</span>
+            <span>더보기</span>
           </button>
         </div>
       )}
-
-      {/* 하단 정보 */}
-      <div className="glass-card rounded-xl p-3 text-center text-sm text-foreground/60">
-        총 {filteredAndSortedStocks.length}개 종목 중 {displayedStocks.length}개 표시
-        {searchQuery && <span> · 검색: "{searchQuery}"</span>}
-      </div>
     </div>
   );
 };
@@ -257,9 +273,10 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({ stockData, onStockClick
 // 암호화폐 탭 컴포넌트
 interface CryptoMarketTabProps {
   cryptoData: any[];
+  onCryptoClick?: (symbol: string) => void;
 }
 
-const CryptoMarketTab: React.FC<CryptoMarketTabProps> = ({ cryptoData }) => {
+const CryptoMarketTab: React.FC<CryptoMarketTabProps> = ({ cryptoData, onCryptoClick }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'price' | 'change' | 'volume'>('change');
   const [displayCount, setDisplayCount] = useState(100); // 초기 100개 표시
@@ -350,7 +367,8 @@ const CryptoMarketTab: React.FC<CryptoMarketTabProps> = ({ cryptoData }) => {
         {displayedCrypto.map((crypto) => (
           <div
             key={crypto.symbol}
-            className="glass-card rounded-xl p-4 transition-all duration-300 hover:scale-[1.01]"
+            onClick={() => onCryptoClick?.(crypto.symbol)}
+            className="glass-card rounded-xl p-4 transition-all duration-300 hover:scale-[1.01] cursor-pointer"
           >
             <div className="flex items-center justify-between">
               <div className="flex-1">
@@ -392,15 +410,10 @@ const CryptoMarketTab: React.FC<CryptoMarketTabProps> = ({ cryptoData }) => {
             onClick={handleLoadMore}
             className="flex items-center space-x-2 mx-auto px-6 py-3 bg-orange-500/20 text-orange-400 rounded-lg hover:bg-orange-500/30 transition-colors"
           >
-            <span>더보기 ({filteredAndSortedCrypto.length - displayCount}개 더)</span>
+            <span>더보기</span>
           </button>
         </div>
       )}
-
-      <div className="glass-card rounded-xl p-3 text-center text-sm text-foreground/60">
-        총 {filteredAndSortedCrypto.length}EnhancedMarketTabs개 코인 중 {displayedCrypto.length}개 표시
-        {searchQuery && <span> · 검색: "{searchQuery}"</span>}
-      </div>
     </div>
   );
 };
