@@ -11,6 +11,7 @@ import {
   DataMode 
 } from '../services/websocketService';
 import { MarketTimeManager } from '../utils/marketTime';
+import { formatVolume } from '../utils/formatters';
 
 // ============================================================================
 // 공통 마켓 아이템 인터페이스
@@ -31,14 +32,6 @@ export interface MarketItem {
 // ============================================================================
 // 유틸리티 함수들
 // ============================================================================
-
-const formatVolume = (volume: number): string => {
-  if (volume >= 1e12) return `${(volume / 1e12).toFixed(1)}T`;
-  if (volume >= 1e9) return `${(volume / 1e9).toFixed(1)}B`;
-  if (volume >= 1e6) return `${(volume / 1e6).toFixed(1)}M`;
-  if (volume >= 1e3) return `${(volume / 1e3).toFixed(1)}K`;
-  return volume.toFixed(0);
-};
 
 const formatPrice = (price: number, type: 'crypto' | 'stock'): string => {
   if (type === 'crypto') {
@@ -322,7 +315,6 @@ export function useMarketData() {
     filterByType,
     searchItems,
     formatPrice,
-    formatVolume,
     refreshData,
     isEmpty: allMarketData.length === 0,
     cryptoCount: cryptoData.length,

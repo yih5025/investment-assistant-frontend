@@ -12,12 +12,15 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 // 훅과 서비스 import (실제 구현에서는 별도 파일)
 import { useCryptoDetail, useKimchiPremiumDetail } from '../hooks/useCryptoDetailHook';
+
+// 포맷팅 함수들을 formatters.ts에서 직접 import
 import { 
   formatCurrency, formatPercent, formatSupply, formatDate, formatTimeAgo,
   getKimchiPremiumColor, getMarketSentimentColor, getRiskLevelStyle,
   getGitHubActivityGrade, interpretFundingRate, calculateArbitrageProfit,
-  calculatePriceDistances, safeParseFloat
-} from '../utils/cryptoDataUtils';
+  calculatePriceDistances, safeParseFloat, transformInvestmentData
+} from '../utils/formatters';
+
 
 interface CryptoDetailPageProps {
   symbol: string;

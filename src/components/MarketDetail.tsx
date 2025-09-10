@@ -4,6 +4,7 @@ import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { useMarketDetail } from '../hooks/useMarketDetail'; // 위에서 만든 훅
+import { formatCurrency, formatPercent } from '../utils/formatters';
 
 interface MarketDetailPageProps {
   symbol: string;
@@ -185,19 +186,9 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
   } = useMarketDetail(symbol);
 
   // 유틸리티 함수들 (useCallback으로 최적화)
-  const formatCurrency = useCallback((value: number | null | undefined) => {
-    if (value === null || value === undefined || isNaN(value)) return '$0.00';
-    return `$${value.toFixed(2)}`;
-  }, []);
-
   const formatBillion = useCallback((value: number | null | undefined) => {
     if (value === null || value === undefined || isNaN(value)) return '$0.00B';
     return `$${(value / 1e9).toFixed(2)}B`;
-  }, []);
-
-  const formatPercent = useCallback((value: number | null | undefined) => {
-    if (value === null || value === undefined || isNaN(value)) return '0.0%';
-    return `${value.toFixed(1)}%`;
   }, []);
 
   // 차트용 timestamp 포맷팅 함수 (useCallback으로 최적화)
@@ -372,7 +363,7 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
 
             <div className="text-center">
               <div className="text-3xl font-bold mb-1">
-                {formatCurrency(stockPrice.current_price)}
+                {formatCurrency(stockPrice.current_price || 0)}
               </div>
               <div className={`flex items-center justify-center space-x-1 ${
                 (stockPrice.change_percentage || 0) >= 0 ? 'text-green-400' : 'text-red-400'
@@ -380,9 +371,9 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
                 {(stockPrice.change_percentage || 0) >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
                 <span className="font-medium">
                   {(stockPrice.change_percentage || 0) >= 0 ? '+' : ''}
-                  {formatCurrency(stockPrice.change_amount)} 
+                  {formatCurrency(stockPrice.change_amount || 0)} 
                   ({(stockPrice.change_percentage || 0) >= 0 ? '+' : ''}
-                  {formatPercent(stockPrice.change_percentage)})
+                  {formatPercent(stockPrice.change_percentage || 0)})
                 </span>
               </div>
             </div>
@@ -421,10 +412,10 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
                         {sectorComparison && (
                           sectorComparison.roe_vs_sector > 0 ? 
                             <span className="text-green-400 ml-1">
-                              (업계 +{formatPercent(sectorComparison.roe_vs_sector)})
+                              (업계 +{formatPercent(sectorComparison.roe_vs_sector || 0)})
                             </span> :
                             <span className="text-red-400 ml-1">
-                              (업계 {formatPercent(sectorComparison.roe_vs_sector)})
+                              (업계 {formatPercent(sectorComparison.roe_vs_sector || 0)})
                             </span>
                         )}
                       </div>
@@ -488,7 +479,7 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
                           <div className="text-xs text-foreground/70">시가총액</div>
                         </div>
                         <div>
-                          <div className="text-lg font-bold">{formatPercent(companyData.dividend_yield)}</div>
+                          <div className="text-lg font-bold">{formatPercent(companyData.dividend_yield || 0)}</div>
                           <div className="text-xs text-foreground/70">배당수익률</div>
                         </div>
                         <div>
@@ -609,17 +600,17 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
                           <HelpCircle size={12} />
                         </button>
                       </div>
-                      <span className="font-medium">{formatPercent(ratios.debtToAssetRatio * 100)}</span>
+                      <span className="font-medium">{formatPercent((ratios.debtToAssetRatio || 0) * 100)}</span>
                     </div>
                     
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-foreground/70">자기자본비율</span>
-                      <span className="font-medium">{formatPercent(ratios.equityRatio * 100)}</span>
+                      <span className="font-medium">{formatPercent((ratios.equityRatio || 0) * 100)}</span>
                     </div>
                     
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-foreground/70">현금비율</span>
-                      <span className="font-medium">{formatPercent(ratios.cashRatio * 100)}</span>
+                      <span className="font-medium">{formatPercent((ratios.cashRatio || 0) * 100)}</span>
                     </div>
                   </div>
 
@@ -650,11 +641,11 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-foreground/70">ROE (자기자본이익률)</span>
-                      <span className="font-medium">{formatPercent(companyData.roe)}</span>
+                      <span className="font-medium">{formatPercent(companyData.roe || 0)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-foreground/70">순이익률</span>
-                      <span className="font-medium">{formatPercent(companyData.profit_margin)}</span>
+                      <span className="font-medium">{formatPercent(companyData.profit_margin || 0)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-foreground/70">PER</span>
@@ -666,7 +657,7 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-foreground/70">배당수익률</span>
-                      <span className="font-medium">{formatPercent(companyData.dividend_yield)}</span>
+                      <span className="font-medium">{formatPercent(companyData.dividend_yield || 0)}</span>
                     </div>
                   </div>
                 </Card>
@@ -729,7 +720,7 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
                     <div className="flex justify-between items-center">
                       <span className="text-sm">ROE</span>
                       <div className="flex items-center space-x-2">
-                        <span className="text-sm font-medium">{formatPercent(companyData.roe)}</span>
+                        <span className="text-sm font-medium">{formatPercent(companyData.roe || 0)}</span>
                         <span className={`text-xs px-2 py-1 rounded ${
                           sectorComparison.roe_vs_sector > 0 
                             ? 'bg-green-500/20 text-green-400' 
