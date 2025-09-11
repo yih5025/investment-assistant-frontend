@@ -72,7 +72,8 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
     if (isNaN(numPrice)) return '$0';
     
     if (numPrice < 0.000001) {
-      return `$${numPrice.toExponential(2)}`;
+      // 매우 작은 숫자는 10자리 소수점으로 표시 (과학적 표기법 대신)
+      return `$${numPrice.toFixed(10)}`;
     } else if (numPrice < 0.01) {
       return `$${numPrice.toFixed(8)}`;
     } else if (numPrice < 1) {
