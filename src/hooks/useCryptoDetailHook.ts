@@ -7,6 +7,7 @@ import {
   EcosystemAPIResponse, 
   InvestmentAPIResponse,
   DetailedKimchiPremiumResponse,
+  KimchiPremiumChartResponse, // 새로 추가
   cryptoDetailService 
 } from '../services/cryptoDetailService';
 
@@ -23,6 +24,7 @@ interface LoadingState {
   ecosystem: boolean;
   investment: boolean;
   detailedKimchi: boolean;
+  kimchiChart: boolean; // 김치프리미엄 차트 로딩 상태 추가
   overall: boolean; // 전체 초기 로딩 상태
 }
 
@@ -39,6 +41,7 @@ interface ErrorState {
   ecosystem: string | null;
   investment: string | null;
   detailedKimchi: string | null;
+  kimchiChart: string | null; // 김치프리미엄 차트 에러 상태 추가
   general: string | null;
 }
 
@@ -56,6 +59,7 @@ interface UseCryptoDetailReturn {
   ecosystemData: EcosystemAPIResponse | null;
   investmentData: InvestmentAPIResponse | null;
   detailedKimchiData: DetailedKimchiPremiumResponse | null;
+  kimchiChartData: KimchiPremiumChartResponse | null; // 김치프리미엄 차트 데이터 추가
   
   // 로딩 상태
   loading: LoadingState;
@@ -69,6 +73,7 @@ interface UseCryptoDetailReturn {
   refetchEcosystem: () => Promise<void>;
   refetchInvestment: () => Promise<void>;
   fetchDetailedKimchi: (sortBy?: string, minVolume?: number) => Promise<void>;
+  fetchKimchiChart: (days?: number) => Promise<void>; // 김치프리미엄 차트 fetch 함수 추가
   clearErrors: () => void;
   
   // 유틸리티 상태
@@ -92,6 +97,7 @@ export function useCryptoDetail(symbol: string): UseCryptoDetailReturn {
   const [ecosystemData, setEcosystemData] = useState<EcosystemAPIResponse | null>(null);
   const [investmentData, setInvestmentData] = useState<InvestmentAPIResponse | null>(null);
   const [detailedKimchiData, setDetailedKimchiData] = useState<DetailedKimchiPremiumResponse | null>(null);
+  const [kimchiChartData, setKimchiChartData] = useState<KimchiPremiumChartResponse | null>(null); // 새로 추가
 
   // 로딩 상태 (각 API별로 독립적 관리)
   const [loading, setLoading] = useState<LoadingState>({
@@ -99,6 +105,7 @@ export function useCryptoDetail(symbol: string): UseCryptoDetailReturn {
     ecosystem: false,
     investment: false,
     detailedKimchi: false,
+    kimchiChart: false, // 김치프리미엄 차트 로딩 상태 추가
     overall: false,
   });
 
@@ -108,6 +115,7 @@ export function useCryptoDetail(symbol: string): UseCryptoDetailReturn {
     ecosystem: null,
     investment: null,
     detailedKimchi: null,
+    kimchiChart: null, // 김치프리미엄 차트 에러 상태 추가
     general: null,
   });
 
@@ -232,6 +240,32 @@ export function useCryptoDetail(symbol: string): UseCryptoDetailReturn {
   }, [symbol, setLoadingState, setError]);
 
   /**
+   * 김치프리미엄 차트 데이터 조회 (새로 추가)
+   * 
+   * 왜 별도 함수로 분리했는가:
+   * - 차트 데이터는 시각화 전용으로 독립적 관리 필요
+   * - 시간 범위 변경 시 빠른 재로딩 지원
+   * - 차트 로딩 상태를 독립적으로 표시 가능
+   */
+  const fetchKimchiChart = useCallback(async (days: number = 7) => {
+    if (!symbol) return;
+
+    setLoadingState('kimchiChart', true);
+    setError('kimchiChart', null);
+
+    try {
+      const data = await cryptoDetailService.fetchKimchiPremiumChart(symbol, days);
+      setKimchiChartData(data);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load chart data';
+      setError('kimchiChart', errorMessage);
+      console.error('Failed to fetch kimchi premium chart:', error);
+    } finally {
+      setLoadingState('kimchiChart', false);
+    }
+  }, [symbol, setLoadingState, setError]);
+
+  /**
    * 모든 기본 데이터 새로고침
    * 
    * 왜 Promise.allSettled를 사용했는가:
@@ -280,6 +314,7 @@ export function useCryptoDetail(symbol: string): UseCryptoDetailReturn {
       ecosystem: null,
       investment: null,
       detailedKimchi: null,
+      kimchiChart: null, // 김치프리미엄 차트 에러도 초기화
       general: null,
     });
   }, []);
@@ -298,6 +333,7 @@ export function useCryptoDetail(symbol: string): UseCryptoDetailReturn {
       setEcosystemData(null);
       setInvestmentData(null);
       setDetailedKimchiData(null);
+      setKimchiChartData(null); // 김치프리미엄 차트 데이터도 초기화
       
       // 새로운 데이터 로드
       refetchAll();
@@ -328,6 +364,7 @@ export function useCryptoDetail(symbol: string): UseCryptoDetailReturn {
     ecosystemData,
     investmentData,
     detailedKimchiData,
+    kimchiChartData, // 김치프리미엄 차트 데이터 반환
     
     // 상태
     loading,
@@ -339,6 +376,7 @@ export function useCryptoDetail(symbol: string): UseCryptoDetailReturn {
     refetchEcosystem,
     refetchInvestment,
     fetchDetailedKimchi,
+    fetchKimchiChart, // 김치프리미엄 차트 fetch 함수 반환
     clearErrors,
     
     // 파생 상태
@@ -414,5 +452,63 @@ export function useKimchiPremiumDetail(symbol: string) {
     refetch: fetchData,
     changeSortBy,
     changeMinVolume,
+  };
+}
+
+/**
+ * 김치프리미엄 차트 전용 훅 (새로 추가)
+ * 
+ * 왜 별도 훅으로 분리했는가:
+ * - 차트는 김치 탭에서만 사용하는 특화 기능
+ * - 시간 범위 변경 시 독립적인 로딩 상태 관리
+ * - 차트 관련 상태와 로직을 캡슐화
+ */
+export function useKimchiPremiumChart(symbol: string) {
+  const [data, setData] = useState<KimchiPremiumChartResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [days, setDays] = useState<number>(7);
+
+  const fetchChart = useCallback(async (chartDays?: number) => {
+    if (!symbol) return;
+
+    const requestDays = chartDays ?? days;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await cryptoDetailService.fetchKimchiPremiumChart(symbol, requestDays);
+      setData(result);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load chart data';
+      setError(errorMessage);
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [symbol, days]);
+
+  // symbol이나 days 변경 시 자동 재조회
+  useEffect(() => {
+    fetchChart();
+  }, [fetchChart]);
+
+  /**
+   * 차트 시간 범위 변경
+   * 
+   * UI에서 7일/14일/30일 버튼 클릭 시 사용
+   */
+  const changeDays = useCallback((newDays: number) => {
+    setDays(newDays);
+  }, []);
+
+  return {
+    data,
+    loading,
+    error,
+    days,
+    fetchChart,
+    changeDays,
+    refetch: () => fetchChart(),
   };
 }

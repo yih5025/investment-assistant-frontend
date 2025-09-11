@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   ArrowLeft, Star, TrendingUp, TrendingDown, AlertTriangle, DollarSign, 
   BarChart3, Activity, MessageSquare, Target, Users, ExternalLink, 
@@ -11,7 +11,7 @@ import { Progress } from "./ui/progress";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 // 훅과 서비스 import (실제 구현에서는 별도 파일)
-import { useCryptoDetail, useKimchiPremiumDetail } from '../hooks/useCryptoDetailHook';
+import { useCryptoDetail, useKimchiPremiumDetail, useKimchiPremiumChart } from '../hooks/useCryptoDetailHook';
 
 // 포맷팅 함수들을 formatters.ts에서 직접 import
 import { 
@@ -20,7 +20,6 @@ import {
   getGitHubActivityGrade, interpretFundingRate, calculateArbitrageProfit,
   calculatePriceDistances, safeParseFloat, transformInvestmentData
 } from '../utils/formatters';
-
 
 interface CryptoDetailPageProps {
   symbol: string;
@@ -57,6 +56,31 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
     sortBy,
     minVolume
   } = useKimchiPremiumDetail(activeTab === 'kimchi' ? symbol : '');
+
+  // 김치프리미엄 차트 훅 (김치 탭에서만 사용)
+  const {
+    data: kimchiChartData,
+    loading: kimchiChartLoading,
+    error: kimchiChartError,
+    days: chartDays,
+    changeDays: setChartDays
+  } = useKimchiPremiumChart(activeTab === 'kimchi' ? symbol : '');
+
+  // 소수점 포맷팅 함수 (낮은 가격 대응)
+  const formatLowPrice = (price: number | string): string => {
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    if (isNaN(numPrice)) return '$0';
+    
+    if (numPrice < 0.000001) {
+      return `$${numPrice.toExponential(2)}`;
+    } else if (numPrice < 0.01) {
+      return `$${numPrice.toFixed(8)}`;
+    } else if (numPrice < 1) {
+      return `$${numPrice.toFixed(6)}`;
+    } else {
+      return `$${numPrice.toFixed(2)}`;
+    }
+  };
 
   // 섹션 확장/축소 토글
   const toggleSection = (sectionId: string) => {
@@ -208,20 +232,7 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
           )}
         </Card>
 
-        {/* 
-          Global Market Context 섹션 - 유지됨
-          역할 설명:
-          1. BTC 점유율: 알트코인 투자 타이밍 판단 지표
-             - BTC 도미넌스 높음(>60%): 비트코인 강세, 알트코인 약세
-             - BTC 도미넌스 낮음(<45%): 알트시즌, 알트코인 투자 기회
-          
-          2. 전체 시장 변화: 개별 코인 움직임의 원인 분석
-             - 시장 전체가 상승 중이면 개별 코인 상승도 시장 효과
-             - 시장이 하락 중인데 개별 코인이 상승하면 강한 개별 요인
-          
-          3. 시장 상태: 투자 전략 수립에 필수
-             - 강세장에서는 적극적 투자, 약세장에서는 보수적 접근
-        */}
+        {/* Global Market Context 섹션 */}
         {investmentData?.global_context && (
           <Card className="glass-card p-3">
             <div className="space-y-2">
@@ -292,19 +303,14 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
 
     const marketData = investmentData.market_data;
     const supplyData = investmentData.supply_data;
-    const priceDistances = calculatePriceDistances(
-      safeParseFloat(marketData.current_price_usd),
-      safeParseFloat(marketData.ath_usd),
-      safeParseFloat(marketData.atl_usd)
-    );
 
     return (
       <div className="space-y-4">
-        {/* 가격 정보 */}
+        {/* 가격 정보 - 높이 축소 */}
         <Card className="glass-card p-4">
           <h3 className="font-bold mb-3">가격 분석</h3>
           
-          <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="grid grid-cols-3 gap-3 mb-3">
             <div className="text-center">
               <div className="text-lg font-bold text-green-400">
                 {formatPercent(safeParseFloat(marketData.price_change_percentage_24h))}
@@ -325,18 +331,15 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
             </div>
           </div>
 
-          {/* ATH/ATL 정보 */}
-          <div className="space-y-3">
+          {/* ATH/ATL 정보 - 수정된 레이아웃 */}
+          <div className="space-y-2">
             <div className="glass-subtle rounded-lg p-3">
               <div className="flex justify-between items-center">
-                <div>
-                  <div className="text-sm text-foreground/70">최고가 (ATH)</div>
-                  <div className="font-bold">{formatCurrency(safeParseFloat(marketData.ath_usd))}</div>
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm text-foreground/70">최고가 (ATH):</span>
+                  <span className="font-bold">{formatCurrency(safeParseFloat(marketData.ath_usd))}</span>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm text-red-400">
-                    {formatPercent(safeParseFloat(marketData.ath_change_percentage))}
-                  </div>
                   <div className="text-xs text-foreground/70">
                     {formatDate(marketData.ath_date)}
                   </div>
@@ -346,14 +349,11 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
 
             <div className="glass-subtle rounded-lg p-3">
               <div className="flex justify-between items-center">
-                <div>
-                  <div className="text-sm text-foreground/70">최저가 (ATL)</div>
-                  <div className="font-bold">{formatCurrency(safeParseFloat(marketData.atl_usd))}</div>
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm text-foreground/70">최저가 (ATL):</span>
+                  <span className="font-bold">{formatCurrency(safeParseFloat(marketData.atl_usd))}</span>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm text-green-400">
-                    +{formatPercent(safeParseFloat(marketData.atl_change_percentage))}
-                  </div>
                   <div className="text-xs text-foreground/70">
                     {formatDate(marketData.atl_date)}
                   </div>
@@ -474,6 +474,153 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
 
     return (
       <div className="space-y-4">
+        {/* 김치프리미엄 가격 차트 */}
+        <Card className="glass-card p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-bold">가격 추이 차트</h3>
+            <div className="flex items-center space-x-2">
+              <select
+                value={chartDays}
+                onChange={(e) => setChartDays(Number(e.target.value))}
+                className="text-xs p-2 rounded bg-background border border-border"
+              >
+                <option value={7}>7일</option>
+                <option value={14}>14일</option>
+                <option value={30}>30일</option>
+              </select>
+            </div>
+          </div>
+          
+          {kimchiChartLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
+              <p className="text-sm text-foreground/70">차트 로딩 중...</p>
+            </div>
+          ) : kimchiChartError ? (
+            <div className="text-center py-8">
+              <Info className="h-8 w-8 text-red-400 mx-auto mb-2" />
+              <p className="text-sm text-red-400">{kimchiChartError}</p>
+            </div>
+          ) : kimchiChartData ? (
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={(() => {
+                  // 차트 데이터 변환
+                  const allDates = new Set<string>();
+                  const koreanExchanges = kimchiChartData.chart_data.korean_exchanges;
+                  const globalExchanges = kimchiChartData.chart_data.global_exchanges || {};
+                  
+                  // 모든 날짜 수집
+                  Object.values(koreanExchanges).forEach(data => {
+                    data.forEach(item => allDates.add(item.date));
+                  });
+                  Object.values(globalExchanges).forEach(data => {
+                    data.forEach(item => allDates.add(item.date));
+                  });
+                  
+                  // 날짜순 정렬
+                  const sortedDates = Array.from(allDates).sort();
+                  
+                  return sortedDates.map(date => {
+                    const dataPoint: any = { date };
+                    
+                    // 한국 거래소 데이터 추가
+                    Object.entries(koreanExchanges).forEach(([exchange, data]) => {
+                      const dayData = data.find(item => item.date === date);
+                      if (dayData) {
+                        dataPoint[exchange] = dayData.price_usd;
+                      }
+                    });
+                    
+                    // 글로벌 거래소 데이터 추가 (주요 거래소만)
+                    const majorGlobalExchanges = ['binance', 'coinbase', 'kraken'];
+                    majorGlobalExchanges.forEach(exchange => {
+                      if (globalExchanges[exchange]) {
+                        const dayData = globalExchanges[exchange].find(item => item.date === date);
+                        if (dayData) {
+                          dataPoint[exchange] = dayData.price_usd;
+                        }
+                      }
+                    });
+                    
+                    return dataPoint;
+                  });
+                })()}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis 
+                    dataKey="date" 
+                    tick={{ fontSize: 11, fill: '#9CA3AF' }}
+                    tickFormatter={(value) => new Date(value).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 11, fill: '#9CA3AF' }}
+                    tickFormatter={(value) => formatLowPrice(value)}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#1F2937', 
+                      border: '1px solid #374151',
+                      borderRadius: '8px',
+                      fontSize: '12px'
+                    }}
+                    labelFormatter={(label) => new Date(label).toLocaleDateString('ko-KR')}
+                    formatter={(value: any, name: any) => [formatLowPrice(value), name]}
+                  />
+                  
+                  {/* 한국 거래소 라인 */}
+                  {Object.keys(kimchiChartData.chart_data.korean_exchanges).map((exchange, index) => (
+                    <Line
+                      key={exchange}
+                      type="monotone"
+                      dataKey={exchange}
+                      stroke={['#10B981', '#3B82F6'][index] || '#6366F1'}
+                      strokeWidth={2}
+                      dot={false}
+                      connectNulls={false}
+                      name={`🇰🇷 ${exchange}`}
+                    />
+                  ))}
+                  
+                  {/* 글로벌 거래소 라인 */}
+                  {kimchiChartData.chart_data.global_exchanges && 
+                   ['binance', 'coinbase', 'kraken'].map((exchange, index) => 
+                     kimchiChartData.chart_data.global_exchanges[exchange] ? (
+                       <Line
+                         key={`global-${exchange}`}
+                         type="monotone"
+                         dataKey={exchange}
+                         stroke={['#F59E0B', '#EF4444', '#8B5CF6'][index]}
+                         strokeWidth={1.5}
+                         strokeDasharray="5 5"
+                         dot={false}
+                         connectNulls={false}
+                         name={`🌍 ${exchange}`}
+                       />
+                     ) : null
+                   )
+                  }
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Info className="h-8 w-8 text-yellow-400 mx-auto mb-2" />
+              <p className="text-sm text-foreground/70">차트 데이터를 불러올 수 없습니다.</p>
+            </div>
+          )}
+          
+          <div className="mt-3 flex flex-wrap gap-2 text-xs">
+            <div className="flex items-center space-x-1">
+              <div className="w-3 h-0.5 bg-green-400"></div>
+              <span className="text-foreground/70">한국 거래소</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <div className="w-3 h-0.5 bg-yellow-400" style={{borderTop: '1px dashed'}}></div>
+              <span className="text-foreground/70">글로벌 거래소</span>
+            </div>
+          </div>
+        </Card>
+
         {/* 김치프리미엄 요약 */}
         <Card className="glass-card p-4 border-2 border-primary/30">
           <div className="flex items-center justify-between mb-3">
@@ -498,13 +645,13 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="glass-subtle rounded-lg p-3 text-center">
               <div className="text-sm font-bold">
-                {formatCurrency(safeParseFloat(kimchiData.korean_price_usd))}
+                {formatLowPrice(safeParseFloat(kimchiData.korean_price_usd))}
               </div>
               <div className="text-xs text-foreground/70">{kimchiData.korean_exchange}</div>
             </div>
             <div className="glass-subtle rounded-lg p-3 text-center">
               <div className="text-sm font-bold">
-                {formatCurrency(safeParseFloat(kimchiData.global_avg_price_usd))}
+                {formatLowPrice(safeParseFloat(kimchiData.global_avg_price_usd))}
               </div>
               <div className="text-xs text-foreground/70">글로벌 평균</div>
             </div>
@@ -528,13 +675,13 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
               <div>
                 <div className="text-foreground/70">총 차익</div>
                 <div className="font-medium text-green-400">
-                  ${arbitrageResult.grossProfit.toFixed(0)}
+                  {formatLowPrice(arbitrageResult.grossProfit)}
                 </div>
               </div>
               <div>
                 <div className="text-foreground/70">거래 비용</div>
                 <div className="font-medium text-red-400">
-                  ${arbitrageResult.transactionCost.toFixed(0)}
+                  {formatLowPrice(arbitrageResult.transactionCost)}
                 </div>
               </div>
             </div>
@@ -594,7 +741,7 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
                               {comparison.korean_exchange} vs {comparison.global_exchange}
                             </div>
                             <div className="text-xs text-foreground/70">
-                              ${comparison.korean_price_usd.toLocaleString()} vs ${comparison.global_price_usd.toLocaleString()}
+                              {formatLowPrice(comparison.korean_price_usd)} vs {formatLowPrice(comparison.global_price_usd)}
                             </div>
                           </div>
                           <div className="text-right">
@@ -604,7 +751,7 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
                               {formatPercent(comparison.premium_percentage)}
                             </div>
                             <div className="text-xs text-foreground/70">
-                              ${Math.abs(comparison.price_diff_usd).toFixed(0)}
+                              {formatLowPrice(Math.abs(comparison.price_diff_usd))}
                             </div>
                           </div>
                         </div>
@@ -1094,7 +1241,7 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
     );
   };
 
-  // 탭 네비게이션 - concept 제거하고 균등 분배
+  // 탭 네비게이션 - concept 제거
   const renderTabNavigation = () => (
     <div className="flex justify-between rounded-xl glass p-1 mb-4">
       {[
