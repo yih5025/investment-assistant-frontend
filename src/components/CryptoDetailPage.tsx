@@ -533,8 +533,11 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
                       }
                     });
                     
-                    // 글로벌 거래소 데이터 추가 (주요 거래소만)
-                    const majorGlobalExchanges = ['binance', 'coinbase', 'kraken'];
+                    // 글로벌 거래소 데이터 추가 (주요 거래소 10개)
+                    const majorGlobalExchanges = [
+                      'binance', 'coinbase', 'kraken', 'okex', 'huobi', 
+                      'kucoin', 'gate', 'bybit', 'bitget', 'mexc'
+                    ];
                     majorGlobalExchanges.forEach(exchange => {
                       if (globalExchanges[exchange]) {
                         const dayData = globalExchanges[exchange].find(item => item.date === date);
@@ -588,23 +591,32 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
                   ))}
                   
                   {/* 글로벌 거래소 라인 */}
-                  {kimchiChartData.chart_data.global_exchanges && 
-                   ['binance', 'coinbase', 'kraken'].map((exchange, index) => 
-                     kimchiChartData.chart_data.global_exchanges[exchange] ? (
-                       <Line
-                         key={`global-${exchange}`}
-                         type="monotone"
-                         dataKey={exchange}
-                         stroke={['#F59E0B', '#EF4444', '#8B5CF6'][index]}
-                         strokeWidth={1.5}
-                         strokeDasharray="5 5"
-                         dot={false}
-                         connectNulls={false}
-                         name={`🌍 ${exchange}`}
-                       />
-                     ) : null
-                   )
-                  }
+                  {kimchiChartData.chart_data.global_exchanges && (() => {
+                    const majorGlobalExchanges = [
+                      'binance', 'coinbase', 'kraken', 'okex', 'huobi', 
+                      'kucoin', 'gate', 'bybit', 'bitget', 'mexc'
+                    ];
+                    const globalColors = [
+                      '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#84CC16',
+                      '#F97316', '#EC4899', '#6366F1', '#14B8A6', '#A855F7'
+                    ];
+                    
+                    return majorGlobalExchanges.map((exchange, index) => 
+                      kimchiChartData.chart_data.global_exchanges[exchange] ? (
+                        <Line
+                          key={`global-${exchange}`}
+                          type="monotone"
+                          dataKey={exchange}
+                          stroke={globalColors[index]}
+                          strokeWidth={1.5}
+                          strokeDasharray="5 5"
+                          dot={false}
+                          connectNulls={false}
+                          name={`🌍 ${exchange.toUpperCase()}`}
+                        />
+                      ) : null
+                    );
+                  })()}
                 </LineChart>
               </ResponsiveContainer>
             </div>
