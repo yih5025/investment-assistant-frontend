@@ -327,7 +327,11 @@ export function getKimchiPremiumColor(premium: number): string {
 /**
  * 시장 심리에 따른 색상
  */
-export function getMarketSentimentColor(sentiment: string): string {
+export function getMarketSentimentColor(sentiment: string | null | undefined): string {
+  if (!sentiment) {
+    return 'text-gray-400';
+  }
+  
   switch (sentiment.toLowerCase()) {
     case '강세':
     case 'bullish':
@@ -345,7 +349,11 @@ export function getMarketSentimentColor(sentiment: string): string {
 /**
  * 위험도에 따른 색상 및 배지 스타일
  */
-export function getRiskLevelStyle(riskLevel: string): { color: string; bgColor: string } {
+export function getRiskLevelStyle(riskLevel: string | null | undefined): { color: string; bgColor: string } {
+  if (!riskLevel) {
+    return { color: 'text-gray-400', bgColor: 'bg-gray-500/20' };
+  }
+  
   switch (riskLevel.toLowerCase()) {
     case '높음':
     case 'high':

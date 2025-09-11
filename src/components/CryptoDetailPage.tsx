@@ -28,8 +28,8 @@ interface CryptoDetailPageProps {
 }
 
 export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
-  // 탭 상태 관리 (5탭으로 확장)
-  const [activeTab, setActiveTab] = useState<"concept" | "market" | "kimchi" | "derivatives" | "ecosystem">("concept");
+  // 탭 상태 관리 (4탭으로 축소 - concept 제거)
+  const [activeTab, setActiveTab] = useState<"market" | "kimchi" | "derivatives" | "ecosystem">("market");
   const [isFavorite, setIsFavorite] = useState(false);
   
   // 확장 상태 관리
@@ -208,7 +208,20 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
           )}
         </Card>
 
-        {/* Global Market Context */}
+        {/* 
+          Global Market Context 섹션 - 유지됨
+          역할 설명:
+          1. BTC 점유율: 알트코인 투자 타이밍 판단 지표
+             - BTC 도미넌스 높음(>60%): 비트코인 강세, 알트코인 약세
+             - BTC 도미넌스 낮음(<45%): 알트시즌, 알트코인 투자 기회
+          
+          2. 전체 시장 변화: 개별 코인 움직임의 원인 분석
+             - 시장 전체가 상승 중이면 개별 코인 상승도 시장 효과
+             - 시장이 하락 중인데 개별 코인이 상승하면 강한 개별 요인
+          
+          3. 시장 상태: 투자 전략 수립에 필수
+             - 강세장에서는 적극적 투자, 약세장에서는 보수적 접근
+        */}
         {investmentData?.global_context && (
           <Card className="glass-card p-3">
             <div className="space-y-2">
@@ -237,6 +250,13 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
                   <div>
                     <span className="text-foreground/70">BTC 점유율: </span>
                     <span className="font-medium">{investmentData.global_context.btc_dominance}%</span>
+                    <span className={`ml-1 text-xs ${
+                      safeParseFloat(investmentData.global_context.btc_dominance) > 60 ? 'text-yellow-400' : 
+                      safeParseFloat(investmentData.global_context.btc_dominance) < 45 ? 'text-green-400' : 'text-blue-400'
+                    }`}>
+                      {safeParseFloat(investmentData.global_context.btc_dominance) > 60 ? '(BTC 강세)' : 
+                       safeParseFloat(investmentData.global_context.btc_dominance) < 45 ? '(알트시즌)' : '(균형)'}
+                    </span>
                   </div>
                   <div>
                     <span className="text-foreground/70">활성 코인: </span>
@@ -252,130 +272,6 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
                   <span className="capitalize">{investmentData.global_context.market_status}</span>
                 </div>
               </div>
-            </div>
-          </Card>
-        )}
-      </div>
-    );
-  };
-
-  // 개념 설명 탭
-  const renderConceptTab = () => {
-    if (!conceptData) {
-      return (
-        <div className="text-center py-8">
-          <Info className="h-12 w-12 text-yellow-400 mx-auto mb-4" />
-          <p className="text-foreground/70">개념 설명 데이터를 불러올 수 없습니다.</p>
-          {errors.concept && (
-            <p className="text-red-400 text-sm mt-2">{errors.concept}</p>
-          )}
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-4">
-        {/* 기본 개념 설명 */}
-        <Card className="glass-card p-4">
-          <h3 className="font-bold mb-3 flex items-center">
-            <MessageSquare size={16} className="mr-2" />
-            {conceptData.basic_info.name} 이해하기
-          </h3>
-          
-          <div className="space-y-4">
-            <div className="glass-subtle rounded-lg p-4">
-              <h4 className="font-medium mb-2 text-primary">한 줄 요약</h4>
-              <p className="text-sm leading-relaxed">
-                {conceptData.educational_content.what_is_it}
-              </p>
-            </div>
-
-            <div className="glass-subtle rounded-lg p-4">
-              <h4 className="font-medium mb-2 text-green-400">어떻게 작동하나?</h4>
-              <p className="text-sm leading-relaxed">
-                {conceptData.educational_content.how_it_works}
-              </p>
-            </div>
-
-            <div className="glass-subtle rounded-lg p-4">
-              <h4 className="font-medium mb-2 text-yellow-400">왜 만들어졌나?</h4>
-              <p className="text-sm leading-relaxed">
-                {conceptData.educational_content.why_created}
-              </p>
-            </div>
-
-            {conceptData.key_features.unique_features.length > 0 && (
-              <div className="glass-subtle rounded-lg p-4">
-                <h4 className="font-medium mb-2 text-purple-400">핵심 특징</h4>
-                <div className="space-y-2">
-                  {conceptData.key_features.unique_features.map((feature: any, index: number) => (
-                    <div key={index} className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-                      <span className="text-sm">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </Card>
-
-        {/* 기본 정보 */}
-        <Card className="glass-card p-4">
-          <h3 className="font-bold mb-3">기본 정보</h3>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="glass-subtle rounded-lg p-3">
-              <div className="flex items-center space-x-2 mb-2">
-                <Calendar size={14} className="text-primary" />
-                <span className="text-sm font-medium">탄생일</span>
-              </div>
-              <div className="font-bold">
-                {formatDate(conceptData.concept_description.genesis_date)}
-              </div>
-            </div>
-            
-            <div className="glass-subtle rounded-lg p-3">
-              <div className="flex items-center space-x-2 mb-2">
-                <Crown size={14} className="text-primary" />
-                <span className="text-sm font-medium">프로젝트 연령</span>
-              </div>
-              <div className="font-bold">{conceptData.concept_description.project_age_years}년</div>
-            </div>
-            
-            <div className="glass-subtle rounded-lg p-3">
-              <div className="flex items-center space-x-2 mb-2">
-                <BarChart3 size={14} className="text-primary" />
-                <span className="text-sm font-medium">주요 카테고리</span>
-              </div>
-              <div className="font-bold">{conceptData.category_info.primary_category}</div>
-            </div>
-            
-            <div className="glass-subtle rounded-lg p-3">
-              <div className="flex items-center space-x-2 mb-2">
-                <Target size={14} className="text-primary" />
-                <span className="text-sm font-medium">합의 알고리즘</span>
-              </div>
-              <div className="font-bold">{conceptData.key_features.consensus_algorithm}</div>
-            </div>
-          </div>
-        </Card>
-
-        {/* FAQ */}
-        {conceptData.faqs.length > 0 && (
-          <Card className="glass-card p-4">
-            <h3 className="font-bold mb-3">자주 묻는 질문</h3>
-            <div className="space-y-3">
-              {conceptData.faqs.map((faq: any, index: number) => (
-                <div key={index} className="glass-subtle rounded-lg p-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-sm mb-2">{faq.question}</h4>
-                      <p className="text-xs text-foreground/70">{faq.answer}</p>
-                    </div>
-                    <Badge className="ml-2 text-xs">{faq.category}</Badge>
-                  </div>
-                </div>
-              ))}
             </div>
           </Card>
         )}
@@ -1198,11 +1094,10 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
     );
   };
 
-  // 탭 네비게이션
+  // 탭 네비게이션 - concept 제거하고 균등 분배
   const renderTabNavigation = () => (
-    <div className="flex rounded-xl glass p-1 mb-4 overflow-x-auto">
+    <div className="flex justify-between rounded-xl glass p-1 mb-4">
       {[
-        { id: "concept", label: "개념", icon: MessageSquare },
         { id: "market", label: "시장", icon: BarChart3 },
         { id: "kimchi", label: "김치", icon: DollarSign },
         { id: "derivatives", label: "파생", icon: Activity },
@@ -1213,7 +1108,7 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
-            className={`flex items-center space-x-1 py-2 px-3 rounded-lg transition-all text-sm flex-shrink-0 ${
+            className={`flex items-center justify-center space-x-1 py-2 px-3 rounded-lg transition-all text-sm flex-1 ${
               activeTab === tab.id
                 ? 'glass-strong text-primary font-medium'
                 : 'hover:glass-subtle text-foreground/70'
@@ -1227,11 +1122,9 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
     </div>
   );
 
-  // 탭 콘텐츠 렌더링
+  // 탭 콘텐츠 렌더링 - concept 케이스 제거
   const renderTabContent = () => {
     switch (activeTab) {
-      case "concept":
-        return renderConceptTab();
       case "market":
         return renderMarketTab();
       case "kimchi":

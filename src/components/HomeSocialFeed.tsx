@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { MessageSquare, TrendingUp, ExternalLink } from "lucide-react";
 import { Badge } from "./ui/badge";
+import { formatNumber } from '../utils/formatters';
 
 interface SNSPost {
   id: string;
@@ -90,14 +91,6 @@ export function HomeSocialFeed({ isLoggedIn, onPostClick }: SocialFeedProps) {
     }
   };
 
-  const formatNumber = (num: number): string => {
-    if (num >= 1000000) {
-      return (num / 1000000).toFixed(1) + "M";
-    } else if (num >= 1000) {
-      return (num / 1000).toFixed(1) + "K";
-    }
-    return num.toString();
-  };
 
   const handlePostClick = (post: SNSPost) => {
     if (onPostClick) {
