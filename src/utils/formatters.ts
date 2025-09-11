@@ -28,7 +28,7 @@ export function isValidNumber(value: any): boolean {
 
 /**
  * 통합 화폐 포맷터 (USD)
- * 소액 암호화폐(PEPE, SHIB 등)를 위한 정밀한 소수점 처리
+ * 소액 암호화폐(PEPE, SHIB 등)를 위한 정밀한 소수점 처리 - 지수 표기법 제거
  */
 export function formatCurrency(value: number | string, decimals?: number): string {
   const numValue = safeParseFloat(value);
@@ -53,23 +53,26 @@ export function formatCurrency(value: number | string, decimals?: number): strin
     }
   }
   
-  // 소액 암호화폐 처리 (0.01달러 미만)
+  // 소액 암호화폐 처리 - 지수 표기법 제거하고 모든 소수점 표시
   if (abs < 0.01) {
-    if (abs < 0.000001) {
-      // 1 마이크로달러 미만 (8자리 소수점)
-      return `${sign}$${abs.toFixed(8)}`;
+    if (abs < 0.000000001) {
+      // 1 나노달러 미만 (12자리 소수점)
+      return `${sign}$${abs.toFixed(12)}`;
+    } else if (abs < 0.000001) {
+      // 1 마이크로달러 미만 (10자리 소수점)
+      return `${sign}$${abs.toFixed(10)}`;
     } else if (abs < 0.0001) {
-      // 0.0001달러 미만 (6자리 소수점)
-      return `${sign}$${abs.toFixed(6)}`;
+      // 0.0001달러 미만 (8자리 소수점)
+      return `${sign}$${abs.toFixed(8)}`;
     } else {
-      // 0.01달러 미만 (4자리 소수점)
-      return `${sign}$${abs.toFixed(4)}`;
+      // 0.01달러 미만 (6자리 소수점)
+      return `${sign}$${abs.toFixed(6)}`;
     }
   }
   
   // 일반적인 가격 처리
   if (abs < 1) {
-    return `${sign}$${abs.toFixed(3)}`;
+    return `${sign}$${abs.toFixed(4)}`;
   } else if (abs < 1000) {
     return `${sign}$${abs.toFixed(2)}`;
   } else if (abs >= 1000000000000) {
@@ -87,7 +90,7 @@ export function formatCurrency(value: number | string, decimals?: number): strin
 
 /**
  * 원화 포맷터 (KRW) - 개선된 버전
- * 달러와 같은 방식으로 소수점 동적 처리 + 한국식 단위 (조/억/만)
+ * 달러와 같은 방식으로 소수점 동적 처리 + 한국식 단위 (조/억/만) - 지수 표기법 제거
  */
 export function formatCurrencyKRW(value: number | string, decimals?: number): string {
   const numValue = safeParseFloat(value);
@@ -110,20 +113,23 @@ export function formatCurrencyKRW(value: number | string, decimals?: number): st
     }
   }
   
-  // 소액 암호화폐 처리 (1원 미만) - 달러와 동일한 로직
+  // 소액 암호화폐 처리 - 지수 표기법 제거하고 모든 소수점 표시
   if (abs < 1) {
-    if (abs < 0.000001) {
-      // 1 마이크로원 미만 (8자리 소수점)
-      return `${sign}₩${abs.toFixed(8)}`;
+    if (abs < 0.000000001) {
+      // 1 나노원 미만 (12자리 소수점)
+      return `${sign}₩${abs.toFixed(12)}`;
+    } else if (abs < 0.000001) {
+      // 1 마이크로원 미만 (10자리 소수점)
+      return `${sign}₩${abs.toFixed(10)}`;
     } else if (abs < 0.0001) {
-      // 0.0001원 미만 (6자리 소수점)
-      return `${sign}₩${abs.toFixed(6)}`;
+      // 0.0001원 미만 (8자리 소수점)
+      return `${sign}₩${abs.toFixed(8)}`;
     } else if (abs < 0.01) {
-      // 0.01원 미만 (4자리 소수점)
-      return `${sign}₩${abs.toFixed(4)}`;
+      // 0.01원 미만 (6자리 소수점)
+      return `${sign}₩${abs.toFixed(6)}`;
     } else {
-      // 1원 미만 (3자리 소수점)
-      return `${sign}₩${abs.toFixed(3)}`;
+      // 1원 미만 (4자리 소수점)
+      return `${sign}₩${abs.toFixed(4)}`;
     }
   }
   
@@ -152,23 +158,25 @@ export function formatCurrencyKRW(value: number | string, decimals?: number): st
  * 원화 포맷터 (정밀 모드) - 축약 없이 모든 소수점 표시
  * 거래소에서 정확한 가격 표시가 필요한 경우 사용
  */
-export function formatCurrencyKRWPrecise(value: number | string, maxDecimals: number = 8): string {
+export function formatCurrencyKRWPrecise(value: number | string, maxDecimals: number = 12): string {
   const numValue = safeParseFloat(value);
   if (!isValidNumber(numValue)) return '₩0';
   
   const abs = Math.abs(numValue);
   const sign = numValue < 0 ? '-' : '';
   
-  // 의미있는 소수점 자리 계산
+  // 의미있는 소수점 자리 계산 - 지수 표기법 제거
   let decimals = 0;
-  if (abs < 0.000001) {
-    decimals = Math.min(8, maxDecimals);
+  if (abs < 0.000000001) {
+    decimals = Math.min(12, maxDecimals);
+  } else if (abs < 0.000001) {
+    decimals = Math.min(10, maxDecimals);
   } else if (abs < 0.0001) {
-    decimals = Math.min(6, maxDecimals);
+    decimals = Math.min(8, maxDecimals);
   } else if (abs < 0.01) {
-    decimals = Math.min(4, maxDecimals);
+    decimals = Math.min(6, maxDecimals);
   } else if (abs < 1) {
-    decimals = Math.min(3, maxDecimals);
+    decimals = Math.min(4, maxDecimals);
   } else if (abs < 10) {
     decimals = Math.min(2, maxDecimals);
   } else if (abs < 1000) {

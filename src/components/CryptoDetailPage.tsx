@@ -8,7 +8,7 @@ import {
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, AreaChart, Area } from 'recharts';
 
 // 훅과 서비스 import (실제 구현에서는 별도 파일)
 import { useCryptoDetail, useKimchiPremiumDetail, useKimchiPremiumChart } from '../hooks/useCryptoDetailHook';
@@ -547,25 +547,30 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
                     return dataPoint;
                   });
                 })()}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                   <XAxis 
                     dataKey="date" 
-                    tick={{ fontSize: 11, fill: '#9CA3AF' }}
+                    axisLine={false} 
+                    tickLine={false}
+                    tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }}
                     tickFormatter={(value) => new Date(value).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
                   />
                   <YAxis 
-                    tick={{ fontSize: 11, fill: '#9CA3AF' }}
+                    axisLine={false} 
+                    tickLine={false}
+                    tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }}
+                    domain={['dataMin * 0.98', 'dataMax * 1.02']}
                     tickFormatter={(value) => formatLowPrice(value)}
                   />
                   <Tooltip 
+                    formatter={(value: any, name: any) => [formatLowPrice(value), name]}
+                    labelFormatter={(label) => `날짜: ${new Date(label).toLocaleDateString('ko-KR')}`}
                     contentStyle={{ 
-                      backgroundColor: '#1F2937', 
-                      border: '1px solid #374151',
+                      backgroundColor: 'rgba(0, 0, 0, 0.8)', 
+                      border: '1px solid rgba(255,255,255,0.2)',
                       borderRadius: '8px',
                       fontSize: '12px'
                     }}
-                    labelFormatter={(label) => new Date(label).toLocaleDateString('ko-KR')}
-                    formatter={(value: any, name: any) => [formatLowPrice(value), name]}
                   />
                   
                   {/* 한국 거래소 라인 */}
