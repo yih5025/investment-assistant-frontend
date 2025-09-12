@@ -15,7 +15,7 @@ import { useCryptoDetail, useKimchiPremiumDetail, useKimchiPremiumChart } from '
 
 // 포맷팅 함수들을 formatters.ts에서 직접 import
 import { 
-  formatCurrency, formatPercent, formatSupply, formatDate, formatTimeAgo,
+  formatCurrency, formatCryptoCurrency, formatPercent, formatSupply, formatDate, formatTimeAgo,
   getKimchiPremiumColor, getMarketSentimentColor, getRiskLevelStyle,
   getGitHubActivityGrade, interpretFundingRate, calculateArbitrageProfit,
   calculatePriceDistances, safeParseFloat, transformInvestmentData
@@ -66,22 +66,7 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
     changeDays: setChartDays
   } = useKimchiPremiumChart(activeTab === 'kimchi' ? symbol : '');
 
-  // 소수점 포맷팅 함수 (낮은 가격 대응)
-  const formatLowPrice = (price: number | string): string => {
-    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-    if (isNaN(numPrice)) return '$0';
-    
-    if (numPrice < 0.000001) {
-      // 매우 작은 숫자는 10자리 소수점으로 표시 (과학적 표기법 대신)
-      return `$${numPrice.toFixed(10)}`;
-    } else if (numPrice < 0.01) {
-      return `$${numPrice.toFixed(8)}`;
-    } else if (numPrice < 1) {
-      return `$${numPrice.toFixed(6)}`;
-    } else {
-      return `$${numPrice.toFixed(2)}`;
-    }
-  };
+  // 소수점 포맷팅 함수는 formatCryptoCurrency로 대체
 
   // 섹션 확장/축소 토글
   const toggleSection = (sectionId: string) => {
@@ -479,16 +464,21 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
         <Card className="glass-card p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-bold">가격 추이 차트</h3>
-            <div className="flex items-center space-x-2">
-              <select
-                value={chartDays}
-                onChange={(e) => setChartDays(Number(e.target.value))}
-                className="text-xs p-2 rounded bg-background border border-border"
-              >
-                <option value={7}>7일</option>
-                <option value={14}>14일</option>
-                <option value={30}>30일</option>
-              </select>
+            <div className="flex space-x-1">
+              {[7, 14, 30].map((days) => (
+                <button
+                  key={days}
+                  onClick={() => setChartDays(days)}
+                  disabled={kimchiChartLoading}
+                  className={`px-2 py-1 rounded-lg text-xs transition-all ${
+                    chartDays === days 
+                      ? 'glass-strong text-primary' 
+                      : 'glass-subtle hover:glass'
+                  } ${kimchiChartLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  {days}일
+                </button>
+              ))}
             </div>
           </div>
           
@@ -563,10 +553,10 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
                     tickLine={false}
                     tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }}
                     domain={['dataMin * 0.98', 'dataMax * 1.02']}
-                    tickFormatter={(value) => formatLowPrice(value)}
+                    tickFormatter={(value) => formatCryptoCurrency(value)}
                   />
                   <Tooltip 
-                    formatter={(value: any, name: any) => [formatLowPrice(value), name]}
+                    formatter={(value: any, name: any) => [formatCryptoCurrency(value), name]}
                     labelFormatter={(label) => `날짜: ${new Date(label).toLocaleDateString('ko-KR')}`}
                     contentStyle={{ 
                       backgroundColor: 'rgba(0, 0, 0, 0.8)', 
@@ -663,13 +653,13 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="glass-subtle rounded-lg p-3 text-center">
               <div className="text-sm font-bold">
-                {formatLowPrice(safeParseFloat(kimchiData.korean_price_usd))}
+                {formatCryptoCurrency(safeParseFloat(kimchiData.korean_price_usd))}
               </div>
               <div className="text-xs text-foreground/70">{kimchiData.korean_exchange}</div>
             </div>
             <div className="glass-subtle rounded-lg p-3 text-center">
               <div className="text-sm font-bold">
-                {formatLowPrice(safeParseFloat(kimchiData.global_avg_price_usd))}
+                {formatCryptoCurrency(safeParseFloat(kimchiData.global_avg_price_usd))}
               </div>
               <div className="text-xs text-foreground/70">글로벌 평균</div>
             </div>
@@ -693,13 +683,13 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
               <div>
                 <div className="text-foreground/70">총 차익</div>
                 <div className="font-medium text-green-400">
-                  {formatLowPrice(arbitrageResult.grossProfit)}
+                  {formatCryptoCurrency(arbitrageResult.grossProfit)}
                 </div>
               </div>
               <div>
                 <div className="text-foreground/70">거래 비용</div>
                 <div className="font-medium text-red-400">
-                  {formatLowPrice(arbitrageResult.transactionCost)}
+                  {formatCryptoCurrency(arbitrageResult.transactionCost)}
                 </div>
               </div>
             </div>
@@ -759,7 +749,7 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
                               {comparison.korean_exchange} vs {comparison.global_exchange}
                             </div>
                             <div className="text-xs text-foreground/70">
-                              {formatLowPrice(comparison.korean_price_usd)} vs {formatLowPrice(comparison.global_price_usd)}
+                              {formatCryptoCurrency(comparison.korean_price_usd)} vs {formatCryptoCurrency(comparison.global_price_usd)}
                             </div>
                           </div>
                           <div className="text-right">
@@ -769,7 +759,7 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
                               {formatPercent(comparison.premium_percentage)}
                             </div>
                             <div className="text-xs text-foreground/70">
-                              {formatLowPrice(Math.abs(comparison.price_diff_usd))}
+                              {formatCryptoCurrency(Math.abs(comparison.price_diff_usd))}
                             </div>
                           </div>
                         </div>

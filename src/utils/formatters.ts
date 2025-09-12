@@ -37,6 +37,9 @@ export function formatCurrency(value: number | string, decimals?: number): strin
   const abs = Math.abs(numValue);
   const sign = numValue < 0 ? '-' : '';
   
+  // 0인 경우 처리
+  if (abs === 0) return '$0';
+  
   // 커스텀 소수점이 지정된 경우
   if (decimals !== undefined) {
     // 축약 단위 처리 시에도 커스텀 소수점 적용
@@ -56,23 +59,23 @@ export function formatCurrency(value: number | string, decimals?: number): strin
   // 소액 암호화폐 처리 - 지수 표기법 제거하고 모든 소수점 표시
   if (abs < 0.01) {
     if (abs < 0.000000001) {
-      // 1 나노달러 미만 (12자리 소수점)
-      return `${sign}$${abs.toFixed(12)}`;
+      // 1 나노달러 미만 (12자리 소수점에서 trailing zeros 제거)
+      return `${sign}$${abs.toFixed(12).replace(/\.?0+$/, '')}`;
     } else if (abs < 0.000001) {
-      // 1 마이크로달러 미만 (10자리 소수점)
-      return `${sign}$${abs.toFixed(10)}`;
+      // 1 마이크로달러 미만 (10자리 소수점에서 trailing zeros 제거)
+      return `${sign}$${abs.toFixed(10).replace(/\.?0+$/, '')}`;
     } else if (abs < 0.0001) {
-      // 0.0001달러 미만 (8자리 소수점)
-      return `${sign}$${abs.toFixed(8)}`;
+      // 0.0001달러 미만 (8자리 소수점에서 trailing zeros 제거)
+      return `${sign}$${abs.toFixed(8).replace(/\.?0+$/, '')}`;
     } else {
-      // 0.01달러 미만 (6자리 소수점)
-      return `${sign}$${abs.toFixed(6)}`;
+      // 0.01달러 미만 (6자리 소수점에서 trailing zeros 제거)
+      return `${sign}$${abs.toFixed(6).replace(/\.?0+$/, '')}`;
     }
   }
   
   // 일반적인 가격 처리
   if (abs < 1) {
-    return `${sign}$${abs.toFixed(4)}`;
+    return `${sign}$${abs.toFixed(4).replace(/\.?0+$/, '')}`;
   } else if (abs < 1000) {
     return `${sign}$${abs.toFixed(2)}`;
   } else if (abs >= 1000000000000) {
@@ -86,6 +89,40 @@ export function formatCurrency(value: number | string, decimals?: number): strin
   }
   
   return `${sign}$${abs.toLocaleString()}`;
+}
+
+/**
+ * 소액 암호화폐 전용 포맷터 (0.00001072 같은 매우 작은 값)
+ */
+export function formatCryptoCurrency(value: number | string): string {
+  const numValue = safeParseFloat(value);
+  if (!isValidNumber(numValue)) return '$0';
+  
+  const abs = Math.abs(numValue);
+  const sign = numValue < 0 ? '-' : '';
+  
+  // 0인 경우 처리
+  if (abs === 0) return '$0';
+  
+  // 소액 암호화폐 처리 - 지수 표기법 제거하고 의미있는 자릿수만 표시
+  if (abs < 0.01) {
+    if (abs < 0.000000001) {
+      // 1 나노달러 미만 - 의미있는 자릿수 12개까지
+      return `${sign}$${abs.toFixed(12).replace(/\.?0+$/, '')}`;
+    } else if (abs < 0.000001) {
+      // 1 마이크로달러 미만 - 의미있는 자릿수 10개까지
+      return `${sign}$${abs.toFixed(10).replace(/\.?0+$/, '')}`;
+    } else if (abs < 0.0001) {
+      // 0.0001달러 미만 - 의미있는 자릿수 8개까지
+      return `${sign}$${abs.toFixed(8).replace(/\.?0+$/, '')}`;
+    } else {
+      // 0.01달러 미만 - 의미있는 자릿수 6개까지
+      return `${sign}$${abs.toFixed(6).replace(/\.?0+$/, '')}`;
+    }
+  }
+  
+  // 일반 처리는 formatCurrency에 위임
+  return formatCurrency(numValue);
 }
 
 /**
@@ -239,6 +276,34 @@ export function formatNumber(value: number | string, decimals: number = 0): stri
   }
   
   return numValue.toLocaleString();
+}
+
+/**
+ * 주식 변동금액 포맷터 (일반적인 달러 단위, 소액 암호화폐 로직 제외)
+ */
+export function formatStockChange(value: number | string): string {
+  const numValue = safeParseFloat(value);
+  if (!isValidNumber(numValue)) return '$0.00';
+  
+  const abs = Math.abs(numValue);
+  const sign = numValue < 0 ? '-' : '';
+  
+  // 0인 경우 처리
+  if (abs === 0) return '$0.00';
+  
+  // 주식 변동금액은 일반적으로 센트 단위까지만 표시
+  if (abs >= 1000000000000) {
+    return `${sign}$${(abs / 1000000000000).toFixed(2)}T`;
+  } else if (abs >= 1000000000) {
+    return `${sign}$${(abs / 1000000000).toFixed(2)}B`;
+  } else if (abs >= 1000000) {
+    return `${sign}$${(abs / 1000000).toFixed(2)}M`;
+  } else if (abs >= 1000) {
+    return `${sign}$${(abs / 1000).toFixed(2)}K`;
+  } else {
+    // 일반적인 주식 가격 변동은 소수점 2자리까지
+    return `${sign}$${abs.toFixed(2)}`;
+  }
 }
 
 /**

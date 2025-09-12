@@ -4,7 +4,7 @@ import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { useMarketDetail } from '../hooks/useMarketDetail'; // 위에서 만든 훅
-import { formatCurrency, formatPercent } from '../utils/formatters';
+import { formatCurrency, formatStockChange, formatPercent } from '../utils/formatters';
 
 interface MarketDetailPageProps {
   symbol: string;
@@ -371,7 +371,7 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
                 {(stockPrice.change_percentage || 0) >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
                 <span className="font-medium">
                   {(stockPrice.change_percentage || 0) >= 0 ? '+' : ''}
-                  {formatCurrency(stockPrice.change_amount || 0)} 
+                  {formatStockChange(stockPrice.change_amount || 0)} 
                   ({(stockPrice.change_percentage || 0) >= 0 ? '+' : ''}
                   {formatPercent(stockPrice.change_percentage || 0)})
                 </span>
