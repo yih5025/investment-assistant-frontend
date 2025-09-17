@@ -230,9 +230,6 @@ export function EarningsCalendar() {
                       </p>
                       
                       <div className="flex items-center justify-between">
-                        <Badge variant="outline" className="text-xs">
-                          {news.news_section === 'forecast' ? '예측' : '반응'}
-                        </Badge>
                         <ExternalLink size={14} className="text-foreground/40 group-hover:text-primary transition-colors" />
                       </div>
                     </div>
@@ -258,20 +255,10 @@ export function EarningsCalendar() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
           <Calendar size={20} className="text-primary" />
-          <h3 className="font-medium">실적 발표 캘린더</h3>
+          <h3 className="font-medium">실적 발표</h3>
         </div>
         
         <div className="flex items-center space-x-2">
-          {/* 새로고침 버튼 */}
-          <button 
-            onClick={refreshAll}
-            disabled={loading.overall}
-            className="p-1 glass-subtle rounded hover:glass transition-all disabled:opacity-50"
-            title="데이터 새로고침"
-          >
-            {loading.overall ? <LoadingSpinner size={16} /> : <RefreshCw size={16} />}
-          </button>
-          
           {/* 월 네비게이션 */}
           <button className="p-1 glass-subtle rounded hover:glass transition-all">
             <ChevronLeft size={16} />
@@ -588,9 +575,6 @@ function EarningsNewsSection({
                   </p>
                   
                   <div className="flex items-center justify-between">
-                    <Badge variant="outline" className="text-xs">
-                      {news.news_section === 'forecast' ? '예측' : '반응'}
-                    </Badge>
                     <ExternalLink size={14} className="text-foreground/40 group-hover:text-primary transition-colors" />
                   </div>
                 </div>
@@ -609,21 +593,13 @@ function EarningsNewsSection({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
           <TrendingUp size={20} className="text-primary" />
-          <h4 className="font-medium">이번 주 주요 실적 뉴스</h4>
+          <h4 className="font-medium">이번 주 실적 뉴스</h4>
           {weeklyNewsData && (
             <span className="text-sm text-foreground/60">
               ({weeklyNewsData.week_start} ~ {weeklyNewsData.week_end})
             </span>
           )}
         </div>
-        <button
-          onClick={onRefreshNews}
-          disabled={loading.weekly}
-          className="p-1 glass-subtle rounded hover:glass transition-all disabled:opacity-50"
-          title="뉴스 새로고침"
-        >
-          {loading.weekly ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
-        </button>
       </div>
 
       {/* 로딩 상태 */}
