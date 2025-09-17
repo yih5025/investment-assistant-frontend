@@ -653,3 +653,177 @@ html {
     -webkit-overflow-scrolling: touch;
   }
 }
+
+/* Enhanced Calendar Styles - globals.css에 추가할 스타일 */
+
+/* 개선된 캘린더 그리드 - 높이 증가 */
+.calendar-grid-enhanced {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  padding: 1px;
+}
+
+/* 개선된 캘린더 날짜 칸 - 높이 증가 및 flexbox 레이아웃 */
+.calendar-day-enhanced {
+  height: 80px; /* 기존 aspect-ratio: 1에서 고정 높이로 변경 */
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  padding: 4px;
+}
+
+.calendar-day-enhanced:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: scale(1.02);
+}
+
+.calendar-day-enhanced.has-event {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+/* 날짜 숫자 스타일 - 상단 좌측에 배치 */
+.calendar-date-number {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-weight: 500;
+  line-height: 1;
+  z-index: 2;
+}
+
+/* 이벤트 컨테이너 - 날짜 숫자 아래에 배치 */
+.calendar-events-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 20px; /* 날짜 숫자 공간 확보 */
+  flex: 1;
+  overflow: hidden;
+}
+
+/* 이벤트 배지 스타일 */
+.event-badge {
+  font-size: 8px;
+  font-weight: 600;
+  padding: 2px 4px;
+  border-radius: 3px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border: 1px solid;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+.event-badge:hover {
+  transform: scale(1.05);
+  z-index: 10;
+}
+
+/* 더 보기 배지 스타일 */
+.event-badge-more {
+  font-size: 7px;
+  font-weight: 500;
+  padding: 1px 3px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1.2;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.event-badge-more:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+  transform: scale(1.05);
+}
+
+/* 반응형 조정 */
+@media (max-width: 768px) {
+  .calendar-day-enhanced {
+    height: 60px;
+    min-height: 60px;
+    padding: 2px;
+  }
+  
+  .calendar-date-number {
+    top: 2px;
+    left: 4px;
+  }
+  
+  .calendar-events-container {
+    margin-top: 16px;
+    gap: 1px;
+  }
+  
+  .event-badge {
+    font-size: 7px;
+    padding: 1px 2px;
+  }
+  
+  .event-badge-more {
+    font-size: 6px;
+    padding: 1px 2px;
+  }
+}
+
+@media (max-width: 640px) {
+  .calendar-day-enhanced {
+    height: 50px;
+    min-height: 50px;
+  }
+  
+  .calendar-events-container {
+    margin-top: 14px;
+  }
+  
+  .event-badge {
+    font-size: 6px;
+    padding: 1px;
+  }
+}
+
+/* 다크 모드 대응 */
+@media (prefers-color-scheme: dark) {
+  .calendar-grid-enhanced {
+    background: rgba(0, 0, 0, 0.2);
+  }
+  
+  .calendar-day-enhanced {
+    background: rgba(0, 0, 0, 0.1);
+  }
+  
+  .calendar-day-enhanced:hover {
+    background: rgba(0, 0, 0, 0.2);
+  }
+  
+  .calendar-day-enhanced.has-event {
+    background: rgba(59, 130, 246, 0.15);
+  }
+}
+
+/* 접근성 개선 */
+.calendar-day-enhanced:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.event-badge:focus-visible,
+.event-badge-more:focus-visible {
+  outline: 1px solid var(--primary);
+  outline-offset: 1px;
+}
