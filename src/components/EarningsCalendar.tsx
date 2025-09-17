@@ -326,7 +326,6 @@ export function EarningsCalendar() {
           </TabsList>
           
           {/* 캘린더 탭 */}
-          /* 캘린더 탭 개선된 디자인 - 기존 TabsContent value="calendar" 부분 교체 */
 
           <TabsContent value="calendar" className="mt-4">
             {/* 요일 헤더 */}
