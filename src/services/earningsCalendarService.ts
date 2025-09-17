@@ -14,7 +14,7 @@ import {
    * API 설정
    */
   const API_BASE_URL = 'https://api.investment-assistant.site/api/v1';
-  const DEFAULT_TIMEOUT = 10000;
+  const DEFAULT_TIMEOUT = 30000;
   
   /**
    * API 에러 클래스
