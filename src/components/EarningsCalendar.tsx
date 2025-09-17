@@ -72,14 +72,6 @@ export function EarningsCalendar() {
     
     setShowNewsDetail(true);
   };
-
-  /**
-   * 중요도별 색상 클래스
-   */
-/**
- * 중요도별 색상 클래스 - 개선된 버전
- * 기존 getImportanceColor 함수 교체용
- */
   const getImportanceColor = (importance: string) => {
     switch (importance) {
       case "high": 
@@ -93,9 +85,6 @@ export function EarningsCalendar() {
     }
   };
 
-  /**
-   * 이벤트 타입별 아이콘
-   */
   const getEventIcon = (type: string) => {
     switch (type) {
       case "earnings_report": return <TrendingUp size={12} />;
