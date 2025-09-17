@@ -76,12 +76,20 @@ export function EarningsCalendar() {
   /**
    * 중요도별 색상 클래스
    */
+/**
+ * 중요도별 색상 클래스 - 개선된 버전
+ * 기존 getImportanceColor 함수 교체용
+ */
   const getImportanceColor = (importance: string) => {
     switch (importance) {
-      case "high": return "bg-red-500/20 text-red-400 border-red-500/30";
-      case "medium": return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
-      case "low": return "bg-gray-500/20 text-gray-400 border-gray-500/30";
-      default: return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+      case "high": 
+        return "bg-red-100 text-red-800 border border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800/50";
+      case "medium": 
+        return "bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800/50";
+      case "low": 
+        return "bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800/50 dark:text-slate-300 dark:border-slate-700/50";
+      default: 
+        return "bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800/50";
     }
   };
 
@@ -318,18 +326,20 @@ export function EarningsCalendar() {
           </TabsList>
           
           {/* 캘린더 탭 */}
+          /* 캘린더 탭 개선된 디자인 - 기존 TabsContent value="calendar" 부분 교체 */
+
           <TabsContent value="calendar" className="mt-4">
             {/* 요일 헤더 */}
-            <div className="grid grid-cols-7 gap-1 mb-2">
+            <div className="grid grid-cols-7 gap-2 mb-3">
               {CalendarDateUtils.getDayNames().map((day, index) => (
-                <div key={index} className="text-center text-xs font-medium text-foreground/70 py-2">
+                <div key={index} className="text-center text-sm font-medium text-foreground/80 py-2">
                   {day}
                 </div>
               ))}
             </div>
 
-            {/* 달력 그리드 - 크기 확대 */}
-            <div className="grid grid-cols-7 gap-1 mb-4">
+            {/* 달력 그리드 - 개선된 디자인 */}
+            <div className="grid grid-cols-7 gap-2 mb-4">
               {calendarDays.map((date, index) => {
                 const isCurrentMonth = date.getMonth() === month;
                 const isToday = date.toDateString() === today.toDateString();
@@ -338,34 +348,50 @@ export function EarningsCalendar() {
                 return (
                   <div
                     key={index}
-                    className={`relative min-h-[80px] p-2 rounded-lg border border-foreground/10 transition-all cursor-pointer hover:bg-foreground/5 ${
-                      isCurrentMonth ? 'text-foreground bg-background/50' : 'text-foreground/30 bg-background/20'
+                    className={`relative aspect-square p-2 rounded-lg border transition-all hover:border-primary/30 ${
+                      isCurrentMonth 
+                        ? 'text-foreground bg-background border-foreground/10' 
+                        : 'text-foreground/40 bg-background/50 border-foreground/5'
                     } ${
-                      isToday ? 'bg-primary/20 border-primary/30 text-primary' : ''
+                      isToday 
+                        ? 'bg-primary/10 border-primary/40 text-primary ring-1 ring-primary/20' 
+                        : ''
                     } ${
-                      events.length > 0 ? 'border-primary/20' : ''
+                      events.length > 0 
+                        ? 'border-primary/20 bg-primary/5' 
+                        : ''
                     }`}
                   >
-                    {/* 날짜 */}
-                    <div className="text-sm font-medium mb-1">{date.getDate()}</div>
+                    {/* 날짜 표시 */}
+                    <div className={`text-sm font-medium mb-1 ${isToday ? 'font-bold' : ''}`}>
+                      {date.getDate()}
+                    </div>
                     
-                    {/* 이벤트 표시 - 심볼로 표시 */}
+                    {/* 이벤트 심볼들 - 컴팩트한 디자인 */}
                     {events.length > 0 && (
-                      <div className="space-y-1">
-                        {events.slice(0, 3).map((event, eventIndex) => (
+                      <div className="space-y-0.5">
+                        {events.slice(0, 2).map((event, eventIndex) => (
                           <div
                             key={eventIndex}
                             onClick={() => handleEventClick(event)}
-                            className={`text-xs px-1 py-0.5 rounded ${getImportanceColor(event.importance)} 
-                              cursor-pointer hover:opacity-80 transition-opacity truncate`}
-                            title={`${event.symbol} - ${event.company_name}`}
+                            className={`text-xs px-1.5 py-0.5 rounded-sm font-medium cursor-pointer hover:scale-105 transition-transform ${getImportanceColor(event.importance)} truncate`}
+                            title={`${event.symbol} - ${event.company_name} (${event.total_news_count}개 뉴스)`}
                           >
                             {event.symbol}
                           </div>
                         ))}
-                        {events.length > 3 && (
-                          <div className="text-xs text-foreground/50 px-1">
-                            +{events.length - 3}개 더
+                        
+                        {/* 더 많은 이벤트가 있을 때 */}
+                        {events.length > 2 && (
+                          <div 
+                            className="text-xs text-center text-foreground/60 cursor-pointer hover:text-primary transition-colors"
+                            onClick={() => {
+                              // 첫 번째 이벤트를 선택하여 상세 보기
+                              handleEventClick(events[0]);
+                            }}
+                            title={`총 ${events.length}개 이벤트`}
+                          >
+                            +{events.length - 2}
                           </div>
                         )}
                       </div>
@@ -639,65 +665,64 @@ function EarningsNewsSection({
           </div>
         </div>
       )}
-
-      {/* 주간 뉴스 리스트 */}
       {weeklyNewsData && !loading.weekly && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {weeklyNewsData.earnings_with_news.map((earning, earningIndex) => (
-            <div key={earningIndex} className="space-y-3">
-              {/* 기업 정보 헤더 */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Badge className="bg-primary/20 text-primary border-0">
+            <div key={earningIndex} className="border-l-2 border-primary/20 pl-4">
+              {/* 기업 헤더 - 한 줄로 간결하게 */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <Badge variant="outline" className="text-xs font-mono">
                     {earning.calendar_info.symbol}
                   </Badge>
-                  <span className="font-medium">{earning.calendar_info.company_name}</span>
-                  <span className="text-sm text-foreground/60">
-                    {new Date(earning.calendar_info.report_date).toLocaleDateString('ko-KR')}
+                  <span className="font-medium text-sm">{earning.calendar_info.company_name}</span>
+                  <span className="text-xs text-foreground/50">
+                    {new Date(earning.calendar_info.report_date).toLocaleDateString('ko-KR', { 
+                      month: 'short', 
+                      day: 'numeric' 
+                    })}
                   </span>
                 </div>
-                <span className="text-xs text-foreground/50">
-                  뉴스 {earning.news_count}개
+                <span className="text-xs text-foreground/40 bg-foreground/5 px-2 py-1 rounded">
+                  {earning.news_count}개
                 </span>
               </div>
 
-              {/* 해당 기업의 뉴스들 (최대 3개까지만 표시) */}
-              <div className="space-y-2 ml-4">
+              {/* 뉴스 리스트 - 간결한 카드 */}
+              <div className="space-y-2">
                 {earning.forecast_news.slice(0, 3).map((news, newsIndex) => (
-                  <article
+                  <div
                     key={newsIndex}
-                    className="glass-subtle p-3 rounded-lg cursor-pointer hover:glass transition-all group"
+                    className="p-3 rounded-lg bg-background/50 border border-foreground/5 hover:border-primary/20 hover:bg-primary/5 transition-all cursor-pointer group"
                     onClick={() => window.open(news.url, '_blank')}
                   >
-                    <div className="flex items-start justify-between mb-1">
-                      <span className="text-xs text-foreground/70">{news.source}</span>
-                      <span className="text-xs text-foreground/50">
-                        {formatTimestamp(news.published_at)}
-                      </span>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs text-foreground/60 font-medium">{news.source}</span>
+                          <span className="text-xs text-foreground/40">
+                            {formatTimestamp(news.published_at)}
+                          </span>
+                        </div>
+                        
+                        <h5 className="text-sm font-medium mb-1 line-clamp-1 group-hover:text-primary transition-colors">
+                          {news.title}
+                        </h5>
+                        
+                        <p className="text-xs text-foreground/60 line-clamp-2 leading-relaxed">
+                          {news.summary}
+                        </p>
+                      </div>
+                      
+                      <ExternalLink size={14} className="text-foreground/30 group-hover:text-primary transition-colors flex-shrink-0 mt-1" />
                     </div>
-                    
-                    <h5 className="text-sm font-medium mb-1 line-clamp-1 group-hover:text-primary transition-colors">
-                      {news.title}
-                    </h5>
-                    
-                    <p className="text-xs text-foreground/60 line-clamp-2 leading-relaxed">
-                      {news.summary}
-                    </p>
-                    
-                    <div className="flex items-center justify-between mt-2">
-                      <Badge variant="outline" className="text-xs">
-                        {news.news_section === 'forecast' ? '예측' : '반응'}
-                      </Badge>
-                      <ExternalLink size={12} className="text-foreground/40 group-hover:text-primary transition-colors" />
-                    </div>
-                  </article>
+                  </div>
                 ))}
                 
-                {/* 더 많은 뉴스가 있는 경우 */}
+                {/* 더 보기 버튼 - 간결하게 */}
                 {earning.news_count > 3 && (
                   <button
                     onClick={() => {
-                      // 해당 기업의 캘린더 이벤트 생성하여 선택
                       const mockEvent: CalendarEventDisplay = {
                         id: earning.calendar_info.id,
                         symbol: earning.calendar_info.symbol,
@@ -723,9 +748,9 @@ function EarningsNewsSection({
                       };
                       onEventSelect(mockEvent);
                     }}
-                    className="text-xs text-primary hover:text-primary/80 underline ml-2"
+                    className="w-full text-center py-2 text-xs text-primary hover:text-primary/80 hover:bg-primary/5 rounded transition-all"
                   >
-                    +{earning.news_count - 3}개 더 보기
+                    +{earning.news_count - 3}개 뉴스 더 보기
                   </button>
                 )}
               </div>
