@@ -9,7 +9,6 @@ import { BottomNavigation } from "./components/BottomNavigation";
 import EnhancedTopGainersBanner from "./components/TopGainersBanner";
 import { EarningsCalendar } from "./components/EarningsCalendar";
 import { HomeSocialFeed } from "./components/HomeSocialFeed";
-import { HomeNewsList } from "./components/HomeNewsList"; 
 import MarketPage from "./components/MarketPage";
 import { MarketDetailPage } from "./components/MarketDetail";
 import { CryptoDetailPage } from "./components/CryptoDetailPage"; // 추가
@@ -570,7 +569,6 @@ function AppContent() {
             <EnhancedTopGainersBanner />
             <EarningsCalendar />
             <HomeSocialFeed isLoggedIn={isLoggedIn} onPostClick={handleSNSPostClick} />
-            <HomeNewsList onViewAll={() => setActiveTab("news")} />
           </div>
         );
 

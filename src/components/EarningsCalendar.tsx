@@ -316,10 +316,9 @@ export function EarningsCalendar() {
 
           
           {/* 캘린더 탭 */}
-
           <TabsContent value="calendar" className="mt-4">
             {/* 요일 헤더 */}
-            <div className="grid grid-cols-7 gap-2 mb-3">
+            <div className="grid grid-cols-7 mb-1">
               {CalendarDateUtils.getDayNames().map((day, index) => (
                 <div key={index} className="text-center text-sm font-medium text-foreground/80 py-2">
                   {day}
@@ -327,8 +326,8 @@ export function EarningsCalendar() {
               ))}
             </div>
 
-            {/* 달력 그리드 - 개선된 디자인 */}
-            <div className="grid grid-cols-7 gap-2 mb-4">
+            {/* 달력 그리드 - 사각형 디자인 */}
+            <div className="grid grid-cols-7 mb-4" style={{ gap: '1px' }}>
               {calendarDays.map((date, index) => {
                 const isCurrentMonth = date.getMonth() === month;
                 const isToday = date.toDateString() === today.toDateString();
@@ -337,32 +336,45 @@ export function EarningsCalendar() {
                 return (
                   <div
                     key={index}
-                    className={`relative aspect-square p-2 rounded-lg border transition-all hover:border-primary/30 ${
+                    className={`relative border border-foreground/10 transition-all hover:border-primary/30 ${
                       isCurrentMonth 
-                        ? 'text-foreground bg-background border-foreground/10' 
-                        : 'text-foreground/40 bg-background/50 border-foreground/5'
+                        ? 'text-foreground bg-background/50' 
+                        : 'text-foreground/40 bg-background/30'
                     } ${
                       isToday 
-                        ? 'bg-primary/10 border-primary/40 text-primary ring-1 ring-primary/20' 
+                        ? 'bg-primary/10 border-primary/40 text-primary' 
                         : ''
                     } ${
                       events.length > 0 
                         ? 'border-primary/20 bg-primary/5' 
                         : ''
                     }`}
+                    style={{ 
+                      minHeight: '80px',
+                      padding: '2px'
+                    }}
                   >
                     {/* 날짜 표시 */}
-                    <div className={`text-sm font-medium mb-1 ${isToday ? 'font-bold' : ''}`}>
+                    <div 
+                      className={`text-sm font-medium ${isToday ? 'font-bold' : ''}`}
+                      style={{ marginBottom: '2px' }}
+                    >
                       {date.getDate()}
                     </div>
+                    
                     {/* 이벤트 표시 - 스택형 심볼 */}
                     {events.length > 0 && (
-                      <div className="flex flex-col gap-0.5 mt-1">
+                      <div className="flex flex-col" style={{ gap: '1px' }}>
                         {events.slice(0, 3).map((event, eventIndex) => (
                           <div
                             key={eventIndex}
                             onClick={() => handleEventClick(event)}
-                            className={`text-xs px-1 py-0.5 rounded text-center font-medium cursor-pointer transition-all hover:scale-105 ${getImportanceColor(event.importance)}`}
+                            className={`text-center font-medium cursor-pointer transition-all hover:scale-105 ${getImportanceColor(event.importance)}`}
+                            style={{
+                              fontSize: '10px',
+                              padding: '1px 2px',
+                              lineHeight: '1.1'
+                            }}
                             title={`${event.symbol} - ${event.company_name}\n뉴스: ${event.total_news_count}개\n섹터: ${event.gics_sector}`}
                           >
                             {event.symbol}
@@ -371,11 +383,16 @@ export function EarningsCalendar() {
                         
                         {events.length > 3 && (
                           <div 
-                            className="text-xs text-center py-0.5 text-foreground/60 bg-foreground/10 rounded cursor-pointer hover:bg-foreground/20 transition-all"
+                            className="text-center text-foreground/60 bg-foreground/10 cursor-pointer hover:bg-foreground/20 transition-all"
                             onClick={() => handleEventClick(events[0])}
+                            style={{
+                              fontSize: '9px',
+                              padding: '1px',
+                              lineHeight: '1.1'
+                            }}
                             title={`총 ${events.length}개 실적 발표`}
                           >
-                            +{events.length - 3}개
+                            +{events.length - 3}
                           </div>
                         )}
                       </div>
