@@ -61,6 +61,25 @@ export function EarningsCalendar() {
   const calendarDays = CalendarDateUtils.getCalendarDays(year, month);
 
   /**
+   * 월 변경 핸들러
+   */
+  const handlePreviousMonth = () => {
+    setCurrentDate(prevDate => {
+      const newDate = new Date(prevDate);
+      newDate.setMonth(prevDate.getMonth() - 1);
+      return newDate;
+    });
+  };
+
+  const handleNextMonth = () => {
+    setCurrentDate(prevDate => {
+      const newDate = new Date(prevDate);
+      newDate.setMonth(prevDate.getMonth() + 1);
+      return newDate;
+    });
+  };
+
+  /**
    * 이벤트 클릭 처리
    */
   const handleEventClick = async (event: CalendarEventDisplay) => {
@@ -260,13 +279,19 @@ export function EarningsCalendar() {
         
         <div className="flex items-center space-x-2">
           {/* 월 네비게이션 */}
-          <button className="p-1 glass-subtle rounded hover:glass transition-all">
+          <button 
+            onClick={handlePreviousMonth}
+            className="p-1 glass-subtle rounded hover:glass transition-all"
+          >
             <ChevronLeft size={16} />
           </button>
           <span className="text-sm font-medium min-w-[120px] text-center">
             {year}년 {CalendarDateUtils.getMonthName(month)}
           </span>
-          <button className="p-1 glass-subtle rounded hover:glass transition-all">
+          <button 
+            onClick={handleNextMonth}
+            className="p-1 glass-subtle rounded hover:glass transition-all"
+          >
             <ChevronRight size={16} />
           </button>
         </div>
@@ -313,8 +338,8 @@ export function EarningsCalendar() {
               ))}
             </div>
 
-            {/* 달력 그리드 - 목업 스타일 그대로 사용 */}
-            <div className="calendar-grid mb-4">
+            {/* 달력 그리드 - 높이 증가 및 날짜 상단 배치 */}
+            <div className="calendar-grid-enhanced mb-4">
               {calendarDays.map((date, index) => {
                 const isCurrentMonth = date.getMonth() === month;
                 const isToday = date.toDateString() === today.toDateString();
@@ -323,7 +348,7 @@ export function EarningsCalendar() {
                 return (
                   <div
                     key={index}
-                    className={`calendar-day relative ${
+                    className={`calendar-day-enhanced relative ${
                       isCurrentMonth ? 'text-foreground' : 'text-foreground/30'
                     } ${
                       isToday ? 'bg-primary/20 text-primary' : ''
@@ -331,22 +356,19 @@ export function EarningsCalendar() {
                       events.length > 0 ? 'has-event' : ''
                     }`}
                   >
-                    {/* 날짜 표시 */}
-                    <span className="text-xs">{date.getDate()}</span>
+                    {/* 날짜 표시 - 상단 좌측에 배치 */}
+                    <span className="calendar-date-number text-xs font-medium">
+                      {date.getDate()}
+                    </span>
                     
-                    {/* 이벤트 표시 - 스택형 심볼 (목업 디자인 + 개선된 표시) */}
+                    {/* 이벤트 표시 - 날짜 아래에 배치 */}
                     {events.length > 0 && (
-                      <div className="absolute inset-x-1 bottom-1 flex flex-col gap-0.5">
+                      <div className="calendar-events-container">
                         {events.slice(0, 3).map((event, eventIndex) => (
                           <div
                             key={eventIndex}
                             onClick={() => handleEventClick(event)}
-                            className={`text-center font-medium cursor-pointer transition-all hover:scale-105 ${getImportanceColor(event.importance)}`}
-                            style={{
-                              fontSize: '9px',
-                              padding: '1px 2px',
-                              lineHeight: '1'
-                            }}
+                            className={`event-badge ${getImportanceColor(event.importance)}`}
                             title={`${event.symbol} - ${event.company_name}\n뉴스: ${event.total_news_count || 0}개`}
                           >
                             {event.symbol}
@@ -355,13 +377,8 @@ export function EarningsCalendar() {
                         
                         {events.length > 3 && (
                           <div 
-                            className="text-center text-foreground/60 bg-foreground/10 cursor-pointer hover:bg-foreground/20 transition-all"
+                            className="event-badge-more"
                             onClick={() => handleEventClick(events[0])}
-                            style={{
-                              fontSize: '8px',
-                              padding: '1px',
-                              lineHeight: '1'
-                            }}
                             title={`총 ${events.length}개 실적 발표`}
                           >
                             +{events.length - 3}
