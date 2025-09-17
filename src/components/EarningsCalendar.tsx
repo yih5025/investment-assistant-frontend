@@ -324,6 +324,7 @@ export function EarningsCalendar() {
             <TabsTrigger value="thisweek">이번주</TabsTrigger>
             <TabsTrigger value="thismonth">이번달</TabsTrigger>
           </TabsList>
+
           
           {/* 캘린더 탭 */}
 
@@ -365,32 +366,27 @@ export function EarningsCalendar() {
                     <div className={`text-sm font-medium mb-1 ${isToday ? 'font-bold' : ''}`}>
                       {date.getDate()}
                     </div>
-                    
-                    {/* 이벤트 심볼들 - 컴팩트한 디자인 */}
+                    {/* 이벤트 표시 - 스택형 심볼 */}
                     {events.length > 0 && (
-                      <div className="space-y-0.5">
-                        {events.slice(0, 2).map((event, eventIndex) => (
+                      <div className="flex flex-col gap-0.5 mt-1">
+                        {events.slice(0, 3).map((event, eventIndex) => (
                           <div
                             key={eventIndex}
                             onClick={() => handleEventClick(event)}
-                            className={`text-xs px-1.5 py-0.5 rounded-sm font-medium cursor-pointer hover:scale-105 transition-transform ${getImportanceColor(event.importance)} truncate`}
-                            title={`${event.symbol} - ${event.company_name} (${event.total_news_count}개 뉴스)`}
+                            className={`text-xs px-1 py-0.5 rounded text-center font-medium cursor-pointer transition-all hover:scale-105 ${getImportanceColor(event.importance)}`}
+                            title={`${event.symbol} - ${event.company_name}\n뉴스: ${event.total_news_count}개\n섹터: ${event.gics_sector}`}
                           >
                             {event.symbol}
                           </div>
                         ))}
                         
-                        {/* 더 많은 이벤트가 있을 때 */}
-                        {events.length > 2 && (
+                        {events.length > 3 && (
                           <div 
-                            className="text-xs text-center text-foreground/60 cursor-pointer hover:text-primary transition-colors"
-                            onClick={() => {
-                              // 첫 번째 이벤트를 선택하여 상세 보기
-                              handleEventClick(events[0]);
-                            }}
-                            title={`총 ${events.length}개 이벤트`}
+                            className="text-xs text-center py-0.5 text-foreground/60 bg-foreground/10 rounded cursor-pointer hover:bg-foreground/20 transition-all"
+                            onClick={() => handleEventClick(events[0])}
+                            title={`총 ${events.length}개 실적 발표`}
                           >
-                            +{events.length - 2}
+                            +{events.length - 3}개
                           </div>
                         )}
                       </div>
