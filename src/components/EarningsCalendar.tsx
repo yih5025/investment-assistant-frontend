@@ -61,25 +61,6 @@ export function EarningsCalendar() {
   const calendarDays = CalendarDateUtils.getCalendarDays(year, month);
 
   /**
-   * 월 네비게이션 함수들
-   */
-  const goToPreviousMonth = () => {
-    setCurrentDate(prevDate => {
-      const newDate = new Date(prevDate);
-      newDate.setMonth(newDate.getMonth() - 1);
-      return newDate;
-    });
-  };
-
-  const goToNextMonth = () => {
-    setCurrentDate(prevDate => {
-      const newDate = new Date(prevDate);
-      newDate.setMonth(newDate.getMonth() + 1);
-      return newDate;
-    });
-  };
-
-  /**
    * 이벤트 클릭 처리
    */
   const handleEventClick = async (event: CalendarEventDisplay) => {
@@ -269,7 +250,7 @@ export function EarningsCalendar() {
 
   // 메인 캘린더 화면 렌더링
   return (
-    <div className="glass-card rounded-xl p-3">
+    <div className="glass-card rounded-xl p-4">
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
@@ -279,21 +260,13 @@ export function EarningsCalendar() {
         
         <div className="flex items-center space-x-2">
           {/* 월 네비게이션 */}
-          <button 
-            onClick={goToPreviousMonth}
-            className="p-1 glass-subtle rounded hover:glass transition-all"
-            title="이전 달"
-          >
+          <button className="p-1 glass-subtle rounded hover:glass transition-all">
             <ChevronLeft size={16} />
           </button>
           <span className="text-sm font-medium min-w-[120px] text-center">
             {year}년 {CalendarDateUtils.getMonthName(month)}
           </span>
-          <button 
-            onClick={goToNextMonth}
-            className="p-1 glass-subtle rounded hover:glass transition-all"
-            title="다음 달"
-          >
+          <button className="p-1 glass-subtle rounded hover:glass transition-all">
             <ChevronRight size={16} />
           </button>
         </div>
@@ -340,8 +313,8 @@ export function EarningsCalendar() {
               ))}
             </div>
 
-             {/* 달력 그리드 - 높이 개선 */}
-             <div className="grid grid-cols-7 gap-1 mb-4">
+            {/* 달력 그리드 - 목업 스타일 그대로 사용 */}
+            <div className="calendar-grid mb-4">
               {calendarDays.map((date, index) => {
                 const isCurrentMonth = date.getMonth() === month;
                 const isToday = date.toDateString() === today.toDateString();
@@ -350,39 +323,31 @@ export function EarningsCalendar() {
                 return (
                   <div
                     key={index}
-                    className={`relative border rounded-lg transition-all hover:border-primary/30 ${
-                      isCurrentMonth 
-                        ? 'text-foreground bg-background border-foreground/10' 
-                        : 'text-foreground/30 bg-background/50 border-foreground/5'
+                    className={`calendar-day relative ${
+                      isCurrentMonth ? 'text-foreground' : 'text-foreground/30'
                     } ${
-                      isToday 
-                        ? 'bg-primary/10 border-primary/40 text-primary ring-1 ring-primary/20' 
-                        : ''
+                      isToday ? 'bg-primary/20 text-primary' : ''
                     } ${
-                      events.length > 0 
-                        ? 'border-primary/20 bg-primary/5' 
-                        : ''
+                      events.length > 0 ? 'has-event' : ''
                     }`}
-                    style={{
-                      height: '80px',
-                      minHeight: '80px',
-                      padding: '4px'
-                    }}
                   >
                     {/* 날짜 표시 */}
-                    <div className={`text-sm font-medium mb-1 ${isToday ? 'font-bold' : ''}`}>
-                      {date.getDate()}
-                    </div>
+                    <span className="text-xs">{date.getDate()}</span>
                     
-                    {/* 이벤트 표시 - 스택형 심볼 (높이 증가로 더 많은 공간 활용) */}
+                    {/* 이벤트 표시 - 스택형 심볼 (목업 디자인 + 개선된 표시) */}
                     {events.length > 0 && (
-                      <div className="flex flex-col gap-0.5 mt-1 flex-1 overflow-hidden">
+                      <div className="absolute inset-x-1 bottom-1 flex flex-col gap-0.5">
                         {events.slice(0, 3).map((event, eventIndex) => (
                           <div
                             key={eventIndex}
                             onClick={() => handleEventClick(event)}
-                            className={`text-xs px-1 py-0.5 rounded text-center font-medium cursor-pointer transition-all hover:scale-105 ${getImportanceColor(event.importance)}`}
-                            title={`${event.symbol} - ${event.company_name}\n뉴스: ${event.total_news_count || 0}개\n섹터: ${event.gics_sector}`}
+                            className={`text-center font-medium cursor-pointer transition-all hover:scale-105 ${getImportanceColor(event.importance)}`}
+                            style={{
+                              fontSize: '9px',
+                              padding: '1px 2px',
+                              lineHeight: '1'
+                            }}
+                            title={`${event.symbol} - ${event.company_name}\n뉴스: ${event.total_news_count || 0}개`}
                           >
                             {event.symbol}
                           </div>
@@ -390,11 +355,16 @@ export function EarningsCalendar() {
                         
                         {events.length > 3 && (
                           <div 
-                            className="text-xs text-center py-0.5 text-foreground/60 bg-foreground/10 rounded cursor-pointer hover:bg-foreground/20 transition-all"
+                            className="text-center text-foreground/60 bg-foreground/10 cursor-pointer hover:bg-foreground/20 transition-all"
                             onClick={() => handleEventClick(events[0])}
+                            style={{
+                              fontSize: '8px',
+                              padding: '1px',
+                              lineHeight: '1'
+                            }}
                             title={`총 ${events.length}개 실적 발표`}
                           >
-                            +{events.length - 3}개
+                            +{events.length - 3}
                           </div>
                         )}
                       </div>
