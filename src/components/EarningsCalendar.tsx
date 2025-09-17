@@ -318,16 +318,16 @@ export function EarningsCalendar() {
           {/* 캘린더 탭 */}
           <TabsContent value="calendar" className="mt-4">
             {/* 요일 헤더 */}
-            <div className="grid grid-cols-7 mb-1">
-              {CalendarDateUtils.getDayNames().map((day, index) => (
-                <div key={index} className="text-center text-sm font-medium text-foreground/80 py-2">
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {['일', '월', '화', '수', '목', '금', '토'].map((day, index) => (
+                <div key={index} className="text-center text-xs font-medium text-foreground/70 py-2">
                   {day}
                 </div>
               ))}
             </div>
 
-            {/* 달력 그리드 - 사각형 디자인 */}
-            <div className="grid grid-cols-7 mb-4" style={{ gap: '1px' }}>
+            {/* 달력 그리드 - 목업 스타일 그대로 사용 */}
+            <div className="calendar-grid mb-4">
               {calendarDays.map((date, index) => {
                 const isCurrentMonth = date.getMonth() === month;
                 const isToday = date.toDateString() === today.toDateString();
@@ -336,46 +336,31 @@ export function EarningsCalendar() {
                 return (
                   <div
                     key={index}
-                    className={`relative border border-foreground/10 transition-all hover:border-primary/30 ${
-                      isCurrentMonth 
-                        ? 'text-foreground bg-background/50' 
-                        : 'text-foreground/40 bg-background/30'
+                    className={`calendar-day relative ${
+                      isCurrentMonth ? 'text-foreground' : 'text-foreground/30'
                     } ${
-                      isToday 
-                        ? 'bg-primary/10 border-primary/40 text-primary' 
-                        : ''
+                      isToday ? 'bg-primary/20 text-primary' : ''
                     } ${
-                      events.length > 0 
-                        ? 'border-primary/20 bg-primary/5' 
-                        : ''
+                      events.length > 0 ? 'has-event' : ''
                     }`}
-                    style={{ 
-                      minHeight: '80px',
-                      padding: '2px'
-                    }}
                   >
                     {/* 날짜 표시 */}
-                    <div 
-                      className={`text-sm font-medium ${isToday ? 'font-bold' : ''}`}
-                      style={{ marginBottom: '2px' }}
-                    >
-                      {date.getDate()}
-                    </div>
+                    <span className="text-xs">{date.getDate()}</span>
                     
-                    {/* 이벤트 표시 - 스택형 심볼 */}
+                    {/* 이벤트 표시 - 스택형 심볼 (목업 디자인 + 개선된 표시) */}
                     {events.length > 0 && (
-                      <div className="flex flex-col" style={{ gap: '1px' }}>
+                      <div className="absolute inset-x-1 bottom-1 flex flex-col gap-0.5">
                         {events.slice(0, 3).map((event, eventIndex) => (
                           <div
                             key={eventIndex}
                             onClick={() => handleEventClick(event)}
                             className={`text-center font-medium cursor-pointer transition-all hover:scale-105 ${getImportanceColor(event.importance)}`}
                             style={{
-                              fontSize: '10px',
+                              fontSize: '9px',
                               padding: '1px 2px',
-                              lineHeight: '1.1'
+                              lineHeight: '1'
                             }}
-                            title={`${event.symbol} - ${event.company_name}\n뉴스: ${event.total_news_count}개\n섹터: ${event.gics_sector}`}
+                            title={`${event.symbol} - ${event.company_name}\n뉴스: ${event.total_news_count || 0}개`}
                           >
                             {event.symbol}
                           </div>
@@ -386,9 +371,9 @@ export function EarningsCalendar() {
                             className="text-center text-foreground/60 bg-foreground/10 cursor-pointer hover:bg-foreground/20 transition-all"
                             onClick={() => handleEventClick(events[0])}
                             style={{
-                              fontSize: '9px',
+                              fontSize: '8px',
                               padding: '1px',
-                              lineHeight: '1.1'
+                              lineHeight: '1'
                             }}
                             title={`총 ${events.length}개 실적 발표`}
                           >
