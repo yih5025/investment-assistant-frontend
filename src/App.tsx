@@ -7,7 +7,7 @@ import { webSocketService } from './services/websocketService';
 
 import { BottomNavigation } from "./components/BottomNavigation";
 import EnhancedTopGainersBanner from "./components/TopGainersBanner";
-import { HomeEventCalendar } from "./components/HomeEventCalendar";
+import { EarningsCalendar } from "./components/EarningsCalendar";
 import { HomeSocialFeed } from "./components/HomeSocialFeed";
 import { HomeNewsList } from "./components/HomeNewsList"; 
 import MarketPage from "./components/MarketPage";
@@ -568,7 +568,7 @@ function AppContent() {
           <div className="space-y-4 relative z-10">
             {renderHeader()}
             <EnhancedTopGainersBanner />
-            <HomeEventCalendar />
+            <EarningsCalendar />
             <HomeSocialFeed isLoggedIn={isLoggedIn} onPostClick={handleSNSPostClick} />
             <HomeNewsList onViewAll={() => setActiveTab("news")} />
           </div>
