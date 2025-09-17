@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { useEarningsCalendar } from "../hooks/useEarningsCalendar";
+import { useEarningsCalendar } from "../hooks/useEarningsCalendar.ts";
 import { CalendarDateUtils } from "../services/earningsCalendarService";
 import { 
   CalendarEventDisplay, 
