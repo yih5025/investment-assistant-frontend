@@ -302,6 +302,33 @@ export interface KimchiPremiumChartResponse {
     data_freshness: string;
   };
 }
+// 빗썸 가격 차트 타입 정의
+export interface CryptoPriceChartDataPoint {
+  timestamp: string;
+  price: number;        // KRW 가격
+  open: number;         // 시가 (KRW)
+  high: number;         // 고가 (KRW)
+  low: number;          // 저가 (KRW)  
+  close: number;        // 종가 (KRW)
+  volume: number;       // 거래량
+  avg_24h_volume: number; // 24시간 평균 누적 거래량
+  data_points: number;  // 해당 시간대 데이터 포인트 수
+}
+
+export interface CryptoPriceRange {
+  min: number;          // KRW 기준
+  max: number;          // KRW 기준
+}
+
+export interface CryptoPriceChartResponse {
+  symbol: string;
+  market_code: string;  // 빗썸 마켓 코드 (예: KRW-BTC)
+  timeframe: string;
+  timestamp: string;
+  data_points: number;
+  price_range: CryptoPriceRange;
+  chart_data: CryptoPriceChartDataPoint[];
+}
 
 /**
  * CryptoDetailService 클래스
@@ -409,6 +436,30 @@ export class CryptoDetailService {
       );
     } catch (error) {
       throw new Error(`Failed to fetch kimchi premium chart for ${symbol}: ${error}`);
+    }
+  }
+  /**
+   * 암호화폐 가격 차트 데이터 조회 (빗썸 기반)
+   */
+  async fetchCryptoPriceChart(
+    symbol: string, 
+    timeframe: '1M' | '30M' | '1H' | '1D' | '1W' | '1MO' = '1D'
+  ): Promise<CryptoPriceChartResponse> {
+    try {
+      const validTimeframes = ['1M', '30M', '1H', '1D', '1W', '1MO'];
+      if (!validTimeframes.includes(timeframe)) {
+        throw new Error(`Invalid timeframe: ${timeframe}`);
+      }
+      
+      const params = new URLSearchParams({
+        timeframe: timeframe
+      });
+      
+      return await this.apiClient.get<CryptoPriceChartResponse>(
+        `/investment/${symbol}/chart?${params}`
+      );
+    } catch (error) {
+      throw new Error(`Failed to fetch crypto price chart for ${symbol}: ${error}`);
     }
   }
 

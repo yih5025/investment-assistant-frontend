@@ -10,15 +10,16 @@ import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, AreaChart, Area } from 'recharts';
 
-// 훅과 서비스 import (실제 구현에서는 별도 파일)
-import { useCryptoDetail, useKimchiPremiumDetail, useKimchiPremiumChart } from '../hooks/useCryptoDetailHook';
+// 훅과 서비스 import
+import { useCryptoDetail, useKimchiPremiumDetail, useKimchiPremiumChart, useCryptoPriceChart } from '../hooks/useCryptoDetailHook';
 
-// 포맷팅 함수들을 formatters.ts에서 직접 import
+// 포맷팅 함수들 import
 import { 
   formatCurrency, formatCryptoCurrency, formatPercent, formatSupply, formatDate, formatTimeAgo,
+  formatCurrencyKRW, formatVolume, safeParseFloat,
   getKimchiPremiumColor, getMarketSentimentColor, getRiskLevelStyle,
   getGitHubActivityGrade, interpretFundingRate, calculateArbitrageProfit,
-  calculatePriceDistances, safeParseFloat, transformInvestmentData
+  calculatePriceDistances, transformInvestmentData
 } from '../utils/formatters';
 
 interface CryptoDetailPageProps {
@@ -27,7 +28,7 @@ interface CryptoDetailPageProps {
 }
 
 export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
-  // 탭 상태 관리 (4탭으로 축소 - concept 제거)
+  // 탭 상태 관리
   const [activeTab, setActiveTab] = useState<"market" | "kimchi" | "derivatives" | "ecosystem">("market");
   const [isFavorite, setIsFavorite] = useState(false);
   
@@ -47,7 +48,19 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
     isInitialLoading
   } = useCryptoDetail(symbol);
   
-  // 김치프리미엄 상세 훅 (필요할 때만 로드)
+  // 가격 차트 훅 추가
+  const {
+    chartData: priceChartData,
+    loading: priceChartLoading,
+    error: priceChartError,
+    selectedTimeframe,
+    changeTimeframe,
+    refreshTimeframe,
+    preloadAllTimeframes,
+    hasData: hasPriceChartData
+  } = useCryptoPriceChart(symbol);
+  
+  // 김치프리미엄 상세 훅
   const {
     data: detailedKimchiData,
     loading: kimchiDetailLoading,
@@ -57,7 +70,7 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
     minVolume
   } = useKimchiPremiumDetail(activeTab === 'kimchi' ? symbol : '');
 
-  // 김치프리미엄 차트 훅 (김치 탭에서만 사용)
+  // 김치프리미엄 차트 훅
   const {
     data: kimchiChartData,
     loading: kimchiChartLoading,
@@ -66,7 +79,12 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
     changeDays: setChartDays
   } = useKimchiPremiumChart(activeTab === 'kimchi' ? symbol : '');
 
-  // 소수점 포맷팅 함수는 formatCryptoCurrency로 대체
+  // 시장 탭 접속시 차트 미리 로드
+  useEffect(() => {
+    if (symbol && activeTab === 'market') {
+      preloadAllTimeframes();
+    }
+  }, [symbol, activeTab, preloadAllTimeframes]);
 
   // 섹션 확장/축소 토글
   const toggleSection = (sectionId: string) => {
@@ -74,6 +92,47 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
       ...prev,
       [sectionId]: !prev[sectionId]
     }));
+  };
+
+  // 차트 타임스탬프 포맷팅
+  const formatTimestampForChart = (timestamp: string, timeframe: string): string => {
+    const date = new Date(timestamp);
+    
+    switch (timeframe) {
+      case '1M':
+        return date.toLocaleTimeString('ko-KR', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          second: '2-digit'
+        });
+      case '30M':
+        return date.toLocaleTimeString('ko-KR', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        });
+      case '1H':
+        return date.toLocaleTimeString('ko-KR', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        });
+      case '1D':
+        return date.toLocaleDateString('ko-KR', { 
+          month: 'short', 
+          day: 'numeric' 
+        });
+      case '1W':
+        return date.toLocaleDateString('ko-KR', { 
+          month: 'short', 
+          day: 'numeric' 
+        });
+      case '1MO':
+        return date.toLocaleDateString('ko-KR', { 
+          month: 'short',
+          year: '2-digit'
+        });
+      default:
+        return date.toLocaleDateString('ko-KR');
+    }
   };
 
   // 로딩 상태
@@ -276,6 +335,149 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
     );
   };
 
+  // 가격 차트 렌더링 함수
+  const renderPriceChart = () => {
+    return (
+      <Card className="glass-card p-4">
+        <h3 className="font-bold mb-3 flex items-center">
+          <BarChart3 size={16} className="mr-2" />
+          가격 차트
+          <Badge className="ml-2 bg-blue-500/20 text-blue-400 border-0 text-xs">
+            빗썸
+          </Badge>
+        </h3>
+        
+        <div className="flex space-x-2 mb-4">
+          {(['1M', '30M', '1H', '1D', '1W', '1MO'] as const).map((timeframe) => (
+            <button
+              key={timeframe}
+              onClick={() => changeTimeframe(timeframe)}
+              disabled={priceChartLoading}
+              className={`px-3 py-1 rounded-lg text-xs transition-all ${
+                selectedTimeframe === timeframe 
+                  ? 'glass-strong text-primary' 
+                  : 'glass-subtle hover:glass'
+              } ${priceChartLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {timeframe === '1MO' ? '30D' : timeframe}
+            </button>
+          ))}
+        </div>
+
+        <div className="h-48 relative">
+          {priceChartLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
+                <p className="text-sm text-foreground/70">차트 데이터 로딩 중...</p>
+              </div>
+            </div>
+          ) : priceChartError ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <AlertTriangle className="h-8 w-8 text-red-400 mx-auto mb-2" />
+                <p className="text-sm text-red-400">{priceChartError}</p>
+                <button 
+                  onClick={() => refreshTimeframe(selectedTimeframe)}
+                  className="mt-2 text-xs text-primary hover:underline"
+                >
+                  다시 시도
+                </button>
+              </div>
+            </div>
+          ) : priceChartData && priceChartData.chart_data.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={priceChartData.chart_data.map(point => ({
+                timestamp: point.timestamp,
+                price: point.price,
+                volume: point.volume,
+                open: point.open,
+                high: point.high,
+                low: point.low,
+                close: point.close
+              }))}>
+                <defs>
+                  <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                <XAxis 
+                  dataKey="timestamp" 
+                  axisLine={false} 
+                  tickLine={false}
+                  tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }}
+                  tickFormatter={(timestamp) => formatTimestampForChart(timestamp, selectedTimeframe)}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false}
+                  tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }}
+                  domain={['dataMin * 0.98', 'dataMax * 1.02']}
+                  tickFormatter={(value) => formatCurrencyKRW(value).replace('₩', '')}
+                />
+                <Tooltip 
+                  formatter={(value: any, name: any) => {
+                    if (name === 'price') return [formatCurrencyKRW(value), '가격'];
+                    if (name === 'volume') return [formatVolume(value), '거래량'];
+                    return [value, name];
+                  }}
+                  labelFormatter={(label) => `시간: ${formatTimestampForChart(label, selectedTimeframe)}`}
+                  contentStyle={{ 
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)', 
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '8px',
+                    fontSize: '12px'
+                  }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="price" 
+                  stroke="#3B82F6" 
+                  strokeWidth={2}
+                  fill="url(#priceGradient)" 
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <Info className="h-8 w-8 text-yellow-400 mx-auto mb-2" />
+                <p className="text-sm text-foreground/70">차트 데이터를 불러올 수 없습니다.</p>
+                <button 
+                  onClick={() => refreshTimeframe(selectedTimeframe)}
+                  className="mt-2 text-xs text-primary hover:underline"
+                >
+                  다시 시도
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {priceChartData && (
+          <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+            <div className="text-center">
+              <div className="text-foreground/70">데이터 포인트</div>
+              <div className="font-medium">{priceChartData.data_points}개</div>
+            </div>
+            <div className="text-center">
+              <div className="text-foreground/70">최저 - 최고</div>
+              <div className="font-medium">
+                {formatCurrencyKRW(priceChartData.price_range.min)} - {formatCurrencyKRW(priceChartData.price_range.max)}
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-foreground/70">마켓</div>
+              <div className="font-medium">{priceChartData.market_code}</div>
+            </div>
+          </div>
+        )}
+      </Card>
+    );
+  };
+
   // 시장 분석 탭
   const renderMarketTab = () => {
     if (!investmentData) {
@@ -292,7 +494,10 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
 
     return (
       <div className="space-y-4">
-        {/* 가격 정보 - 높이 축소 */}
+        {/* 가격 차트 - 가격 분석 바로 위에 추가 */}
+        {renderPriceChart()}
+
+        {/* 가격 정보 */}
         <Card className="glass-card p-4">
           <h3 className="font-bold mb-3">가격 분석</h3>
           
@@ -317,7 +522,7 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
             </div>
           </div>
 
-          {/* ATH/ATL 정보 - 수정된 레이아웃 */}
+          {/* ATH/ATL 정보 */}
           <div className="space-y-2">
             <div className="glass-subtle rounded-lg p-3">
               <div className="flex justify-between items-center">
@@ -496,12 +701,10 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={(() => {
-                  // 차트 데이터 변환
                   const allDates = new Set<string>();
                   const koreanExchanges = kimchiChartData.chart_data.korean_exchanges;
                   const globalExchanges = kimchiChartData.chart_data.global_exchanges || {};
                   
-                  // 모든 날짜 수집
                   Object.values(koreanExchanges).forEach(data => {
                     data.forEach(item => allDates.add(item.date));
                   });
@@ -509,13 +712,11 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
                     data.forEach(item => allDates.add(item.date));
                   });
                   
-                  // 날짜순 정렬
                   const sortedDates = Array.from(allDates).sort();
                   
                   return sortedDates.map(date => {
                     const dataPoint: any = { date };
                     
-                    // 한국 거래소 데이터 추가
                     Object.entries(koreanExchanges).forEach(([exchange, data]) => {
                       const dayData = data.find(item => item.date === date);
                       if (dayData) {
@@ -523,7 +724,6 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
                       }
                     });
                     
-                    // 글로벌 거래소 데이터 추가 (주요 거래소 10개)
                     const majorGlobalExchanges = [
                       'binance', 'coinbase', 'kraken', 'okex', 'huobi', 
                       'kucoin', 'gate', 'bybit', 'bitget', 'mexc'
@@ -566,7 +766,6 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
                     }}
                   />
                   
-                  {/* 한국 거래소 라인 */}
                   {Object.keys(kimchiChartData.chart_data.korean_exchanges).map((exchange, index) => (
                     <Line
                       key={exchange}
@@ -580,7 +779,6 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
                     />
                   ))}
                   
-                  {/* 글로벌 거래소 라인 */}
                   {kimchiChartData.chart_data.global_exchanges && (() => {
                     const majorGlobalExchanges = [
                       'binance', 'coinbase', 'kraken', 'okex', 'huobi', 
@@ -665,7 +863,6 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
             </div>
           </div>
 
-          {/* 차익거래 분석 */}
           <div className="glass-subtle rounded-lg p-3">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center">
@@ -696,7 +893,7 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
           </div>
         </Card>
 
-        {/* 상세 거래소 비교 (확장 가능) */}
+        {/* 상세 거래소 비교 */}
         <Card className="glass-card p-4">
           <div 
             className="flex items-center justify-between cursor-pointer"
@@ -717,7 +914,6 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
                 </div>
               ) : detailedKimchiData ? (
                 <div className="space-y-3">
-                  {/* 정렬 옵션 */}
                   <div className="flex items-center space-x-2">
                     <select 
                       value={sortBy}
@@ -739,7 +935,6 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
                     />
                   </div>
                   
-                  {/* 거래소 비교 리스트 */}
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {detailedKimchiData.exchange_comparisons.slice(0, 20).map((comparison: any, index: number) => (
                       <div key={index} className="glass-subtle rounded-lg p-3">
@@ -767,7 +962,6 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
                     ))}
                   </div>
                   
-                  {/* 통계 요약 */}
                   <div className="glass-subtle rounded-lg p-3">
                     <div className="text-sm font-medium mb-2">통계 요약</div>
                     <div className="grid grid-cols-3 gap-3 text-xs">
@@ -825,7 +1019,6 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
           </div>
           
           <div className="space-y-3">
-            {/* 펀딩비 분석 */}
             <div className="glass-subtle rounded-lg p-3 border-l-4 border-primary">
               <div className="flex justify-between items-center mb-2">
                 <div className="flex items-center">
@@ -859,7 +1052,6 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
               </div>
             </div>
 
-            {/* 미결제약정 */}
             <div className="glass-subtle rounded-lg p-3">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-foreground/70">미결제약정</span>
@@ -887,7 +1079,6 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
               </div>
             </div>
 
-            {/* 시장 심리 종합 */}
             <div className="glass-subtle rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">종합 시장 심리</span>

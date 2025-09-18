@@ -8,12 +8,14 @@ import {
   InvestmentAPIResponse,
   DetailedKimchiPremiumResponse,
   KimchiPremiumChartResponse, // 새로 추가
-  cryptoDetailService 
+  cryptoDetailService,
+  CryptoPriceChartResponse,
+  CryptoPriceChartDataPoint,
+  CryptoPriceRange,
 } from '../services/cryptoDetailService';
 
 /**
  * 로딩 상태 타입 정의
- * 
  * 왜 개별 로딩 상태를 관리하는가:
  * - 각 탭별로 독립적인 로딩 UI 표시 가능
  * - 일부 데이터 로딩 실패해도 다른 탭은 정상 표시
@@ -510,5 +512,88 @@ export function useKimchiPremiumChart(symbol: string) {
     fetchChart,
     changeDays,
     refetch: () => fetchChart(),
+  };
+}
+
+/**
+ * 암호화폐 가격 차트 전용 훅 (빗썸 데이터 기반)
+ */
+export function useCryptoPriceChart(symbol: string) {
+  const [data, setData] = useState<Record<string, CryptoPriceChartResponse | null>>({});
+  const [loading, setLoading] = useState<Record<string, boolean>>({});
+  const [errors, setErrors] = useState<Record<string, string | null>>({});
+  const [selectedTimeframe, setSelectedTimeframe] = useState<'1M' | '30M' | '1H' | '1D' | '1W' | '1MO'>('1D');
+
+  const requestTracker = useRef<Set<string>>(new Set());
+
+  const fetchChart = useCallback(async (timeframe: '1M' | '30M' | '1H' | '1D' | '1W' | '1MO') => {
+    if (!symbol) return;
+
+    const requestKey = `${symbol}-${timeframe}`;
+    if (requestTracker.current.has(requestKey)) return;
+
+    requestTracker.current.add(requestKey);
+    setLoading(prev => ({ ...prev, [timeframe]: true }));
+    setErrors(prev => ({ ...prev, [timeframe]: null }));
+
+    try {
+      const chartData = await cryptoDetailService.fetchCryptoPriceChart(symbol, timeframe);
+      setData(prev => ({ ...prev, [timeframe]: chartData }));
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : `Failed to load ${timeframe} chart`;
+      setErrors(prev => ({ ...prev, [timeframe]: errorMessage }));
+      setData(prev => ({ ...prev, [timeframe]: null }));
+    } finally {
+      setLoading(prev => ({ ...prev, [timeframe]: false }));
+      requestTracker.current.delete(requestKey);
+    }
+  }, [symbol]);
+
+  const changeTimeframe = useCallback((newTimeframe: '1M' | '30M' | '1H' | '1D' | '1W' | '1MO') => {
+    setSelectedTimeframe(newTimeframe);
+    if (!data[newTimeframe] && !loading[newTimeframe]) {
+      fetchChart(newTimeframe);
+    }
+  }, [data, loading, fetchChart]);
+
+  const refreshTimeframe = useCallback((timeframe: '1M' | '30M' | '1H' | '1D' | '1W' | '1MO') => {
+    setData(prev => ({ ...prev, [timeframe]: null }));
+    setErrors(prev => ({ ...prev, [timeframe]: null }));
+    fetchChart(timeframe);
+  }, [fetchChart]);
+
+  const preloadAllTimeframes = useCallback(async () => {
+    const timeframes: ('1M' | '30M' | '1H' | '1D' | '1W' | '1MO')[] = ['1M', '30M', '1H', '1D', '1W', '1MO'];
+    const toLoad = timeframes.filter(tf => !data[tf] && !loading[tf]);
+    if (toLoad.length === 0) return;
+    
+    await Promise.allSettled(toLoad.map(tf => fetchChart(tf)));
+  }, [data, loading, fetchChart]);
+
+  useEffect(() => {
+    if (symbol) {
+      setData({});
+      setLoading({});
+      setErrors({});
+      setSelectedTimeframe('1D');
+      requestTracker.current.clear();
+      fetchChart('1D');
+    }
+  }, [symbol, fetchChart]);
+
+  const currentChartData = data[selectedTimeframe];
+  const isCurrentLoading = loading[selectedTimeframe] || false;
+  const currentError = errors[selectedTimeframe] || null;
+
+  return {
+    chartData: currentChartData,
+    loading: isCurrentLoading,
+    error: currentError,
+    selectedTimeframe,
+    changeTimeframe,
+    fetchChart,
+    refreshTimeframe,
+    preloadAllTimeframes,
+    hasData: !!currentChartData,
   };
 }
