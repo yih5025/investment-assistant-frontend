@@ -1,8 +1,8 @@
 // components/MarketPage.tsx
-// 클릭 이벤트가 추가된 탭 기반 마켓 페이지
+// 로딩 UI가 추가된 탭 기반 마켓 페이지
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { Search, TrendingUp, TrendingDown, Star, Clock, BarChart3, Coins } from 'lucide-react';
+import { Search, TrendingUp, TrendingDown, Star, Clock, BarChart3, Coins, Loader2 } from 'lucide-react';
 import { useMarketData } from '../hooks/useMarketData';
 
 interface MarketPageProps {
@@ -11,6 +11,48 @@ interface MarketPageProps {
 }
 
 type TabType = 'crypto' | 'stocks';
+
+// 로딩 스켈레톤 컴포넌트 (MarketDetailPage와 동일한 스타일)
+const LoadingSkeleton = ({ count = 8 }: { count?: number }) => (
+  <div className="space-y-2">
+    {Array.from({ length: count }).map((_, index) => (
+      <div key={index} className="animate-pulse">
+        <div className="glass-card rounded-xl p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="h-6 bg-gray-700 rounded w-16"></div>
+                <div className="h-5 bg-gray-700 rounded w-12"></div>
+              </div>
+              <div className="h-4 bg-gray-700 rounded w-32 mb-2"></div>
+              <div className="h-3 bg-gray-700 rounded w-24"></div>
+            </div>
+            <div className="text-right">
+              <div className="h-7 bg-gray-700 rounded w-20 mb-2"></div>
+              <div className="h-4 bg-gray-700 rounded w-16"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+// 로딩 상태 컴포넌트
+const LoadingState = ({ message, subMessage }: { message: string; subMessage?: string }) => (
+  <div className="space-y-4">
+    <div className="flex items-center justify-center py-12">
+      <div className="text-center">
+        <Loader2 className="animate-spin mx-auto mb-4" size={32} />
+        <h3 className="text-lg font-medium mb-2">{message}</h3>
+        {subMessage && (
+          <p className="text-sm text-foreground/70">{subMessage}</p>
+        )}
+      </div>
+    </div>
+    <LoadingSkeleton count={6} />
+  </div>
+);
 
 const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick }) => {
   const [activeTab, setActiveTab] = useState<TabType>('stocks');
@@ -113,11 +155,15 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick }) 
         <StockMarketTab 
           stockData={sp500Data}
           onStockClick={handleStockClick}
+          isLoading={overallStatus === 'connecting' || overallStatus === 'reconnecting' || (isEmpty && overallStatus === 'disconnected')}
+          connectionStatus={overallStatus}
         />
       ) : (
         <CryptoMarketTab 
           cryptoData={cryptoData}
           onCryptoClick={handleCryptoClick}
+          isLoading={overallStatus === 'connecting' || overallStatus === 'reconnecting' || (isEmpty && overallStatus === 'disconnected')}
+          connectionStatus={overallStatus}
         />
       )}
     </div>
@@ -128,9 +174,16 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick }) 
 interface StockMarketTabProps {
   stockData: any[];
   onStockClick: (symbol: string) => void;
+  isLoading?: boolean;
+  connectionStatus?: string;
 }
 
-const StockMarketTab: React.FC<StockMarketTabProps> = ({ stockData, onStockClick }) => {
+const StockMarketTab: React.FC<StockMarketTabProps> = ({ 
+  stockData, 
+  onStockClick, 
+  isLoading = false, 
+  connectionStatus 
+}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'price' | 'change' | 'volume'>('change');
   const [displayCount, setDisplayCount] = useState(100); // 초기 100개 표시
@@ -173,6 +226,32 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({ stockData, onStockClick
   const handleLoadMore = () => {
     setDisplayCount(prev => prev + 100);
   };
+
+  // 로딩 상태일 때
+  if (isLoading) {
+    return (
+      <LoadingState 
+        message="S&P 500 데이터 로딩 중"
+        subMessage="실시간 주식 데이터를 가져오고 있습니다. 잠시만 기다려주세요."
+      />
+    );
+  }
+
+  // 데이터가 없을 때
+  if (stockData.length === 0) {
+    return (
+      <div className="glass-card rounded-xl p-8 text-center">
+        <BarChart3 size={48} className="mx-auto mb-4 text-foreground/30" />
+        <h3 className="text-lg font-medium mb-2">주식 데이터 없음</h3>
+        <p className="text-sm text-foreground/70 mb-4">
+          연결 상태: {connectionStatus}
+        </p>
+        <p className="text-xs text-foreground/50">
+          데이터 연결에 문제가 있을 수 있습니다. 잠시 후 다시 시도해주세요.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -274,9 +353,16 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({ stockData, onStockClick
 interface CryptoMarketTabProps {
   cryptoData: any[];
   onCryptoClick?: (symbol: string) => void;
+  isLoading?: boolean;
+  connectionStatus?: string;
 }
 
-const CryptoMarketTab: React.FC<CryptoMarketTabProps> = ({ cryptoData, onCryptoClick }) => {
+const CryptoMarketTab: React.FC<CryptoMarketTabProps> = ({ 
+  cryptoData, 
+  onCryptoClick, 
+  isLoading = false, 
+  connectionStatus 
+}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'price' | 'change' | 'volume'>('change');
   const [displayCount, setDisplayCount] = useState(100); // 초기 100개 표시
@@ -319,6 +405,32 @@ const CryptoMarketTab: React.FC<CryptoMarketTabProps> = ({ cryptoData, onCryptoC
   const handleLoadMore = () => {
     setDisplayCount(prev => prev + 100);
   };
+
+  // 로딩 상태일 때
+  if (isLoading) {
+    return (
+      <LoadingState 
+        message="암호화폐 데이터 로딩 중"
+        subMessage="실시간 암호화폐 데이터를 가져오고 있습니다. 잠시만 기다려주세요."
+      />
+    );
+  }
+
+  // 데이터가 없을 때
+  if (cryptoData.length === 0) {
+    return (
+      <div className="glass-card rounded-xl p-8 text-center">
+        <Coins size={48} className="mx-auto mb-4 text-foreground/30" />
+        <h3 className="text-lg font-medium mb-2">암호화폐 데이터 없음</h3>
+        <p className="text-sm text-foreground/70 mb-4">
+          연결 상태: {connectionStatus}
+        </p>
+        <p className="text-xs text-foreground/50">
+          데이터 연결에 문제가 있을 수 있습니다. 잠시 후 다시 시도해주세요.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
