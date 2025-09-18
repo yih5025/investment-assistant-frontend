@@ -799,24 +799,24 @@ html {
   .calendar-day-enhanced {
     height: 130px;
     min-height: 130px;
-    padding: 6px;
+    padding: 2px;
   }
   
   .calendar-date-number {
-    font-size: 15px;
+    font-size: 14px;
     top: 6px;
     left: 8px;
   }
   
   .calendar-events-container {
-    margin-top: 30px;
-    gap: 4px;
+    margin-top: 20px;
+    gap: 2px;
   }
   
   .event-badge {
     font-size: 11px;
-    padding: 7px 9px;
-    min-height: 26px;
+    padding: 6px 8px;
+    min-height: 24px;
   }
   
   .event-badge-more {
