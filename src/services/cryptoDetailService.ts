@@ -443,10 +443,10 @@ export class CryptoDetailService {
    */
   async fetchCryptoPriceChart(
     symbol: string, 
-    timeframe: '1M' | '30M' | '1H' | '1D' | '1W' | '1MO' = '1D'
+    timeframe: '30M' | '1H' | '1D' | '1W' | '1MO' = '1D'
   ): Promise<CryptoPriceChartResponse> {
     try {
-      const validTimeframes = ['1M', '30M', '1H', '1D', '1W', '1MO'];
+      const validTimeframes = ['30M', '1H', '1D', '1W', '1MO'];
       if (!validTimeframes.includes(timeframe)) {
         throw new Error(`Invalid timeframe: ${timeframe}`);
       }

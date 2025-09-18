@@ -99,12 +99,6 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
     const date = new Date(timestamp);
     
     switch (timeframe) {
-      case '1M':
-        return date.toLocaleTimeString('ko-KR', { 
-          hour: '2-digit', 
-          minute: '2-digit',
-          second: '2-digit'
-        });
       case '30M':
         return date.toLocaleTimeString('ko-KR', { 
           hour: '2-digit', 
@@ -348,7 +342,7 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
         </h3>
         
         <div className="flex space-x-2 mb-4">
-          {(['1M', '30M', '1H', '1D', '1W', '1MO'] as const).map((timeframe) => (
+          {(['30M', '1H', '1D', '1W', '1MO'] as const).map((timeframe) => (
             <button
               key={timeframe}
               onClick={() => changeTimeframe(timeframe)}

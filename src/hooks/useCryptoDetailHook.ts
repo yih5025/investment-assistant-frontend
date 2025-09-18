@@ -522,11 +522,11 @@ export function useCryptoPriceChart(symbol: string) {
   const [data, setData] = useState<Record<string, CryptoPriceChartResponse | null>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, string | null>>({});
-  const [selectedTimeframe, setSelectedTimeframe] = useState<'1M' | '30M' | '1H' | '1D' | '1W' | '1MO'>('1D');
+  const [selectedTimeframe, setSelectedTimeframe] = useState<'30M' | '1H' | '1D' | '1W' | '1MO'>('1D');
 
   const requestTracker = useRef<Set<string>>(new Set());
 
-  const fetchChart = useCallback(async (timeframe: '1M' | '30M' | '1H' | '1D' | '1W' | '1MO') => {
+  const fetchChart = useCallback(async (timeframe: '30M' | '1H' | '1D' | '1W' | '1MO') => {
     if (!symbol) return;
 
     const requestKey = `${symbol}-${timeframe}`;
@@ -549,21 +549,21 @@ export function useCryptoPriceChart(symbol: string) {
     }
   }, [symbol]);
 
-  const changeTimeframe = useCallback((newTimeframe: '1M' | '30M' | '1H' | '1D' | '1W' | '1MO') => {
+  const changeTimeframe = useCallback((newTimeframe: '30M' | '1H' | '1D' | '1W' | '1MO') => {
     setSelectedTimeframe(newTimeframe);
     if (!data[newTimeframe] && !loading[newTimeframe]) {
       fetchChart(newTimeframe);
     }
   }, [data, loading, fetchChart]);
 
-  const refreshTimeframe = useCallback((timeframe: '1M' | '30M' | '1H' | '1D' | '1W' | '1MO') => {
+  const refreshTimeframe = useCallback((timeframe: '30M' | '1H' | '1D' | '1W' | '1MO') => {
     setData(prev => ({ ...prev, [timeframe]: null }));
     setErrors(prev => ({ ...prev, [timeframe]: null }));
     fetchChart(timeframe);
   }, [fetchChart]);
 
   const preloadAllTimeframes = useCallback(async () => {
-    const timeframes: ('1M' | '30M' | '1H' | '1D' | '1W' | '1MO')[] = ['1M', '30M', '1H', '1D', '1W', '1MO'];
+    const timeframes: ('30M' | '1H' | '1D' | '1W' | '1MO')[] = ['30M', '1H', '1D', '1W', '1MO'];
     const toLoad = timeframes.filter(tf => !data[tf] && !loading[tf]);
     if (toLoad.length === 0) return;
     
