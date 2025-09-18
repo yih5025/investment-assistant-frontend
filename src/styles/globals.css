@@ -656,8 +656,6 @@ html {
 
 /* Enhanced Calendar Styles - globals.css에 추가할 스타일 */
 
-/* Enhanced Calendar Styles - globals.css에 추가할 스타일 */
-
 /* 개선된 캘린더 그리드 - 높이 증가 */
 .calendar-grid-enhanced {
   display: grid;
@@ -671,15 +669,15 @@ html {
 
 /* 개선된 캘린더 날짜 칸 - 모바일 터치 최적화된 높이 */
 .calendar-day-enhanced {
-  height: 120px; /* 모바일 터치를 위해 대폭 증가 */
-  min-height: 120px;
+  height: 70px; /* 모바일 터치를 위해 대폭 증가 */
+  min-height: 70px;
   display: flex;
   flex-direction: column;
   background: rgba(255, 255, 255, 0.02);
   transition: all 0.2s ease;
   cursor: pointer;
   position: relative;
-  padding: 6px;
+  padding: 2px;
 }
 
 .calendar-day-enhanced:active {
@@ -694,10 +692,10 @@ html {
 /* 날짜 숫자 스타일 - 상단 좌측에 배치, 텍스트 크기 증가 */
 .calendar-date-number {
   position: absolute;
-  top: 6px;
+  top: 4px;
   left: 8px;
   font-weight: 600;
-  font-size: 14px; /* 기존 12px에서 증가 */
+  font-size: 12px; /* 기존 12px에서 증가 */
   line-height: 1;
   z-index: 2;
 }
@@ -715,9 +713,9 @@ html {
 
 /* 이벤트 배지 스타일 - 모바일 터치 최적화 */
 .event-badge {
-  font-size: 11px; /* 8px에서 11px로 대폭 증가 */
+  font-size: 10px; /* 8px에서 11px로 대폭 증가 */
   font-weight: 600;
-  padding: 6px 8px; /* 패딩 대폭 증가 */
+  padding: 4px 6px; /* 패딩 대폭 증가 */
   border-radius: 4px;
   text-align: center;
   cursor: pointer;
@@ -728,7 +726,7 @@ html {
   text-overflow: ellipsis;
   border: 1px solid;
   font-family: ui-monospace, SFMono-Regular, 'SF Mono', Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  min-height: 24px; /* 최소 터치 영역 확보 */
+  min-height: 20px; /* 최소 터치 영역 확보 */
   display: flex;
   align-items: center;
   justify-content: center;
