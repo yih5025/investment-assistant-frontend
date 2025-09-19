@@ -302,8 +302,8 @@
 /* 더욱 투명하고 반짝이는 Liquid Glass 효과 */
 .glass {
   background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(2px) saturate(180%);
+  -webkit-backdrop-filter: blur(2px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.1),
@@ -327,8 +327,8 @@
 
 .glass-card {
   background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  backdrop-filter: blur(2px) saturate(150%);
+  -webkit-backdrop-filter: blur(2px) saturate(150%);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 
     0 4px 24px rgba(0, 0, 0, 0.08),
@@ -352,8 +352,8 @@
 
 .glass-strong {
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(32px) saturate(200%);
-  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  backdrop-filter: blur(2px) saturate(120%);
+  -webkit-backdrop-filter: blur(2px) saturate(120%);
   border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow: 
     0 12px 40px rgba(0, 0, 0, 0.12),
@@ -681,7 +681,7 @@ html {
 }
 
 .calendar-day-enhanced:active {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(59, 130, 246, 0.1);
   transform: scale(0.98);
 }
 
@@ -730,6 +730,8 @@ html {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: rgba(255, 255, 255, 1);
+  background: #162f6e;
 }
 
 .event-badge:active {
@@ -739,16 +741,16 @@ html {
 
 /* 더 보기 배지 스타일 - 모바일 터치 최적화 */
 .event-badge-more {
-  font-size: 10px; /* 7px에서 10px로 증가 */
+  font-size: 12px; /* 7px에서 10px로 증가 */
   font-weight: 600;
-  padding: 6px 8px; /* 패딩 대폭 증가 */
+  padding: 2px 2px; /* 패딩 대폭 증가 */
   text-align: center;
   cursor: pointer;
   transition: all 0.2s ease;
   line-height: 1.2;
-  color: rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 1);
+  background: #162f6e;
+  border: 1px solid rgba(255, 255, 255, 1);
   border-radius: 4px;
   min-height: 24px; /* 최소 터치 영역 확보 */
   display: flex;
@@ -758,7 +760,7 @@ html {
 
 .event-badge-more:active {
   background: rgba(255, 255, 255, 0.25);
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 1);
   transform: scale(0.95);
 }
 
@@ -784,13 +786,14 @@ html {
   
   .event-badge {
     font-size: 12px; /* 모바일에서 더 크게 */
-    padding: 8px 10px;
+    padding: 5px 5px;
     min-height: 28px; /* 터치 영역 더 증가 */
+
   }
   
   .event-badge-more {
-    font-size: 11px;
-    padding: 8px 10px;
+    font-size: 14px;
+    padding: 5px 5px;
     min-height: 28px;
   }
 }
@@ -815,14 +818,14 @@ html {
   
   .event-badge {
     font-size: 11px;
-    padding: 6px 8px;
-    min-height: 24px;
+    padding: 5px 5px;
+    min-height: 22px;
   }
   
   .event-badge-more {
-    font-size: 10px;
-    padding: 7px 9px;
-    min-height: 26px;
+    font-size: 12px;
+    padding: 2px 2px;
+    min-height: 22px;
   }
 }
 
@@ -850,24 +853,6 @@ html {
   }
 }
 
-/* 다크 모드 대응 */
-@media (prefers-color-scheme: dark) {
-  .calendar-grid-enhanced {
-    background: rgba(0, 0, 0, 0.2);
-  }
-  
-  .calendar-day-enhanced {
-    background: rgba(0, 0, 0, 0.1);
-  }
-  
-  .calendar-day-enhanced:hover {
-    background: rgba(0, 0, 0, 0.2);
-  }
-  
-  .calendar-day-enhanced.has-event {
-    background: rgba(59, 130, 246, 0.15);
-  }
-}
 
 /* 접근성 개선 */
 .calendar-day-enhanced:focus-visible {
