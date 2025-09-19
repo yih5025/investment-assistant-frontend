@@ -660,11 +660,10 @@ html {
 .calendar-grid-enhanced {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
+  gap: 0px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
   overflow: hidden;
-  padding: 1px;
+  padding: 0px;
 }
 
 /* 개선된 캘린더 날짜 칸 - 모바일 터치 최적화된 높이 */
@@ -674,6 +673,7 @@ html {
   display: flex;
   flex-direction: column;
   background: rgba(255, 255, 255, 0.02);
+  border: 1px solid #ffffff29;
   transition: all 0.2s ease;
   cursor: pointer;
   position: relative;
