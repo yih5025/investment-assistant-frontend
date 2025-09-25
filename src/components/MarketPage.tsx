@@ -103,8 +103,8 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick }) 
       {/* 헤더 */}
       <div className="glass-card rounded-2xl p-4">
         <h2 className="text-xl font-bold mb-3 flex items-center">
-          <BarChart3 className="mr-2" size={24} />
-          S&P 500 & Crypto Currency
+          <BarChart3 className="mr-2" size={22} />
+          Real-Time Market Data(SP500 & Crypto & ETF)
         </h2>
         <div className="text-sm text-foreground/70 leading-relaxed">
           {activeTab === 'stocks' ? (

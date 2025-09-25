@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
 
 // 최적화된 WebSocket 서비스 import
-import { webSocketService } from './services/websocketService';
+import { webSocketManager } from './services/WebSocketManager';
 
 import { BottomNavigation } from "./components/BottomNavigation";
 import EnhancedTopGainersBanner from "./components/TopGainersBanner";
@@ -144,22 +144,22 @@ function AppContent() {
     console.log('🚀 App 시작 - WebSocket 서비스 앱 수준 초기화');
     
     // 서비스가 아직 초기화되지 않은 경우에만 초기화
-    if (!webSocketService.getStatus().initialized) {
+    if (!webSocketManager.getStatus().initialized) {
       console.log('🔧 WebSocket 서비스 초기화 중...');
-      webSocketService.initialize();
+      webSocketManager.initialize();
     } else {
       console.log('✅ WebSocket 서비스 이미 초기화됨 - 기존 연결 활용');
     }
 
     // 연결 상태 모니터링 (선택사항)
-    const unsubscribeConnection = webSocketService.subscribe('connection_change', ({ type, status, mode }) => {
+    const unsubscribeConnection = webSocketManager.subscribe('connection_change', ({ type, status, mode }) => {
       console.log(`🔄 ${type} 연결 상태: ${status} (${mode} 모드)`);
     });
 
     // 앱 완전 종료 시에만 서비스 정리
     const handleBeforeUnload = () => {
       console.log('🛑 브라우저/앱 종료 - WebSocket 서비스 정리');
-      webSocketService.shutdown();
+      webSocketManager.shutdown();
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -186,7 +186,7 @@ function AppContent() {
         console.log('📱 앱 포그라운드 복귀');
         
         // 필요한 경우에만 재연결 (끊어진 연결이 있는지 확인)
-        const statuses = webSocketService.getAllConnectionStatuses();
+        const statuses = webSocketManager.getAllConnectionStatuses();
         const needsReconnection = Object.entries(statuses).some(([type, info]) => {
           // crypto는 WebSocket이 끊어진 경우, 나머지는 API 폴링이 멈춘 경우
           if (type === 'crypto' && info.mode === 'websocket' && info.status === 'disconnected') {
@@ -200,7 +200,7 @@ function AppContent() {
         
         if (needsReconnection) {
           console.log('🔄 필요한 연결만 복구');
-          webSocketService.reconnectAll();
+          webSocketManager.reconnectAll();
         }
       }
     };
@@ -580,7 +580,7 @@ function AppContent() {
                 <div className="p-2 rounded-xl glass">
                   <TrendingUp size={24} className="text-primary" />
                 </div>
-                <h1 className="text-2xl font-bold">시장 & 재무</h1>
+                <h1 className="text-2xl font-bold">실시간 시장</h1>
               </div>
             </div>
             <MarketPage 
@@ -598,7 +598,7 @@ function AppContent() {
                 <div className="p-2 rounded-xl glass">
                   <MessageSquare size={24} className="text-primary" />
                 </div>
-                <h1 className="text-2xl font-bold">SNS 피드</h1>
+                <h1 className="text-2xl font-bold">경제 SNS</h1>
               </div>
             </div>
             <SNSPage 
@@ -617,7 +617,7 @@ function AppContent() {
                 <div className="p-2 rounded-xl glass">
                   <Newspaper size={24} className="text-primary" />
                 </div>
-                <h1 className="text-2xl font-bold">뉴스</h1>
+                <h1 className="text-2xl font-bold">경제 뉴스</h1>
               </div>
             </div>
             <NewsPage 
@@ -625,29 +625,6 @@ function AppContent() {
               onLoginPrompt={handleLoginClick} 
               onNewsClick={handleNewsClick} 
             />
-          </div>
-        );
-
-      case "ai":
-        return (
-          <div className="space-y-6 relative z-10">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 rounded-xl glass">
-                  <Bot size={24} className="text-primary" />
-                </div>
-                <h1 className="text-2xl font-bold">AI 분석</h1>
-              </div>
-              {!isLoggedIn && (
-                <button
-                  onClick={handleLoginClick}
-                  className="px-3 py-1 glass rounded-lg text-sm hover:glass-strong transition-all"
-                >
-                  로그인
-                </button>
-              )}
-            </div>
-            <AIAnalysis isLoggedIn={isLoggedIn} onLoginPrompt={handleLoginClick} />
           </div>
         );
 
