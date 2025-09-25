@@ -160,10 +160,27 @@ export class ETFService extends BaseService {
     }
   }
 
+  private async loadWithCachePriority(fetchFn: () => Promise<void>): Promise<void> {
+    const now = Date.now();
+    
+    // 🎯 캐시가 유효하면 즉시 emit 후 백그라운드 업데이트
+    if (this.isCacheValid()) {
+      console.log(`🏦 ETF 캐시 데이터 사용 (${Math.round((now - this.dataTimestamp) / 1000)}초 전)`);
+      
+      // 즉시 캐시된 데이터 emit
+      this.emitEvent('etf_update', this.lastDataCache);
+      
+      // 백그라운드에서 최신 데이터 가져오기
+      setTimeout(() => fetchFn().catch(console.error), 100);
+      return;
+    }
+
+    // 캐시가 없거나 오래된 경우 즉시 새 데이터 가져오기
+    await fetchFn();
+  }
+
   private async performApiRequest(): Promise<void> {
     try {
-      this.setConnectionStatus('connecting');
-      
       const result = await this.fetchETFData(
         this.paginationState.offset, 
         this.paginationState.limit
@@ -182,7 +199,7 @@ export class ETFService extends BaseService {
         console.log(`🏦 ETF 데이터 로드: ${result.data.length}개 (전체: ${this.paginationState.totalCount}개)`);
       }
       
-      this.setConnectionStatus('connected');
+      // 🎯 상태 변경 제거 - api_mode는 폴링 시작 시 한 번만 설정
       this.consecutiveErrors = 0;
       
     } catch (error) {
@@ -238,23 +255,26 @@ export class ETFService extends BaseService {
   }
 
   private startApiPolling(): void {
-    if (this.pollingInterval) {
-      console.log('🏦 ETF 폴링 이미 실행 중');
-      return;
-    }
+    this.stopApiPolling();
 
-    console.log('🏦 ETF 폴링 시작');
-    
-    // 즉시 첫 번째 데이터 로드
-    this.fetchDataFromApi();
-    
-    // 정기 폴링 시작
-    const pollInterval = this.config.apiPollingInterval;
-    this.pollingInterval = setInterval(() => {
+    const marketStatus = this.marketTimeManager.getCurrentMarketStatus();
+    const interval = marketStatus.isOpen 
+      ? this.config.apiPollingInterval 
+      : this.config.marketClosedPollingInterval;
+
+    console.log(`🔄 ETF API 폴링 시작 (${interval}ms 간격, 시장 ${marketStatus.isOpen ? '개장' : '폐장'})`);
+
+    const pollData = async () => {
       if (this.isInitialized && !this.isShutdown) {
-        this.fetchDataFromApi();
+        await this.fetchDataFromApi();
       }
-    }, pollInterval);
+    };
+
+    // 🎯 즉시 한 번 실행 후 api_mode 설정 (SP500 패턴)
+    this.loadWithCachePriority(pollData);
+    this.setConnectionStatus('api_mode');
+    
+    this.pollingInterval = setInterval(pollData, interval);
   }
 
   private stopApiPolling(): void {
