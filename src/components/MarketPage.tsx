@@ -114,25 +114,24 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick, on
       {/* 헤더 */}
       <div className="glass-card rounded-2xl p-4">
         <h2 className="text-xl font-bold mb-3 flex items-center">
-          <BarChart3 className="mr-2" size={22} />
           실시간 SP500 & Crypto & ETF 데이터 분석
         </h2>
         <div className="text-sm text-foreground/70 leading-relaxed">
         {activeTab === 'stocks' ? (
           <p>
-            S&P 500(스탠더드 앤드 푸어스 500)은 미국 증권거래소에 상장된 500개의 대형 기업의 주가 성과를 추적하는 대표적인 주가 지수입니다.<br />
+            S&P 500(Standard & Poor's 500)은 미국 증권거래소에 상장된 500개의 기업의 주가 성과를 추적하는 주가 지수입니다.<br />
             S&P 500 기업들의 실시간 주가 데이터를 확인하고, 각 기업의 상세 정보와 재무 상태를 분석할 수 있습니다.<br />
-            관심 있는 주식을 클릭하여 심층적인 투자 정보를 확인해보세요.
+            관심 있는 주식을 클릭하여 정보를 확인해보세요.
           </p>
         ) : activeTab === 'crypto' ? (
           <p>
             암호화폐(Cryptocurrency)는 블록체인 기술을 기반으로 한 디지털 자산으로, 암호학적 보안 기술을 통해 거래의 안전성을 보장합니다.<br />
             주요 암호화폐의 실시간 가격 데이터를 확인하고, 각 코인의 프로젝트 정보와 기술 분석을 확인할 수 있습니다.<br />
-            24시간 실시간 거래되는 암호화폐 시장의 동향을 파악하고 투자 기회를 모색해보세요.
+            관심 있는 암호화폐를 클릭하여 정보를 확인해보세요.
           </p>
         ) : (
           <p>
-            ETF(Exchange Traded Fund, 상장지수펀드)는 특정 지수 또는 자산군의 수익률을 추종하는 인덱스 펀드로, 거래소에서 주식처럼 실시간 거래가 가능합니다.<br />
+            ETF(Exchange Traded Fund, 상장지수펀드)는 특정 지수 또는 자산군의 수익률을 추종하는 인덱스 펀드 상품 입니다.<br />
             주요 ETF의 실시간 가격 데이터를 확인하고, 각 ETF의 섹터별 구성 비중과 주요 보유종목을 분석할 수 있습니다.<br />
             관심 있는 ETF를 클릭하여 상세 페이지에서 펀드 정보, 보유종목 구성, 운용 수수료 등의 투자 정보를 확인해보세요.
           </p>
