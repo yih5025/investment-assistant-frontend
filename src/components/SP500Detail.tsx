@@ -3,7 +3,7 @@ import { ArrowLeft, Star, TrendingUp, TrendingDown, AlertTriangle, Building, Dol
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
-import { useMarketDetail } from '../hooks/useMarketDetail'; // 위에서 만든 훅
+import { useMarketDetail } from '../hooks/useSP500Detail'; // 위에서 만든 훅
 import { formatCurrency, formatStockChange, formatPercent } from '../utils/formatters';
 
 interface MarketDetailPageProps {
