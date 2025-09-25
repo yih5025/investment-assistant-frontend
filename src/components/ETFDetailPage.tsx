@@ -329,14 +329,14 @@ export function ETFDetailPage({ symbol, onBack }: ETFDetailPageProps) {
                   <p className="text-xs text-foreground/70 mb-1">보수율</p>
                   <p className="font-bold">
                     {etfData.key_metrics?.net_expense_ratio || 
-                     formatPercentage(etfData.profile?.net_expense_ratio ?? 0)}
+                     formatPercentage(etfData.profile?.net_expense_ratio ?? null)}
                   </p>
                 </div>
                 <div className="glass-subtle rounded-lg p-3">
                   <p className="text-xs text-foreground/70 mb-1">배당수익률</p>
                   <p className="font-bold">
                     {etfData.key_metrics?.dividend_yield || 
-                     formatPercentage(etfData.profile?.dividend_yield ?? 0)}
+                     formatPercentage(etfData.profile?.dividend_yield ?? null)}
                   </p>
                 </div>
                 <div className="glass-subtle rounded-lg p-3">
