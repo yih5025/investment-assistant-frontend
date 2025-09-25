@@ -43,6 +43,73 @@ export interface TopGainersData {
   change_percent?: number;
 }
 
+export interface ETFData {
+  symbol: string;
+  name: string;
+  current_price: number;
+  change_amount: number;
+  change_percentage: number;
+  volume: number;
+  previous_close?: number;
+  is_positive?: boolean;
+  change_color?: string;
+  last_updated?: string;
+  rank?: number;
+}
+
+export interface ETFProfile {
+  net_assets?: number;
+  net_expense_ratio?: number;
+  portfolio_turnover?: number;
+  dividend_yield?: number;
+  inception_date?: string;
+  leveraged?: boolean;
+  sectors?: Array<{
+    sector: string;
+    weight: number;
+    color?: string;
+  }>;
+  holdings?: Array<{
+    symbol: string;
+    description: string;
+    weight: number;
+  }>;
+}
+
+export interface ETFDetailData extends ETFData {
+  profile?: ETFProfile;
+  chart_data?: Array<{
+    timestamp: string;
+    price: number;
+    volume: number;
+    datetime: string;
+    raw_timestamp?: number;
+  }>;
+  sector_chart_data?: Array<{
+    name: string;
+    value: number;
+    color: string;
+  }>;
+  holdings_chart_data?: Array<{
+    symbol: string;
+    name: string;
+    weight: number;
+  }>;
+  key_metrics?: {
+    net_assets: string;
+    net_expense_ratio: string;
+    dividend_yield: string;
+    inception_year: string;
+  };
+  timeframe?: string;
+  market_status?: {
+    is_open: boolean;
+    status: string;
+    current_time_et: string;
+    timezone: string;
+  };
+}
+
 export interface TopGainersCategoryStats {
   categories: {
     top_gainers: number;
@@ -73,7 +140,7 @@ export interface WebSocketMessage {
 }
 
 export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnecting' | 'api_mode';
-export type WebSocketType = 'crypto' | 'sp500' | 'topgainers';
+export type WebSocketType = 'crypto' | 'sp500' | 'topgainers' | 'etf';
 export type DataMode = 'websocket' | 'api';
 
 export type EventCallback<T = any> = (data: T) => void;
@@ -104,6 +171,7 @@ export interface ServiceEvents {
   'crypto_update': CryptoData[];
   'sp500_update': SP500Data[];
   'topgainers_update': TopGainersData[];
+  'etf_update': ETFData[];
   'topgainers_category_stats': TopGainersCategoryStats;
   'connection_change': { type: WebSocketType; status: ConnectionStatus; mode: DataMode };
   'error': { type: WebSocketType; error: string };

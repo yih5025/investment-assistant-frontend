@@ -3,12 +3,12 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
-  webSocketService, 
+  webSocketManager, 
   TopGainersData,
   TopGainersCategoryStats,
   ConnectionStatus,
   DataMode
-} from '../services/websocketService';
+} from '../services/WebSocketManager';
 import { MarketTimeManager } from '../utils/marketTime';
 
 // ============================================================================
@@ -46,21 +46,21 @@ export function useTopGainersConnection() {
 
   useEffect(() => {
     // TopGainers 연결 상태 구독
-    const unsubscribe = webSocketService.subscribe('connection_change', ({ type, status, mode }) => {
+    const unsubscribe = webSocketManager.subscribe('connection_change', ({ type, status, mode }) => {
       if (type === 'topgainers') {
         setConnectionStatus({ status, mode });
       }
     });
 
     // 초기 상태 설정
-    const allStatuses = webSocketService.getAllConnectionStatuses();
+    const allStatuses = webSocketManager.getAllConnectionStatuses();
     setConnectionStatus(allStatuses.topgainers);
 
     return unsubscribe;
   }, []);
 
   const reconnect = useCallback(() => {
-    webSocketService.reconnect('topgainers');
+    webSocketManager.reconnect('topgainers');
   }, []);
 
   const isConnected = useMemo(() => {
@@ -92,13 +92,13 @@ export function useTopGainersCategoryStats() {
 
   useEffect(() => {
     // 카테고리 통계 구독
-    const unsubscribe = webSocketService.subscribe('topgainers_category_stats', (stats: TopGainersCategoryStats) => {
+    const unsubscribe = webSocketManager.subscribe('topgainers_category_stats', (stats: TopGainersCategoryStats) => {
       setCategoryStats(stats);
       setLastUpdated(new Date());
     });
 
     // 초기 데이터 로드
-    const initialStats = webSocketService.getTopGainersCategoryStats();
+    const initialStats = webSocketManager.getTopGainersCategoryStats();
     if (initialStats) {
       setCategoryStats(initialStats);
       setLastUpdated(new Date());
@@ -159,12 +159,12 @@ const categorizeTopGainersData = (data: TopGainersData[]): TopGainersCategoryDat
 export function useTopGainersData() {
   // 초기값으로 WebSocket 서비스의 캐시된 데이터 사용
   const [allTopGainersData, setAllTopGainersData] = useState<TopGainersData[]>(() => {
-    const cachedData = webSocketService.getLastCachedData('topgainers');
+    const cachedData = webSocketManager.getLastCachedData('topgainers');
     return cachedData || [];
   });
   
   const [categorizedData, setCategorizedData] = useState<TopGainersCategoryData>(() => {
-    const cachedData = webSocketService.getLastCachedData('topgainers');
+    const cachedData = webSocketManager.getLastCachedData('topgainers');
     if (cachedData && cachedData.length > 0) {
       return categorizeTopGainersData(cachedData);
     }
@@ -176,12 +176,12 @@ export function useTopGainersData() {
   });
   
   const [lastUpdated, setLastUpdated] = useState<Date | null>(() => {
-    const cachedData = webSocketService.getLastCachedData('topgainers');
+    const cachedData = webSocketManager.getLastCachedData('topgainers');
     return cachedData && cachedData.length > 0 ? new Date() : null;
   });
 
   useEffect(() => {
-    const unsubscribe = webSocketService.subscribe('topgainers_update', (data: TopGainersData[]) => {
+    const unsubscribe = webSocketManager.subscribe('topgainers_update', (data: TopGainersData[]) => {
       setAllTopGainersData(data);
       const categorized = categorizeTopGainersData(data);
       setCategorizedData(categorized);
@@ -448,7 +448,7 @@ export function useTopGainersPerformance() {
   useEffect(() => {
     let updateTimes: number[] = [];
 
-    const unsubscribe = webSocketService.subscribe('topgainers_update', () => {
+    const unsubscribe = webSocketManager.subscribe('topgainers_update', () => {
       const now = Date.now();
       
       setUpdateCount(prev => prev + 1);
@@ -505,7 +505,7 @@ export function useTopGainersErrors() {
   const [errors, setErrors] = useState<Array<{ error: string; timestamp: Date }>>([]);
 
   useEffect(() => {
-    const unsubscribe = webSocketService.subscribe('error', ({ type, error }) => {
+    const unsubscribe = webSocketManager.subscribe('error', ({ type, error }) => {
       if (type === 'topgainers') {
         const errorObj = {
           error,
@@ -550,9 +550,9 @@ export function useTopGainersDebug() {
 
   const getServiceStatus = useCallback(() => {
     return {
-      service: webSocketService.getStatus(),
-      topgainersCategories: webSocketService.getAllTopGainersCategories(),
-      categoryStats: webSocketService.getTopGainersCategoryStats(),
+      service: webSocketManager.getStatus(),
+      topgainersCategories: webSocketManager.getAllTopGainersCategories(),
+      categoryStats: webSocketManager.getTopGainersCategoryStats(),
     };
   }, []);
 

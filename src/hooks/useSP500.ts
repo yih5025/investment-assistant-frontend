@@ -3,11 +3,11 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
-  webSocketService, 
+  webSocketManager, 
   SP500Data,
   ConnectionStatus,
   DataMode
-} from '../services/websocketService';
+} from '../services/WebSocketManager';
 import { MarketTimeManager } from '../utils/marketTime';
 
 // ============================================================================
@@ -54,21 +54,21 @@ export function useSP500Connection() {
 
   useEffect(() => {
     // SP500 연결 상태 구독
-    const unsubscribe = webSocketService.subscribe('connection_change', ({ type, status, mode }) => {
+    const unsubscribe = webSocketManager.subscribe('connection_change', ({ type, status, mode }) => {
       if (type === 'sp500') {
         setConnectionStatus({ status, mode });
       }
     });
 
     // 초기 상태 설정
-    const allStatuses = webSocketService.getAllConnectionStatuses();
+    const allStatuses = webSocketManager.getAllConnectionStatuses();
     setConnectionStatus(allStatuses.sp500);
 
     return unsubscribe;
   }, []);
 
   const reconnect = useCallback(() => {
-    webSocketService.reconnect('sp500');
+    webSocketManager.reconnect('sp500');
   }, []);
 
   const isConnected = useMemo(() => {
@@ -100,7 +100,7 @@ export function useSP500Stats() {
 
   useEffect(() => {
     // SP500 통계 구독 (데이터 업데이트 시 자동 계산)
-    const unsubscribe = webSocketService.subscribe('sp500_update', (data: SP500Data[]) => {
+    const unsubscribe = webSocketManager.subscribe('sp500_update', (data: SP500Data[]) => {
       if (data.length > 0) {
         const calculatedStats = calculateSP500Stats(data);
         setStats(calculatedStats);
@@ -176,17 +176,17 @@ const transformSP500Data = (data: SP500Data[]): SP500Item[] => {
 export function useSP500Data() {
   // 초기값으로 WebSocket 서비스의 캐시된 데이터 사용
   const [allSP500Data, setAllSP500Data] = useState<SP500Item[]>(() => {
-    const cachedData = webSocketService.getLastCachedData('sp500');
+    const cachedData = webSocketManager.getLastCachedData('sp500');
     return cachedData ? transformSP500Data(cachedData) : [];
   });
   
   const [lastUpdated, setLastUpdated] = useState<Date | null>(() => {
-    const cachedData = webSocketService.getLastCachedData('sp500');
+    const cachedData = webSocketManager.getLastCachedData('sp500');
     return cachedData && cachedData.length > 0 ? new Date() : null;
   });
 
   useEffect(() => {
-    const unsubscribe = webSocketService.subscribe('sp500_update', (data: SP500Data[]) => {
+    const unsubscribe = webSocketManager.subscribe('sp500_update', (data: SP500Data[]) => {
       console.log('SP500 데이터 수신:', data.length, '개 항목');
       
       const transformedData = transformSP500Data(data);
@@ -455,10 +455,10 @@ export function useSP500Performance() {
     let updateTimes: number[] = [];
     let apiStartTime: number = 0;
 
-    const unsubscribe = webSocketService.subscribe('sp500_update', (data) => {
+    const unsubscribe = webSocketManager.subscribe('sp500_update', (data) => {
       const now = Date.now();
       
-      // API 응답 시간 계산 (실제로는 webSocketService에서 측정해야 하지만 여기서 근사치 계산)
+      // API 응답 시간 계산 (실제로는 webSocketManager에서 측정해야 하지만 여기서 근사치 계산)
       if (apiStartTime > 0) {
         setApiCallDuration(now - apiStartTime);
       }
@@ -521,7 +521,7 @@ export function useSP500Errors() {
   const [errors, setErrors] = useState<Array<{ error: string; timestamp: Date }>>([]);
 
   useEffect(() => {
-    const unsubscribe = webSocketService.subscribe('error', ({ type, error }) => {
+    const unsubscribe = webSocketManager.subscribe('error', ({ type, error }) => {
       if (type === 'sp500') {
         const errorObj = {
           error,
@@ -736,8 +736,8 @@ export function useSP500Debug() {
 
   const getServiceStatus = useCallback(() => {
     return {
-      service: webSocketService.getStatus(),
-      sp500Stats: webSocketService.getAllConnectionStatuses().sp500,
+      service: webSocketManager.getStatus(),
+      sp500Stats: webSocketManager.getAllConnectionStatuses().sp500,
     };
   }, []);
 

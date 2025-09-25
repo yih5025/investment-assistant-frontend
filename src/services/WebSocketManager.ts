@@ -4,6 +4,7 @@
 import { CryptoService } from './CryptoService';
 import { SP500Service } from './SP500Service';
 import { TopGainersService } from './TopGainersService';
+import { ETFService } from './ETFService';
 import { MarketTimeManager } from '../utils/marketTime';
 import { 
   ConnectionStatus, 
@@ -16,7 +17,8 @@ import {
   CryptoData,
   SP500Data,
   TopGainersData,
-  TopGainersCategoryStats
+  TopGainersCategoryStats,
+  ETFData
 } from './types';
 
 // Re-export types for external use
@@ -31,13 +33,15 @@ export type {
   CryptoData,
   SP500Data,
   TopGainersData,
-  TopGainersCategoryStats
+  TopGainersCategoryStats,
+  ETFData
 } from './types';
 
 export class WebSocketManager {
   private cryptoService: CryptoService;
   private sp500Service: SP500Service;
   private topGainersService: TopGainersService;
+  private etfService: ETFService;
   private marketTimeManager = new MarketTimeManager();
   
   private isInitialized = false;
@@ -48,9 +52,10 @@ export class WebSocketManager {
     this.cryptoService = new CryptoService(customConfig);
     this.sp500Service = new SP500Service(customConfig);
     this.topGainersService = new TopGainersService(customConfig);
+    this.etfService = new ETFService(customConfig);
 
     this.setupEventForwarding();
-    console.log('🚀 WebSocketManager 초기화: 분리된 서비스 아키텍처');
+    console.log('🚀 WebSocketManager 초기화: 분리된 서비스 아키텍처 (ETF 포함)');
   }
 
   // ============================================================================
@@ -90,6 +95,7 @@ export class WebSocketManager {
     this.cryptoService.shutdown();
     this.sp500Service.shutdown();
     this.topGainersService.shutdown();
+    this.etfService.shutdown();
 
     // 이벤트 구독자 정리
     this.subscribers.clear();
@@ -110,6 +116,9 @@ export class WebSocketManager {
     
     await this.delay(300);
     this.topGainersService.initialize();
+    
+    await this.delay(300);
+    this.etfService.initialize();
     
     console.log('✅ 모든 분리된 서비스 초기화 완료');
   }
@@ -194,6 +203,19 @@ export class WebSocketManager {
     this.topGainersService.subscribe('error', (data) => {
       this.emitEvent('error', { type: 'topgainers', error: data.error });
     });
+
+    // ETFService 이벤트 포워딩
+    this.etfService.subscribe('etf_update', (data: ETFData[]) => {
+      this.emitEvent('etf_update', data);
+    });
+    
+    this.etfService.subscribe('connection_change', (data) => {
+      this.emitEvent('connection_change', { type: 'etf', status: data.status, mode: data.mode });
+    });
+    
+    this.etfService.subscribe('error', (data) => {
+      this.emitEvent('error', { type: 'etf', error: data.error });
+    });
   }
 
   // ============================================================================
@@ -209,6 +231,8 @@ export class WebSocketManager {
         return this.sp500Service.getConnectionStatus();
       case 'topgainers':
         return this.topGainersService.getConnectionStatus();
+      case 'etf':
+        return this.etfService.getConnectionStatus();
       default:
         return 'disconnected';
     }
@@ -220,6 +244,7 @@ export class WebSocketManager {
         return 'websocket';
       case 'sp500':
       case 'topgainers':
+      case 'etf':
         return 'api';
       default:
         return 'websocket';
@@ -240,6 +265,10 @@ export class WebSocketManager {
         status: this.topGainersService.getConnectionStatus(), 
         mode: 'api' 
       },
+      etf: { 
+        status: this.etfService.getConnectionStatus(), 
+        mode: 'api' 
+      }
     };
   }
 
@@ -256,6 +285,9 @@ export class WebSocketManager {
         break;
       case 'topgainers':
         this.topGainersService.reconnect();
+        break;
+      case 'etf':
+        this.etfService.reconnect();
         break;
     }
   }
@@ -284,6 +316,7 @@ export class WebSocketManager {
     // API 서비스들 새로고침
     this.sp500Service.refreshData();
     this.topGainersService.refreshData();
+    this.etfService.refreshData();
     
     // WebSocket 서비스는 연결 상태만 확인
     const cryptoStatus = this.cryptoService.getConnectionStatus();
@@ -302,6 +335,15 @@ export class WebSocketManager {
 
   public getSP500PaginationState() {
     return this.sp500Service.getPaginationState();
+  }
+
+  // ETF 전용 메서드들
+  public async loadMoreETFData(): Promise<boolean> {
+    return await this.etfService.loadMoreData();
+  }
+
+  public getETFPaginationState() {
+    return this.etfService.getPaginationState();
   }
 
   // TopGainers 전용 메서드들
@@ -326,6 +368,8 @@ export class WebSocketManager {
         return this.sp500Service.getLastCachedData();
       case 'topgainers':
         return this.topGainersService.getLastCachedData();
+      case 'etf':
+        return this.etfService.getLastCachedData();
       default:
         return null;
     }
@@ -346,7 +390,8 @@ export class WebSocketManager {
       services: {
         crypto: this.cryptoService.getStatus(),
         sp500: this.sp500Service.getStatus(),
-        topgainers: this.topGainersService.getStatus()
+        topgainers: this.topGainersService.getStatus(),
+        etf: this.etfService.getStatus()
       },
       connectionStatuses: this.getAllConnectionStatuses(),
       subscriberCounts: Object.fromEntries(

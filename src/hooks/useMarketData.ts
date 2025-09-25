@@ -6,6 +6,7 @@ import {
   webSocketManager,
   CryptoData, 
   SP500Data, 
+  ETFData,
   ConnectionStatus, 
   WebSocketType,
   DataMode 
@@ -24,7 +25,7 @@ export interface MarketItem {
   change: number;
   changePercent: number;
   volume: string;
-  type: 'crypto' | 'stock';
+  type: 'crypto' | 'stock' | 'etf';
   marketCap?: string;
   sector?: string;
 }
@@ -33,12 +34,13 @@ export interface MarketItem {
 // 유틸리티 함수들
 // ============================================================================
 
-const formatPrice = (price: number, type: 'crypto' | 'stock'): string => {
+const formatPrice = (price: number, type: 'crypto' | 'stock' | 'etf'): string => {
   if (type === 'crypto') {
     if (price >= 1000000) return `₩${(price / 1000000).toFixed(1)}M`;
     if (price >= 1000) return `₩${price.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}`;
     return `₩${price.toFixed(2)}`;
   } else {
+    // stock or etf
     return `$${price.toFixed(2)}`;
   }
 };
@@ -56,9 +58,10 @@ export function useWebSocketConnection() {
     
     // 초기 상태
     return {
-      crypto: { status: 'disconnected', mode: 'websocket' },
+      crypto: { status: 'disconnected', mode: 'websocket' },  
       sp500: { status: 'disconnected', mode: 'api' },
       topgainers: { status: 'disconnected', mode: 'api' },
+      etf: { status: 'disconnected', mode: 'api' },
     };
   });
 
@@ -267,6 +270,72 @@ export function useSP500Data() {
   };
 }
 
+export function useETFData() {
+  // 🎯 캐시된 데이터로 초기화
+  const [etfData, setETFData] = useState<MarketItem[]>(() => {
+    const cachedData = webSocketManager.getLastCachedData('etf');
+    if (cachedData && cachedData.length > 0) {
+      console.log('📦 ETF 캐시된 데이터로 즉시 초기화:', cachedData.length, '개');
+      return cachedData.map(etf => {
+        const name = etf.name || `${etf.symbol} ETF`;
+        const currentPrice = etf.current_price || etf.price || 0;
+        const changeAmount = etf.change_amount || 0;
+        const changePercent = etf.change_percentage || 0;
+        
+        return {
+          symbol: etf.symbol,
+          name,
+          price: currentPrice,
+          change: changeAmount,
+          changePercent,
+          volume: formatVolume(etf.volume || 0),
+          type: 'etf' as const,
+        };
+      });
+    }
+    return [];
+  });
+
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(() => {
+    const cachedData = webSocketManager.getLastCachedData('etf');
+    return cachedData && cachedData.length > 0 ? new Date() : null;
+  });
+
+  useEffect(() => {
+    const unsubscribe = webSocketManager.subscribe('etf_update', (data: ETFData[]) => {
+      const items: MarketItem[] = data.map(etf => {
+        const name = etf.name || `${etf.symbol} ETF`;
+        const currentPrice = etf.current_price || 0;
+        const changeAmount = etf.change_amount || 0;
+        const changePercent = etf.change_percentage || 0;
+        
+        return {
+          symbol: etf.symbol,
+          name,
+          price: currentPrice,
+          change: changeAmount,
+          changePercent,
+          volume: formatVolume(etf.volume || 0),
+          type: 'etf' as const,
+        };
+      });
+
+      setETFData(items);
+      setLastUpdated(new Date());
+      
+      console.log('🏦 ETF 데이터 업데이트:', items.length, '개');
+    });
+
+    return unsubscribe;
+  }, []); // 🎯 빈 의존성 배열 - 한 번만 구독
+
+  return {
+    etfData,
+    lastUpdated,
+    isEmpty: etfData.length === 0,
+  };
+}
+
 // ============================================================================
 // 🎯 통합 마켓 데이터 훅 (최적화됨)
 // ============================================================================
@@ -274,13 +343,14 @@ export function useSP500Data() {
 export function useMarketData() {
   const { cryptoData } = useCryptoData();
   const { sp500Data } = useSP500Data();
+  const { etfData } = useETFData();
   const { connectionStatuses, isConnected, isAnyConnected, overallStatus } = useWebSocketConnection();
 
   const allMarketData = useMemo(() => {
-    return [...cryptoData, ...sp500Data];
-  }, [cryptoData, sp500Data]);
+    return [...cryptoData, ...sp500Data, ...etfData];
+  }, [cryptoData, sp500Data, etfData]);
 
-  const filterByType = useCallback((type: 'all' | 'crypto' | 'stock') => {
+  const filterByType = useCallback((type: 'all' | 'crypto' | 'stock' | 'etf') => {
     if (type === 'all') return allMarketData;
     return allMarketData.filter(item => item.type === type);
   }, [allMarketData]);
@@ -312,6 +382,17 @@ export function useMarketData() {
     return webSocketManager.getSP500PaginationState();
   }, []);
 
+  // ETF 더보기 로드
+  const loadMoreETF = useCallback(async () => {
+    console.log('🔄 ETF 더보기 요청');
+    return await webSocketManager.loadMoreETFData();
+  }, []);
+
+  // ETF 페이징 상태 조회
+  const getETFPaginationState = useCallback(() => {
+    return webSocketManager.getETFPaginationState();
+  }, []);
+
   // 🎯 불필요한 초기화 로직 제거 - App.tsx에서 이미 처리됨
   // useEffect 없음: 페이지 마운트/언마운트와 독립적
 
@@ -319,6 +400,7 @@ export function useMarketData() {
     allMarketData,
     cryptoData,
     sp500Data,
+    etfData,
     connectionStatuses,
     isConnected,
     isAnyConnected,
@@ -329,9 +411,12 @@ export function useMarketData() {
     refreshData,
     loadMoreSP500,
     getSP500PaginationState,
+    loadMoreETF,
+    getETFPaginationState,
     isEmpty: allMarketData.length === 0,
     cryptoCount: cryptoData.length,
     stockCount: sp500Data.length,
+    etfCount: etfData.length,
     totalCount: allMarketData.length,
   };
 }
