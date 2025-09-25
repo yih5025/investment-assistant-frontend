@@ -63,7 +63,9 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick }) 
     sp500Data,
     overallStatus,
     isEmpty,
-    refreshData
+    refreshData,
+    loadMoreSP500,
+    getSP500PaginationState
   } = useMarketData();
 
   // 주식 클릭 핸들러
@@ -157,6 +159,8 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick }) 
           onStockClick={handleStockClick}
           isLoading={overallStatus === 'connecting' || overallStatus === 'reconnecting' || (isEmpty && overallStatus === 'disconnected')}
           connectionStatus={overallStatus}
+          loadMoreSP500={loadMoreSP500}
+          getSP500PaginationState={getSP500PaginationState}
         />
       ) : (
         <CryptoMarketTab 
@@ -176,17 +180,21 @@ interface StockMarketTabProps {
   onStockClick: (symbol: string) => void;
   isLoading?: boolean;
   connectionStatus?: string;
+  loadMoreSP500?: () => Promise<boolean>;
+  getSP500PaginationState?: () => any;
 }
 
 const StockMarketTab: React.FC<StockMarketTabProps> = ({ 
   stockData, 
   onStockClick, 
   isLoading = false, 
-  connectionStatus 
+  connectionStatus,
+  loadMoreSP500,
+  getSP500PaginationState
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'price' | 'change' | 'volume'>('change');
-  const [displayCount, setDisplayCount] = useState(100); // 초기 100개 표시
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const filteredAndSortedStocks = useMemo(() => {
     let result = stockData;
@@ -219,12 +227,33 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({
     return result;
   }, [stockData, searchQuery, sortBy]);
 
-  // 현재 표시할 데이터
-  const displayedStocks = filteredAndSortedStocks.slice(0, displayCount);
-  const hasMore = displayCount < filteredAndSortedStocks.length;
+  // 페이징 상태 조회
+  const paginationState = getSP500PaginationState ? getSP500PaginationState() : {
+    hasMore: false,
+    isLoading: false,
+    currentCount: stockData.length,
+    totalCount: stockData.length
+  };
 
-  const handleLoadMore = () => {
-    setDisplayCount(prev => prev + 100);
+  // 더보기 핸들러
+  const handleLoadMore = async () => {
+    if (!loadMoreSP500 || isLoadingMore || !paginationState.hasMore) {
+      return;
+    }
+
+    setIsLoadingMore(true);
+    try {
+      const success = await loadMoreSP500();
+      if (success) {
+        console.log('✅ SP500 더보기 로드 성공');
+      } else {
+        console.log('⚠️ SP500 더보기 로드 실패 또는 더 이상 데이터 없음');
+      }
+    } catch (error) {
+      console.error('❌ SP500 더보기 로드 오류:', error);
+    } finally {
+      setIsLoadingMore(false);
+    }
   };
 
   // 로딩 상태일 때
@@ -293,7 +322,7 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({
 
       {/* 주식 리스트 */}
       <div className="space-y-2">
-        {displayedStocks.map((stock) => (
+        {filteredAndSortedStocks.map((stock) => (
           <div
             key={stock.symbol}
             onClick={() => onStockClick(stock.symbol)}
@@ -334,17 +363,39 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({
         ))}
       </div>
 
-      {/* 더보기 버튼 */}
-      {hasMore && (
-        <div className="text-center pt-4">
-          <button
-            onClick={handleLoadMore}
-            className="flex items-center space-x-2 mx-auto px-6 py-3 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors"
-          >
-            <span>더보기</span>
-          </button>
+      {/* 페이징 정보 및 더보기 버튼 */}
+      <div className="space-y-4 pt-4">
+        {/* 페이징 정보 */}
+        <div className="text-center text-sm text-foreground/60">
+          {searchQuery ? (
+            `검색 결과: ${filteredAndSortedStocks.length}개`
+          ) : (
+            `표시 중: ${paginationState.currentCount}개 ${paginationState.totalCount > paginationState.currentCount ? `/ 전체 ${paginationState.totalCount}개` : ''}`
+          )}
         </div>
-      )}
+
+        {/* 더보기 버튼 - 검색 중이 아니고 더 가져올 데이터가 있을 때만 표시 */}
+        {!searchQuery && paginationState.hasMore && (
+          <div className="text-center">
+            <button
+              onClick={handleLoadMore}
+              disabled={isLoadingMore || paginationState.isLoading}
+              className="flex items-center space-x-2 mx-auto px-6 py-3 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoadingMore || paginationState.isLoading ? (
+                <>
+                  <Loader2 className="animate-spin" size={16} />
+                  <span>로딩 중...</span>
+                </>
+              ) : (
+                <>
+                  <span>더보기 (+50개)</span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

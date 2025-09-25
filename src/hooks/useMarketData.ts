@@ -3,13 +3,13 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
-  webSocketService, 
+  webSocketManager,
   CryptoData, 
   SP500Data, 
   ConnectionStatus, 
   WebSocketType,
   DataMode 
-} from '../services/websocketService';
+} from '../services/WebSocketManager';
 import { MarketTimeManager } from '../utils/marketTime';
 import { formatVolume } from '../utils/formatters';
 
@@ -50,8 +50,8 @@ const formatPrice = (price: number, type: 'crypto' | 'stock'): string => {
 export function useWebSocketConnection() {
   const [connectionStatuses, setConnectionStatuses] = useState<Record<WebSocketType, { status: ConnectionStatus; mode: DataMode }>>(() => {
     // 🎯 서비스가 이미 초기화되어 있으면 현재 상태 사용
-    if (webSocketService.getStatus().initialized) {
-      return webSocketService.getAllConnectionStatuses();
+    if (webSocketManager.getStatus().initialized) {
+      return webSocketManager.getAllConnectionStatuses();
     }
     
     // 초기 상태
@@ -66,20 +66,20 @@ export function useWebSocketConnection() {
 
   useEffect(() => {
     // 🎯 서비스가 아직 초기화되지 않은 경우에만 초기화
-    if (!webSocketService.getStatus().initialized) {
-      console.log('🚀 앱 수준에서 WebSocket 서비스 초기화 중...');
-      webSocketService.initialize();
+    if (!webSocketManager.getStatus().initialized) {
+      console.log('🚀 앱 수준에서 WebSocketManager 초기화 중...');
+      webSocketManager.initialize();
     } else {
-      console.log('✅ WebSocket 서비스 이미 초기화됨 - 기존 연결 활용');
+      console.log('✅ WebSocketManager 이미 초기화됨 - 기존 연결 활용');
     }
 
     // 현재 연결 상태 동기화
-    setConnectionStatuses(webSocketService.getAllConnectionStatuses());
+    setConnectionStatuses(webSocketManager.getAllConnectionStatuses());
 
-    const unsubscribe = webSocketService.subscribe('connection_change', ({ type, status, mode }) => {
+    const unsubscribe = webSocketManager.subscribe('connection_change', (data) => {
       setConnectionStatuses(prev => ({
         ...prev,
-        [type]: { status, mode }
+        [data.type]: { status: data.status, mode: data.mode }
       }));
     });
 
@@ -87,18 +87,18 @@ export function useWebSocketConnection() {
     return () => {
       unsubscribe();
       console.log('📦 useWebSocketConnection 언마운트 - 연결 유지');
-      // webSocketService.shutdown() 호출하지 않음!
+      // webSocketManager.shutdown() 호출하지 않음!
     };
   }, []); // 🎯 빈 의존성 배열 - 한 번만 실행
 
   const reconnect = useCallback((type: WebSocketType) => {
     console.log(`🔄 사용자 요청: ${type} 재연결`);
-    webSocketService.reconnect(type);
+    webSocketManager.reconnect(type);
   }, []);
 
   const reconnectAll = useCallback(() => {
     console.log('🔄 사용자 요청: 전체 재연결');
-    webSocketService.reconnectAll();
+    webSocketManager.reconnectAll();
   }, []);
 
   const isConnected = useCallback((type: WebSocketType) => {
@@ -140,7 +140,7 @@ export function useWebSocketConnection() {
 export function useCryptoData() {
   // 🎯 캐시된 데이터로 초기화 - 페이지 전환 시 즉시 표시
   const [cryptoData, setCryptoData] = useState<MarketItem[]>(() => {
-    const cachedData = webSocketService.getLastCachedData('crypto');
+    const cachedData = webSocketManager.getLastCachedData('crypto');
     if (cachedData && cachedData.length > 0) {
       console.log('📦 Crypto 캐시된 데이터로 즉시 초기화:', cachedData.length, '개');
       return cachedData.map(crypto => {
@@ -165,12 +165,12 @@ export function useCryptoData() {
   });
 
   const [lastUpdated, setLastUpdated] = useState<Date | null>(() => {
-    const cachedData = webSocketService.getLastCachedData('crypto');
+    const cachedData = webSocketManager.getLastCachedData('crypto');
     return cachedData && cachedData.length > 0 ? new Date() : null;
   });
 
   useEffect(() => {
-    const unsubscribe = webSocketService.subscribe('crypto_update', (data: CryptoData[]) => {
+    const unsubscribe = webSocketManager.subscribe('crypto_update', (data: CryptoData[]) => {
       const items: MarketItem[] = data.map(crypto => {
         const marketCode = (crypto as any).market_code || crypto.market || '';
         const symbol = (crypto as any).symbol || marketCode.replace('KRW-', '');
@@ -206,7 +206,7 @@ export function useCryptoData() {
 export function useSP500Data() {
   // 🎯 캐시된 데이터로 초기화
   const [sp500Data, setSP500Data] = useState<MarketItem[]>(() => {
-    const cachedData = webSocketService.getLastCachedData('sp500');
+    const cachedData = webSocketManager.getLastCachedData('sp500');
     if (cachedData && cachedData.length > 0) {
       console.log('📦 SP500 캐시된 데이터로 즉시 초기화:', cachedData.length, '개');
       return cachedData.map(stock => {
@@ -230,12 +230,12 @@ export function useSP500Data() {
   });
 
   const [lastUpdated, setLastUpdated] = useState<Date | null>(() => {
-    const cachedData = webSocketService.getLastCachedData('sp500');
+    const cachedData = webSocketManager.getLastCachedData('sp500');
     return cachedData && cachedData.length > 0 ? new Date() : null;
   });
 
   useEffect(() => {
-    const unsubscribe = webSocketService.subscribe('sp500_update', (data: SP500Data[]) => {
+    const unsubscribe = webSocketManager.subscribe('sp500_update', (data: SP500Data[]) => {
       const items: MarketItem[] = data.map(stock => {
         const name = stock.company_name || `${stock.symbol} Inc.`;
         const currentPrice = stock.current_price || stock.price || 0;
@@ -298,7 +298,18 @@ export function useMarketData() {
   // 🎯 최적화된 새로고침 - 연결 끊지 않고 데이터만 갱신
   const refreshData = useCallback(() => {
     console.log('🔄 데이터 수동 새로고침 - 기존 연결 유지');
-    webSocketService.refreshData();
+    webSocketManager.refreshData();
+  }, []);
+
+  // SP500 더보기 기능
+  const loadMoreSP500 = useCallback(async () => {
+    console.log('🔄 SP500 더보기 요청');
+    return await webSocketManager.loadMoreSP500Data();
+  }, []);
+
+  // SP500 페이징 상태 조회
+  const getSP500PaginationState = useCallback(() => {
+    return webSocketManager.getSP500PaginationState();
   }, []);
 
   // 🎯 불필요한 초기화 로직 제거 - App.tsx에서 이미 처리됨
@@ -316,6 +327,8 @@ export function useMarketData() {
     searchItems,
     formatPrice,
     refreshData,
+    loadMoreSP500,
+    getSP500PaginationState,
     isEmpty: allMarketData.length === 0,
     cryptoCount: cryptoData.length,
     stockCount: sp500Data.length,
@@ -521,10 +534,10 @@ export function useWebSocketErrors() {
   const [errors, setErrors] = useState<WebSocketError[]>([]);
 
   useEffect(() => {
-    const unsubscribe = webSocketService.subscribe('error', ({ type, error }) => {
+    const unsubscribe = webSocketManager.subscribe('error', (data) => {
       const errorObj: WebSocketError = {
-        type,
-        error,
+        type: data.type,
+        error: data.error,
         timestamp: new Date(),
       };
 
