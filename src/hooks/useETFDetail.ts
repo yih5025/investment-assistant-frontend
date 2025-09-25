@@ -94,14 +94,14 @@ export function useETFDetail(initialSymbol?: string): UseETFDetailReturn {
   const [currentSymbol, setCurrentSymbol] = useState<string | null>(initialSymbol || null);
   const [currentTimeframe, setCurrentTimeframe] = useState<string>('1D');
 
-  // ETF 상세 정보 조회 - 백엔드 /api/v1/etf/symbol/{symbol} 엔드포인트 호출
+  // ETF 상세 정보 조회 - 백엔드 /api/v1/etf/symbol/{symbol} 엔드포인트 호출 (차트 제외)
   const fetchETFDetail = useCallback(async (symbol: string, timeframe: string = '1D') => {
     if (!symbol) {
       console.warn('ETF 심볼이 제공되지 않았습니다');
       return;
     }
 
-    console.log(`ETF 상세 정보 조회 시작: ${symbol} (${timeframe})`);
+    console.log(`ETF 상세 정보 조회 시작: ${symbol} (차트 제외)`);
     
     setState(prev => ({ 
       ...prev, 
@@ -113,8 +113,8 @@ export function useETFDetail(initialSymbol?: string): UseETFDetailReturn {
     setCurrentTimeframe(timeframe);
 
     try {
-      // 백엔드 엔드포인트: GET /api/v1/etf/symbol/{symbol}?timeframe={timeframe}
-      const response = await fetch(`/api/v1/etf/symbol/${symbol.toUpperCase()}?timeframe=${timeframe}`);
+      // 백엔드 엔드포인트: GET /api/v1/etf/symbol/{symbol} (차트 데이터 제외)
+      const response = await fetch(`/api/v1/etf/symbol/${symbol.toUpperCase()}`);
       
       if (!response.ok) {
         if (response.status === 404) {
@@ -130,29 +130,29 @@ export function useETFDetail(initialSymbol?: string): UseETFDetailReturn {
         throw new Error(result.message || result.error || 'ETF 정보 조회 실패');
       }
 
-      // 백엔드 응답 구조에 맞춰 데이터 변환
+      // 백엔드 응답 구조에 맞춰 데이터 변환 (차트 데이터는 빈 배열로 초기화)
       const etfDetailData: ETFDetailData = {
-        // 기본 정보 (백엔드 basic_info 또는 직접 필드)
-        symbol: result.basic_info?.symbol || result.symbol || symbol,
-        name: result.basic_info?.name || result.name || symbol,
-        current_price: result.basic_info?.current_price || result.current_price || 0,
-        change_amount: result.basic_info?.change_amount || result.change_amount || 0,
-        change_percentage: result.basic_info?.change_percentage || result.change_percentage || 0,
-        volume: result.basic_info?.volume || result.volume || 0,
-        previous_close: result.basic_info?.previous_close || result.previous_close,
-        is_positive: result.basic_info?.is_positive ?? result.is_positive,
+        // 기본 정보 (백엔드 basic_info 필드)
+        symbol: result.basic_info?.symbol || symbol,
+        name: result.basic_info?.name || symbol,
+        current_price: result.basic_info?.current_price || 0,
+        change_amount: result.basic_info?.change_amount || 0,
+        change_percentage: result.basic_info?.change_percentage || 0,
+        volume: result.basic_info?.volume || 0,
+        previous_close: result.basic_info?.previous_close,
+        is_positive: result.basic_info?.is_positive,
         change_color: result.basic_info?.change_amount > 0 ? 'green' : 
                      result.basic_info?.change_amount < 0 ? 'red' : 'gray',
-        last_updated: result.basic_info?.last_updated || result.last_updated,
+        last_updated: result.basic_info?.last_updated,
         
-        // ETF 특화 데이터
+        // ETF 특화 데이터 (차트 제외)
         profile: result.profile,
-        chart_data: result.chart_data || [],
+        chart_data: [], // 초기에는 빈 배열
         sector_chart_data: result.sector_chart_data || [],
         holdings_chart_data: result.holdings_chart_data || [],
         key_metrics: result.key_metrics,
-        timeframe: result.timeframe || timeframe,
-        market_status: result.basic_info?.market_status || result.market_status
+        timeframe: timeframe,
+        market_status: result.basic_info?.market_status
       };
 
       setState(prev => ({
@@ -162,7 +162,12 @@ export function useETFDetail(initialSymbol?: string): UseETFDetailReturn {
         error: null
       }));
 
-      console.log(`ETF 상세 정보 조회 성공: ${symbol}`, etfDetailData);
+      console.log(`ETF 상세 정보 조회 성공: ${symbol} (차트 제외)`, etfDetailData);
+      
+      // 상세 정보 로드 완료 후 별도로 차트 데이터 로드
+      if (timeframe) {
+        await fetchChartData(timeframe as '1D' | '1W' | '1M');
+      }
       
     } catch (error) {
       console.error(`ETF 상세 정보 조회 실패 (${symbol}):`, error);
