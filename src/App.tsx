@@ -10,7 +10,7 @@ import EnhancedTopGainersBanner from "./components/TopGainersBanner";
 import { EarningsCalendar } from "./components/EarningsCalendar";
 import { HomeSocialFeed } from "./components/HomeSocialFeed";
 import MarketPage from "./components/MarketPage";
-import { MarketDetailPage } from "./components/MarketDetail";
+import { MarketDetailPage } from "./components/SP500Detail";
 import { CryptoDetailPage } from "./components/CryptoDetailPage"; // 추가
 import { NewsPage } from "./components/NewsPage"; 
 import NewsDetailPage, { NewsItem as DetailNewsItem } from "./components/NewsDetailPage";

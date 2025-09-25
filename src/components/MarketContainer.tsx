@@ -1,7 +1,7 @@
 // components/MarketContainer.tsx (새로 생성)
 import React, { useState } from 'react';
 import MarketPage from './MarketPage';
-import { MarketDetailPage } from './MarketDetail';
+import { MarketDetailPage } from './SP500Detail';
 
 const MarketContainer: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<'market' | 'detail'>('market');
