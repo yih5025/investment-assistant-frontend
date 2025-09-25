@@ -12,6 +12,7 @@ import { HomeSocialFeed } from "./components/HomeSocialFeed";
 import MarketPage from "./components/MarketPage";
 import { MarketDetailPage } from "./components/SP500Detail";
 import { CryptoDetailPage } from "./components/CryptoDetailPage"; // 추가
+import { ETFDetailPage } from "./components/ETFDetailPage"; // ETF 상세 페이지 추가
 import { NewsPage } from "./components/NewsPage"; 
 import NewsDetailPage, { NewsItem as DetailNewsItem } from "./components/NewsDetailPage";
 import { SNSPage } from "./components/SNSPage";
@@ -79,7 +80,7 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
 // ============================================================================
 
 type AuthState = "guest" | "login" | "signup" | "authenticated";
-type ViewState = "main" | "auth" | "profile" | "sns-detail" | "stock-news" | "news-detail" | "stock-detail" | "crypto-detail";
+type ViewState = "main" | "auth" | "profile" | "sns-detail" | "stock-news" | "news-detail" | "stock-detail" | "crypto-detail" | "etf-detail";
 
 interface SNSPost {
   id: string;
@@ -122,6 +123,7 @@ function AppContent() {
   const [selectedNewsItem, setSelectedNewsItem] = useState<DetailNewsItem | null>(null);
   const [selectedStockSymbol, setSelectedStockSymbol] = useState<string | null>(null);
   const [selectedCryptoSymbol, setSelectedCryptoSymbol] = useState<string | null>(null); // 추가
+  const [selectedETFSymbol, setSelectedETFSymbol] = useState<string | null>(null); // ETF 상세 페이지용
   
   // 모의 사용자 데이터
   const [user] = useState({
@@ -311,6 +313,12 @@ function AppContent() {
     setViewState("crypto-detail");
   };
 
+  // ETF 클릭 핸들러 추가
+  const handleETFClick = (symbol: string) => {
+    setSelectedETFSymbol(symbol);
+    setViewState("etf-detail");
+  };
+
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -486,6 +494,21 @@ function AppContent() {
     );
   }
 
+  // ETF 상세 페이지 추가
+  if (viewState === "etf-detail" && selectedETFSymbol) {
+    return (
+      <div className="min-h-screen relative z-10">
+        <ETFDetailPage
+          symbol={selectedETFSymbol}
+          onBack={() => {
+            setViewState("main");
+            setSelectedETFSymbol(null);
+          }}
+        />
+      </div>
+    );
+  }
+
   // 사용자 프로필 페이지
   if (viewState === "profile" && isLoggedIn) {
     return (
@@ -585,7 +608,8 @@ function AppContent() {
             </div>
             <MarketPage 
               onStockClick={handleStockClick} 
-              onCryptoClick={handleCryptoClick} // 추가
+              onCryptoClick={handleCryptoClick} 
+              onETFClick={handleETFClick} // ETF 클릭 핸들러 추가
             />
           </div>
         );

@@ -9,8 +9,8 @@ import { ETFData, ServiceConfig } from './types';
  * 페이징 지원, 실시간 업데이트, 캐싱 등의 기능을 제공합니다.
  */
 export class ETFService extends BaseService {
-  private pollingInterval: number | null = null;
-  private isPolling = false;
+  private pollingInterval: NodeJS.Timeout | null = null;
+  private ongoingRequest: Promise<void> | null = null;
   protected consecutiveErrors = 0;
   
   // 페이징 상태 관리
@@ -38,37 +38,47 @@ export class ETFService extends BaseService {
 
   public initialize(): void {
     if (this.isInitialized) {
-      console.log('🏦 ETFService 이미 초기화됨');
+      console.log('✅ ETFService 이미 초기화됨 - 기존 폴링 유지');
       return;
     }
 
-    console.log('🏦 ETFService 초기화 시작');
-    this.setConnectionStatus('connecting');
+    if (this.isShutdown) {
+      console.log('⚠️ ETFService가 종료된 상태입니다. 재시작이 필요합니다.');
+      return;
+    }
+
+    console.log('🚀 ETFService 초기화 시작');
+    this.startApiPolling();
     this.isInitialized = true;
-    
-    // 초기 데이터 로드
-    this.loadInitialData();
-    
-    // 정기 폴링 시작
-    this.startPolling();
-    
-    console.log('🏦 ETFService 초기화 완료');
+    console.log('✅ ETFService 초기화 완료');
   }
 
   public shutdown(): void {
-    console.log('🏦 ETFService 종료');
-    this.stopPolling();
+    if (this.isShutdown) {
+      console.log('⚠️ ETFService 이미 종료된 상태입니다.');
+      return;
+    }
+
+    console.log('🛑 ETFService 종료 시작');
+    this.isShutdown = true;
+
+    // 폴링 중단
+    this.stopApiPolling();
+
+    // 상태 초기화
+    this.setConnectionStatus('disconnected');
+    this.subscribers.clear();
+    this.lastDataCache = [];
     this.resetPaginationState();
     this.isInitialized = false;
-    this.setConnectionStatus('disconnected');
+
+    console.log('✅ ETFService 종료 완료');
   }
 
   public reconnect(): void {
-    console.log('🏦 ETFService 재연결 시도');
-    this.shutdown();
-    setTimeout(() => {
-      this.initialize();
-    }, 1000);
+    console.log('🔄 ETFService 수동 재연결 시도');
+    this.consecutiveErrors = 0;
+    this.startApiPolling();
   }
 
   // ETF 더보기 로드
@@ -123,33 +133,34 @@ export class ETFService extends BaseService {
     };
   }
 
-  // 데이터 새로고침
+
+  // 데이터 수동 새로고침
   public refreshData(): void {
-    console.log('🏦 ETF 데이터 수동 새로고침');
-    this.resetPaginationState();
-    this.loadInitialData();
+    console.log('🔄 ETF 데이터 수동 새로고침');
+    
+    // 즉시 fetch 실행
+    this.fetchDataFromApi().catch(error => {
+      console.error('❌ ETF 데이터 새로고침 실패:', error);
+    });
   }
 
-  private async loadInitialData(): Promise<void> {
-    console.log('🏦 ETF 초기 데이터 로드 시작');
-    
-    // 캐시된 데이터가 있고 신선하면 사용
-    if (this.isCacheValid()) {
-      console.log(`🏦 ETF 캐시 데이터 사용 (${Math.round((Date.now() - this.dataTimestamp) / 1000)}초 전)`);
-      
-      // 즉시 캐시된 데이터 emit
-      this.emitEvent('etf_update', this.lastDataCache as ETFData[]);
-      
-      // 백그라운드에서 최신 데이터 가져오기
-      setTimeout(() => this.fetchAndEmitData(), 100);
-      return;
+  private async fetchDataFromApi(): Promise<void> {
+    // 이미 요청이 진행 중이면 중복 요청 방지
+    if (this.ongoingRequest) {
+      console.log('🔄 ETF 데이터 요청이 이미 진행 중입니다. 중복 요청 방지');
+      return this.ongoingRequest;
     }
 
-    // 캐시가 없거나 오래된 경우 즉시 새 데이터 가져오기
-    await this.fetchAndEmitData();
+    this.ongoingRequest = this.performApiRequest();
+    
+    try {
+      await this.ongoingRequest;
+    } finally {
+      this.ongoingRequest = null;
+    }
   }
 
-  private async fetchAndEmitData(): Promise<void> {
+  private async performApiRequest(): Promise<void> {
     try {
       this.setConnectionStatus('connecting');
       
@@ -168,7 +179,7 @@ export class ETFService extends BaseService {
         this.updateCache(data);
         this.emitEvent('etf_update', data);
         
-        console.log(`🏦 ETF 첫 페이지 로드: ${result.data.length}개 (전체: ${this.paginationState.totalCount}개)`);
+        console.log(`🏦 ETF 데이터 로드: ${result.data.length}개 (전체: ${this.paginationState.totalCount}개)`);
       }
       
       this.setConnectionStatus('connected');
@@ -181,7 +192,7 @@ export class ETFService extends BaseService {
       
       if (this.consecutiveErrors >= this.config.maxConsecutiveErrors) {
         this.setConnectionStatus('disconnected');
-        this.stopPolling();
+        this.stopApiPolling();
       }
     }
   }
@@ -226,29 +237,31 @@ export class ETFService extends BaseService {
     }));
   }
 
-  private startPolling(): void {
-    if (this.pollingInterval || this.isPolling) {
+  private startApiPolling(): void {
+    if (this.pollingInterval) {
       console.log('🏦 ETF 폴링 이미 실행 중');
       return;
     }
 
     console.log('🏦 ETF 폴링 시작');
-    this.isPolling = true;
-
+    
+    // 즉시 첫 번째 데이터 로드
+    this.fetchDataFromApi();
+    
+    // 정기 폴링 시작
     const pollInterval = this.config.apiPollingInterval;
-    this.pollingInterval = window.setInterval(() => {
-      if (this.isInitialized) {
-        this.fetchAndEmitData();
+    this.pollingInterval = setInterval(() => {
+      if (this.isInitialized && !this.isShutdown) {
+        this.fetchDataFromApi();
       }
     }, pollInterval);
   }
 
-  private stopPolling(): void {
+  private stopApiPolling(): void {
     if (this.pollingInterval) {
       console.log('🏦 ETF 폴링 중지');
       clearInterval(this.pollingInterval);
       this.pollingInterval = null;
-      this.isPolling = false;
     }
   }
 
@@ -271,7 +284,7 @@ export class ETFService extends BaseService {
     setTimeout(() => {
       if (this.consecutiveErrors < this.config.maxConsecutiveErrors) {
         console.log('🏦 ETF 에러 복구 시도');
-        this.fetchAndEmitData();
+        this.fetchDataFromApi();
       }
     }, this.config.errorBackoffInterval);
   }
