@@ -115,7 +115,7 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick, on
       <div className="glass-card rounded-2xl p-4">
         <h2 className="text-xl font-bold mb-3 flex items-center">
           <BarChart3 className="mr-2" size={22} />
-          실시간 SP500 & Crypto & ETF 데이터
+          실시간 SP500 & Crypto & ETF 데이터 분석
         </h2>
         <div className="text-sm text-foreground/70 leading-relaxed">
         {activeTab === 'stocks' ? (
