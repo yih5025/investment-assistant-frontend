@@ -11,7 +11,7 @@ import { ETFData, ServiceConfig } from './types';
 export class ETFService extends BaseService {
   private pollingInterval: number | null = null;
   private isPolling = false;
-  private consecutiveErrors = 0;
+  protected consecutiveErrors = 0;
   
   // 페이징 상태 관리
   private paginationState = {
@@ -26,6 +26,14 @@ export class ETFService extends BaseService {
   constructor(customConfig?: Partial<ServiceConfig>) {
     super(customConfig);
     console.log('🏦 ETFService 초기화');
+  }
+
+  protected getServiceName(): string {
+    return 'ETFService';
+  }
+
+  protected getDataMode(): 'websocket' | 'api' {
+    return 'api';
   }
 
   public initialize(): void {
@@ -255,7 +263,7 @@ export class ETFService extends BaseService {
     };
   }
 
-  private handleError(error: string): void {
+  protected handleError(error: string): void {
     console.error('🏦 ETF 서비스 오류:', error);
     this.emitEvent('error', { type: 'etf' as const, error });
     
