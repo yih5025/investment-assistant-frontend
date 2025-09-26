@@ -23,6 +23,7 @@ import { LoginPage } from "./components/auth/LoginPage";
 import { SignupPage } from "./components/auth/SignupPage";
 import { UserProfile } from "./components/user/UserProfile";
 import { NotificationSystem } from "./components/notifications/NotificationSystem";
+import { WelcomePage } from "./components/WelcomePage";
 import { TrendingUp, MessageSquare, Newspaper, Bot, BarChart3, Bell, User, LogIn, ArrowLeft } from "lucide-react";
 
 // ============================================================================
@@ -80,7 +81,7 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
 // ============================================================================
 
 type AuthState = "guest" | "login" | "signup" | "authenticated";
-type ViewState = "main" | "auth" | "profile" | "sns-detail" | "stock-news" | "news-detail" | "stock-detail" | "crypto-detail" | "etf-detail";
+type ViewState = "welcome" | "main" | "auth" | "profile" | "sns-detail" | "stock-news" | "news-detail" | "stock-detail" | "crypto-detail" | "etf-detail";
 
 interface SNSPost {
   id: string;
@@ -116,7 +117,11 @@ interface StockNewsItem {
 function AppContent() {
   const [activeTab, setActiveTab] = useState("home");
   const [authState, setAuthState] = useState<AuthState>("guest");
-  const [viewState, setViewState] = useState<ViewState>("main");
+  const [viewState, setViewState] = useState<ViewState>(() => {
+    // 첫 방문 체크 (localStorage 사용)
+    const hasVisited = localStorage.getItem('wei-has-visited');
+    return hasVisited ? "main" : "welcome";
+  });
   const [showNotifications, setShowNotifications] = useState(false);
   const [selectedSNSPost, setSelectedSNSPost] = useState<SNSPost | null>(null);
   const [selectedStockNews, setSelectedStockNews] = useState<{ news: StockNewsItem[], symbol: string } | null>(null);
@@ -285,6 +290,18 @@ function AppContent() {
     }
   };
 
+  // 웰컴 페이지 완료 후 메인으로 이동
+  const handleWelcomeComplete = () => {
+    localStorage.setItem('wei-has-visited', 'true');
+    setViewState("main");
+  };
+
+  // 웰컴 페이지 건너뛰기
+  const handleWelcomeSkip = () => {
+    localStorage.setItem('wei-has-visited', 'true');
+    setViewState("main");
+  };
+
   const handleSNSPostClick = (post: SNSPost) => {
     if (post.hasMarketImpact) {
       setSelectedSNSPost(post);
@@ -340,6 +357,18 @@ function AppContent() {
   // ============================================================================
   // 렌더링 함수들
   // ============================================================================
+
+  // 웰컴 페이지 렌더링
+  if (viewState === "welcome") {
+    return (
+      <div className="min-h-screen relative z-10">
+        <WelcomePage
+          onComplete={handleWelcomeComplete}
+          onSkip={handleWelcomeSkip}
+        />
+      </div>
+    );
+  }
 
   // 인증 페이지 렌더링
   if (viewState === "auth") {
