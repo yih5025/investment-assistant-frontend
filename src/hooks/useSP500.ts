@@ -174,29 +174,82 @@ const transformSP500Data = (data: SP500Data[]): SP500Item[] => {
 };
 
 export function useSP500Data() {
-  // 초기값으로 WebSocket 서비스의 캐시된 데이터 사용
+  // 초기값으로 WebSocket 서비스의 캐시된 데이터 사용 (옵티마이지 강화)
   const [allSP500Data, setAllSP500Data] = useState<SP500Item[]>(() => {
     const cachedData = webSocketManager.getLastCachedData('sp500');
-    return cachedData ? transformSP500Data(cachedData) : [];
+    if (cachedData && cachedData.length > 0) {
+      console.log('💾 SP500 초기 캐시 데이터 로드:', cachedData.length, '개 항목');
+      return transformSP500Data(cachedData);
+    }
+    return [];
   });
   
   const [lastUpdated, setLastUpdated] = useState<Date | null>(() => {
     const cachedData = webSocketManager.getLastCachedData('sp500');
-    return cachedData && cachedData.length > 0 ? new Date() : null;
+    if (cachedData && cachedData.length > 0) {
+      const status = webSocketManager.getStatus();
+      const sp500Status = status.services?.sp500;
+      if (sp500Status?.dataTimestamp) {
+        return new Date(sp500Status.dataTimestamp);
+      }
+    }
+    return null;
+  });
+  
+  const [cacheStatus, setCacheStatus] = useState<{
+    isFromCache: boolean;
+    cacheAge: number;
+    isStale: boolean;
+  }>(() => {
+    const cachedData = webSocketManager.getLastCachedData('sp500');
+    const status = webSocketManager.getStatus();
+    const sp500Status = status.services?.sp500;
+    const now = Date.now();
+    const cacheAge = sp500Status?.dataTimestamp ? now - sp500Status.dataTimestamp : 0;
+    
+    return {
+      isFromCache: !!cachedData && cachedData.length > 0,
+      cacheAge,
+      isStale: cacheAge > 180000 // 3분 이상 오래된 데이터
+    };
   });
 
   useEffect(() => {
     const unsubscribe = webSocketManager.subscribe('sp500_update', (data: SP500Data[]) => {
-      console.log('SP500 데이터 수신:', data.length, '개 항목');
+      console.log('📊 SP500 데이터 수신:', data.length, '개 항목');
       
       const transformedData = transformSP500Data(data);
       setAllSP500Data(transformedData);
       setLastUpdated(new Date());
       
-      console.log('SP500 데이터 업데이트 완료:', transformedData.length, '개 항목');
+      // 캐시 상태 업데이트
+      setCacheStatus({
+        isFromCache: false, // 실시간 데이터
+        cacheAge: 0,
+        isStale: false
+      });
+      
+      console.log('✅ SP500 데이터 업데이트 완료:', transformedData.length, '개 항목');
     });
 
-    return unsubscribe;
+    // 백그라운드 로딩 진행 상황 모니터링
+    const backgroundUnsubscribe = webSocketManager.subscribe('background_loading_complete', ({ service }) => {
+      if (service === 'sp500') {
+        console.log('🎉 SP500 백그라운드 로딩 완료!');
+        // 최신 캐시 데이터 다시 로드
+        const latestCachedData = webSocketManager.getLastCachedData('sp500');
+        if (latestCachedData && latestCachedData.length > 0) {
+          const transformedData = transformSP500Data(latestCachedData);
+          setAllSP500Data(transformedData);
+          setLastUpdated(new Date());
+        }
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      backgroundUnsubscribe();
+    };
   }, []);
 
   // 가격대별 필터링
@@ -272,10 +325,29 @@ export function useSP500Data() {
     };
   }, [allSP500Data]);
 
+  // 캐시 상태 모니터링
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const status = webSocketManager.getStatus();
+      const sp500Status = status.services?.sp500;
+      const now = Date.now();
+      const cacheAge = sp500Status?.dataTimestamp ? now - sp500Status.dataTimestamp : 0;
+      
+      setCacheStatus(prev => ({
+        ...prev,
+        cacheAge,
+        isStale: cacheAge > 180000 // 3분 이상
+      }));
+    }, 30000); // 30초마다 체크
+
+    return () => clearInterval(interval);
+  }, []);
+
   return {
     allSP500Data,
     lastUpdated,
     isEmpty: allSP500Data.length === 0,
+    cacheStatus, // 캐시 상태 정보 추가
     getByPriceRange,
     getByChangeRange,
     getBySector,

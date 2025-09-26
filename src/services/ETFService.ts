@@ -257,12 +257,12 @@ export class ETFService extends BaseService {
   private startApiPolling(): void {
     this.stopApiPolling();
 
-    const marketStatus = this.marketTimeManager.getCurrentMarketStatus();
-    const interval = marketStatus.isOpen 
-      ? this.config.apiPollingInterval 
-      : this.config.marketClosedPollingInterval;
+    // 우선순위 기반 폴링 간격 결정
+    const baseInterval = this.getPollingInterval();
+    const priorityOffset = this.getPriorityOffset('etf');
+    const finalInterval = baseInterval; // ETF는 기본 60초 간격 유지
 
-    console.log(`🔄 ETF API 폴링 시작 (${interval}ms 간격, 시장 ${marketStatus.isOpen ? '개장' : '폐장'})`);
+    console.log(`🔄 ETF API 폴링 시작 (${finalInterval}ms 간격, 우선순위: 중간, 오프셋: ${priorityOffset}ms)`);
 
     const pollData = async () => {
       if (this.isInitialized && !this.isShutdown) {
@@ -270,11 +270,14 @@ export class ETFService extends BaseService {
       }
     };
 
-    // 🎯 즉시 한 번 실행 후 api_mode 설정 (SP500 패턴)
+    // 즉시 한 번 실행 후 api_mode 설정
     this.loadWithCachePriority(pollData);
     this.setConnectionStatus('api_mode');
     
-    this.pollingInterval = setInterval(pollData, interval);
+    // 우선순위 오프셋 적용 (서버 부하 분산)
+    setTimeout(() => {
+      this.pollingInterval = setInterval(pollData, finalInterval);
+    }, priorityOffset);
   }
 
   private stopApiPolling(): void {

@@ -151,10 +151,26 @@ export interface ServiceConfig {
   baseReconnectDelay: number;
   apiPollingInterval: number;
   marketClosedPollingInterval: number;
+  weekendPollingInterval: number; // 주말 폴링 간격
   healthCheckInterval: number;
   cacheMaxAge: number;
   errorBackoffInterval: number;
   maxConsecutiveErrors: number;
+  // 우선순위 기반 차등 폴링 설정
+  priorityPollingOffsets?: {
+    sp500: number;    // 0초 (기본)
+    topgainers: number; // 5초 시차
+    etf: number;      // 10초 시차
+  };
+  // 백그라운드 로딩 우선순위 설정
+  backgroundLoadingDelays?: {
+    crypto: number;           // 0초 (즉시)
+    topgainers: number;      // 0.5초
+    earnings_calendar: number; // 1초
+    earnings_news: number;    // 1.5초
+    sp500: number;           // 3초
+    etf: number;             // 6초
+  };
 }
 
 // 기본 서비스 인터페이스
@@ -176,4 +192,7 @@ export interface ServiceEvents {
   'connection_change': { type: WebSocketType; status: ConnectionStatus; mode: DataMode };
   'error': { type: WebSocketType; error: string };
   'market_status_change': { isOpen: boolean; status: string };
+  'background_loading_start': { services: WebSocketType[] };
+  'background_loading_complete': { service: WebSocketType; duration: number };
+  'background_loading_progress': { completed: number; total: number };
 }

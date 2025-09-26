@@ -124,12 +124,12 @@ export class TopGainersService extends BaseService {
   private startApiPolling(): void {
     this.stopApiPolling();
 
-    const marketStatus = this.marketTimeManager.getCurrentMarketStatus();
-    const interval = marketStatus.isOpen 
-      ? this.config.apiPollingInterval 
-      : this.config.marketClosedPollingInterval;
+    // 우선순위 기반 폴링 간격 결정
+    const baseInterval = this.getPollingInterval();
+    const priorityOffset = this.getPriorityOffset('topgainers');
+    const finalInterval = baseInterval + 5000; // TopGainers는 65초 간격 (낮은 우선순위)
 
-    console.log(`🔄 TopGainers API 폴링 시작 (${interval}ms 간격)`);
+    console.log(`🔄 TopGainers API 폴링 시작 (${finalInterval}ms 간격, 우선순위: 낮음, 오프셋: ${priorityOffset}ms)`);
 
     const pollData = async () => {
       try {
@@ -143,7 +143,10 @@ export class TopGainersService extends BaseService {
     this.loadWithCachePriority(pollData);
     this.setConnectionStatus('api_mode');
     
-    this.pollingInterval = setInterval(pollData, interval);
+    // 우선순위 오프셋 적용 (서버 부하 분산)
+    setTimeout(() => {
+      this.pollingInterval = setInterval(pollData, finalInterval);
+    }, priorityOffset);
   }
 
   private stopApiPolling(): void {

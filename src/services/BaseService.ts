@@ -24,12 +24,28 @@ export abstract class BaseService {
   protected config: ServiceConfig = {
     maxReconnectAttempts: 3,
     baseReconnectDelay: 5000,
-    apiPollingInterval: 5000,
-    marketClosedPollingInterval: 15000,
+    apiPollingInterval: 60000, // 5초 → 1분으로 변경
+    marketClosedPollingInterval: 600000, // 15초 → 10분으로 변경
+    weekendPollingInterval: 1800000, // 30분 (주말/공휴일)
     healthCheckInterval: 60000,
-    cacheMaxAge: 30000,
+    cacheMaxAge: 180000, // 30초 → 3분으로 확대
     errorBackoffInterval: 60000,
-    maxConsecutiveErrors: 3
+    maxConsecutiveErrors: 3,
+    // 우선순위 기반 차등 폴링 설정 (ms)
+    priorityPollingOffsets: {
+      sp500: 0,        // 최우선 (55초)
+      topgainers: 5000, // +5초 (65초 간격)
+      etf: 0           // ETF는 60초 간격으로 별도 설정
+    },
+    // 백그라운드 로딩 우선순위 설정 (ms)
+    backgroundLoadingDelays: {
+      crypto: 0,           // 즉시 시작
+      topgainers: 500,     // 0.5초 후
+      earnings_calendar: 1000,  // 1초 후
+      earnings_news: 1500,      // 1.5초 후
+      sp500: 3000,             // 3초 후
+      etf: 6000                // 6초 후
+    }
   };
 
   constructor(customConfig?: Partial<ServiceConfig>) {
@@ -134,6 +150,41 @@ export abstract class BaseService {
     return this.lastDataCache.length > 0 && 
            this.dataTimestamp > 0 && 
            (now - this.dataTimestamp) < this.config.cacheMaxAge;
+  }
+
+  // 시장 상태에 따른 폴링 간격 결정
+  protected getPollingInterval(): number {
+    const marketStatus = this.marketTimeManager.getCurrentMarketStatus();
+    
+    if (!marketStatus.isOpen) {
+      // 주말 또는 공휴일 체크
+      const now = new Date();
+      const dayOfWeek = now.getDay(); // 0=일요일, 6=토요일
+      
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        return this.config.weekendPollingInterval; // 30분
+      }
+      
+      return this.config.marketClosedPollingInterval; // 10분
+    }
+    
+    return this.config.apiPollingInterval; // 1분
+  }
+
+  // 서비스별 우선순위 오프셋 가져오기
+  protected getPriorityOffset(serviceType: string): number {
+    if (!this.config.priorityPollingOffsets) return 0;
+    
+    switch (serviceType) {
+      case 'sp500':
+        return this.config.priorityPollingOffsets.sp500;
+      case 'topgainers':
+        return this.config.priorityPollingOffsets.topgainers;
+      case 'etf':
+        return this.config.priorityPollingOffsets.etf;
+      default:
+        return 0;
+    }
   }
 
   // 각 서비스에서 구현해야 하는 메서드들

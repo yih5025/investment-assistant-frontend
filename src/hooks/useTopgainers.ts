@@ -157,9 +157,12 @@ const categorizeTopGainersData = (data: TopGainersData[]): TopGainersCategoryDat
 };
 
 export function useTopGainersData() {
-  // 초기값으로 WebSocket 서비스의 캐시된 데이터 사용
+  // 초기값으로 WebSocket 서비스의 캐시된 데이터 사용 (옵티마이지 강화)
   const [allTopGainersData, setAllTopGainersData] = useState<TopGainersData[]>(() => {
     const cachedData = webSocketManager.getLastCachedData('topgainers');
+    if (cachedData && cachedData.length > 0) {
+      console.log('💾 TopGainers 초기 캐시 데이터 로드:', cachedData.length, '개 항목');
+    }
     return cachedData || [];
   });
   
@@ -177,18 +180,72 @@ export function useTopGainersData() {
   
   const [lastUpdated, setLastUpdated] = useState<Date | null>(() => {
     const cachedData = webSocketManager.getLastCachedData('topgainers');
-    return cachedData && cachedData.length > 0 ? new Date() : null;
+    if (cachedData && cachedData.length > 0) {
+      const status = webSocketManager.getStatus();
+      const topGainersStatus = status.services?.topgainers;
+      if (topGainersStatus?.dataTimestamp) {
+        return new Date(topGainersStatus.dataTimestamp);
+      }
+    }
+    return null;
+  });
+  
+  const [cacheStatus, setCacheStatus] = useState<{
+    isFromCache: boolean;
+    cacheAge: number;
+    isStale: boolean;
+  }>(() => {
+    const cachedData = webSocketManager.getLastCachedData('topgainers');
+    const status = webSocketManager.getStatus();
+    const topGainersStatus = status.services?.topgainers;
+    const now = Date.now();
+    const cacheAge = topGainersStatus?.dataTimestamp ? now - topGainersStatus.dataTimestamp : 0;
+    
+    return {
+      isFromCache: !!cachedData && cachedData.length > 0,
+      cacheAge,
+      isStale: cacheAge > 180000 // 3분 이상 오래된 데이터
+    };
   });
 
   useEffect(() => {
     const unsubscribe = webSocketManager.subscribe('topgainers_update', (data: TopGainersData[]) => {
+      console.log('📊 TopGainers 데이터 수신:', data.length, '개 항목');
+      
       setAllTopGainersData(data);
       const categorized = categorizeTopGainersData(data);
       setCategorizedData(categorized);
       setLastUpdated(new Date());
+      
+      // 캐시 상태 업데이트
+      setCacheStatus({
+        isFromCache: false, // 실시간 데이터
+        cacheAge: 0,
+        isStale: false
+      });
+      
+      console.log('✅ TopGainers 데이터 업데이트 완료');
     });
 
-    return unsubscribe;
+    // 백그라운드 로딩 진행 상황 모니터링
+    const backgroundUnsubscribe = webSocketManager.subscribe('background_loading_complete', ({ service }) => {
+      if (service === 'topgainers') {
+        console.log('🎉 TopGainers 백그라운드 로딩 완료!');
+        // 최신 캐시 데이터 다시 로드
+        const latestCachedData = webSocketManager.getLastCachedData('topgainers');
+        if (latestCachedData && latestCachedData.length > 0) {
+          setAllTopGainersData(latestCachedData);
+          const categorized = categorizeTopGainersData(latestCachedData);
+          setCategorizedData(categorized);
+          setLastUpdated(new Date());
+        }
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      backgroundUnsubscribe();
+    };
   }, []);
 
   // 카테고리별 데이터 가져오기
@@ -220,11 +277,30 @@ export function useTopGainersData() {
     };
   }, [allTopGainersData.length, categorizedData]);
 
+  // 캐시 상태 모니터링
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const status = webSocketManager.getStatus();
+      const topGainersStatus = status.services?.topgainers;
+      const now = Date.now();
+      const cacheAge = topGainersStatus?.dataTimestamp ? now - topGainersStatus.dataTimestamp : 0;
+      
+      setCacheStatus(prev => ({
+        ...prev,
+        cacheAge,
+        isStale: cacheAge > 180000 // 3분 이상
+      }));
+    }, 30000); // 30초마다 체크
+
+    return () => clearInterval(interval);
+  }, []);
+
   return {
     allTopGainersData,
     categorizedData,
     lastUpdated,
     isEmpty: allTopGainersData.length === 0,
+    cacheStatus, // 캐시 상태 정보 추가
     getByCategory,
     getTopGainers,
     getTopLosers,

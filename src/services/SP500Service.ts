@@ -165,12 +165,12 @@ export class SP500Service extends BaseService {
   private startApiPolling(): void {
     this.stopApiPolling();
 
-    const marketStatus = this.marketTimeManager.getCurrentMarketStatus();
-    const interval = marketStatus.isOpen 
-      ? this.config.apiPollingInterval 
-      : this.config.marketClosedPollingInterval;
+    // 우선순위 기반 폴링 간격 결정
+    const baseInterval = this.getPollingInterval();
+    const priorityOffset = this.getPriorityOffset('sp500');
+    const finalInterval = baseInterval - 5000; // SP500은 55초 간격 (최우선)
 
-    console.log(`🔄 SP500 API 폴링 시작 (${interval}ms 간격)`);
+    console.log(`🔄 SP500 API 폴링 시작 (${finalInterval}ms 간격, 우선순위: 최우선)`);
 
     const pollData = async () => {
       try {
@@ -184,7 +184,10 @@ export class SP500Service extends BaseService {
     this.loadWithCachePriority(pollData);
     this.setConnectionStatus('api_mode');
     
-    this.pollingInterval = setInterval(pollData, interval);
+    // 우선순위 오프셋 적용
+    setTimeout(() => {
+      this.pollingInterval = setInterval(pollData, finalInterval);
+    }, priorityOffset);
   }
 
   private stopApiPolling(): void {
