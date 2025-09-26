@@ -24,7 +24,7 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
     "TopGainers 데이터 로딩 중...",
     "SP500 백그라운드 로딩 중...",
     "ETF 데이터 준비 중...",
-    "최적화 완료 - 준비 완룈!"
+    "서비스 준비 완료!"
   ];
 
   useEffect(() => {
@@ -101,14 +101,6 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
   if (!showContent) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6 relative">
-        {/* 건너뛰기 버튼 */}
-        <button
-          onClick={onSkip}
-          className="absolute top-6 right-6 glass-card rounded-full p-3 hover:glass-strong transition-all duration-300 group z-10"
-          aria-label="건너뛰기"
-        >
-          <SkipForward size={20} className="text-primary group-hover:text-white transition-colors" />
-        </button>
 
         {/* 로고 및 앱 이름 */}
         <div className="text-center mb-12">
