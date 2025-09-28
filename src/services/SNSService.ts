@@ -83,7 +83,7 @@ export interface SNSListParams {
 // ============================================================================
 
 class SNSApiService {
-  private readonly baseUrl = '/v1/sns/analysis';
+  private readonly baseUrl = '/sns/analysis';
 
   /**
    * 분석된 SNS 게시글 목록을 가져옵니다

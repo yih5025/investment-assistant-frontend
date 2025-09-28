@@ -4,8 +4,10 @@ import { safeLocalStorage, normalizeError } from '../utils/helpers';
 
 // API 클라이언트 설정
 const createApiClient = (): AxiosInstance => {
-  // 동일 오리진 프록시 경유(/api -> Nginx가 /api/v1로 프록시)
-  const defaultBaseUrl = '/api';
+  // 배포 환경에서는 절대 URL 사용, 개발 환경에서는 프록시 사용
+  const defaultBaseUrl = process.env.NODE_ENV === 'production' 
+    ? 'https://api.investment-assistant.site/api/v1'
+    : '/api/v1';
   const baseURL = import.meta.env.VITE_API_BASE_URL || defaultBaseUrl;
   
   const client = axios.create({
