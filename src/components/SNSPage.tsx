@@ -123,7 +123,7 @@ export function SNSPage({ onPostClick }: SNSPageProps) {
   // 필터 변경시 API 파라미터 업데이트
   useEffect(() => {
     updateFilter(toApiParams());
-  }, [filter, updateFilter, toApiParams]);
+  }, [filter.platform, filter.sortBy, filter.searchQuery, updateFilter]);
 
   // 검색 처리 (디바운싱)
   useEffect(() => {

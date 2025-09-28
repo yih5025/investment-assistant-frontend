@@ -246,10 +246,10 @@ export function useSNSFilter(initialFilter: Partial<SNSFilter> = {}) {
   // 필터를 API 파라미터로 변환
   const toApiParams = useCallback((): SNSListParams => {
     return {
-      post_source: filter.platform === 'all' ? undefined : filter.platform,
+      post_source: filter.platform === 'all' ? 'all' : filter.platform,
       // TODO: 검색과 정렬은 백엔드 API에서 지원할 때 추가
     };
-  }, [filter]);
+  }, [filter.platform]); // 필요한 속성만 의존성으로 설정
 
   return {
     filter,
