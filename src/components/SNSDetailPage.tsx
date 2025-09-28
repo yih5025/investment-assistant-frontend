@@ -28,6 +28,67 @@ interface SNSDetailPageProps {
 }
 
 // ============================================================================
+// 아바타 생성 유틸리티 함수들
+// ============================================================================
+
+// 사용자명 기반 아바타 텍스트 생성
+function getAvatarText(username: string): string {
+  if (!username) return '?';
+  
+  // 공백이나 특수문자로 구분된 단어들의 첫 글자 추출
+  const words = username.split(/[\s_-]+/);
+  if (words.length >= 2) {
+    return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
+  }
+  
+  // 단어가 하나면 첫 두 글자 또는 첫 글자
+  if (username.length >= 2) {
+    return username.substring(0, 2).toUpperCase();
+  }
+  
+  return username.charAt(0).toUpperCase();
+}
+
+// 사용자명 기반 그라데이션 색상 생성
+function getAvatarGradient(username: string): string {
+  if (!username) return 'bg-gradient-to-br from-gray-400 to-gray-600';
+  
+  // 유명 인물들은 특별한 색상
+  const specialUsers: { [key: string]: string } = {
+    'realDonaldTrump': 'bg-gradient-to-br from-red-500 to-red-700',
+    'elonmusk': 'bg-gradient-to-br from-purple-500 to-indigo-600',
+    'WhiteHouse': 'bg-gradient-to-br from-blue-600 to-blue-800',
+    'JoeBiden': 'bg-gradient-to-br from-blue-500 to-blue-700',
+    'SpeakerPelosi': 'bg-gradient-to-br from-green-500 to-green-700',
+  };
+  
+  if (specialUsers[username]) {
+    return specialUsers[username];
+  }
+  
+  // 사용자명 해시 기반 색상 생성
+  let hash = 0;
+  for (let i = 0; i < username.length; i++) {
+    hash = username.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  const gradients = [
+    'bg-gradient-to-br from-blue-500 to-purple-600',
+    'bg-gradient-to-br from-green-500 to-teal-600',
+    'bg-gradient-to-br from-orange-500 to-red-600',
+    'bg-gradient-to-br from-pink-500 to-rose-600',
+    'bg-gradient-to-br from-indigo-500 to-blue-600',
+    'bg-gradient-to-br from-purple-500 to-pink-600',
+    'bg-gradient-to-br from-teal-500 to-green-600',
+    'bg-gradient-to-br from-yellow-500 to-orange-600',
+    'bg-gradient-to-br from-red-500 to-pink-600',
+    'bg-gradient-to-br from-cyan-500 to-blue-600',
+  ];
+  
+  return gradients[Math.abs(hash) % gradients.length];
+}
+
+// ============================================================================
 // 메인 컴포넌트
 // ============================================================================
 
@@ -195,9 +256,11 @@ function PostInfoCard({
     <div className="glass-card p-4 rounded-xl">
       <div className="flex items-start space-x-3 mb-4">
         <div className="relative">
-          {/* 프로필 이미지 플레이스홀더 */}
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium">
-            {analysis.author_username.charAt(0).toUpperCase()}
+          {/* 개선된 프로필 아바타 */}
+          <div 
+            className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-medium text-lg ${getAvatarGradient(analysis.author_username)}`}
+          >
+            {getAvatarText(analysis.author_username)}
           </div>
           {/* 인증 마크 */}
           {['realDonaldTrump', 'elonmusk', 'WhiteHouse'].includes(analysis.author_username) && (
