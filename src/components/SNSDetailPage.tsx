@@ -438,7 +438,11 @@ interface AssetChartCardProps {
 }
 
 function AssetChartCard({ post, symbol, formatPrice }: AssetChartCardProps) {
-  const { priceChartData, volumeChartData, hasData } = useSNSChartData(post, symbol);
+  const { 
+    priceChartData, 
+    volumeChartData, 
+    hasData 
+  } = useSNSChartData(post, symbol);
 
   if (!hasData) {
     return (
@@ -453,79 +457,115 @@ function AssetChartCard({ post, symbol, formatPrice }: AssetChartCardProps) {
 
   return (
     <div className="glass-card p-4 rounded-xl">
-      <h4 className="font-medium mb-4">{symbol} 가격 변화</h4>
+      <div className="flex items-center justify-between mb-4">
+        <h4 className="font-medium">{symbol} 가격 변화</h4>
+        <div className="text-xs text-foreground/60">
+          {priceChartData.length} 포인트
+        </div>
+      </div>
       
-      {/* 가격 차트 */}
-      <div className="h-64 mb-6">
+      {/* 가격 차트 - 크기 증가 */}
+      <div className="h-80 mb-6">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={priceChartData}>
+          <LineChart data={priceChartData} margin={{ top: 5, right: 30, left: 20, bottom: 60 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
             <XAxis 
               dataKey="time" 
-              tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.6)' }}
+              tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.7)' }}
               angle={-45}
               textAnchor="end"
-              height={60}
+              height={80}
+              interval={0}
             />
             <YAxis 
-              tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.6)' }}
-              domain={['dataMin - 5', 'dataMax + 5']}
+              tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.7)' }}
+              domain={['dataMin - 2%', 'dataMax + 2%']}
+              width={80}
             />
             <Tooltip 
               contentStyle={{ 
-                backgroundColor: 'rgba(0,0,0,0.8)', 
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '8px'
+                backgroundColor: 'rgba(0,0,0,0.9)', 
+                border: '1px solid rgba(255,255,255,0.3)',
+                borderRadius: '8px',
+                fontSize: '12px'
               }}
               formatter={(value: any) => [formatPrice(value, symbol), '가격']}
+              labelStyle={{ color: 'rgba(255,255,255,0.8)' }}
             />
             <Line 
               type="monotone" 
               dataKey="price" 
               stroke="#60a5fa" 
-              strokeWidth={2}
+              strokeWidth={3}
               dot={(props) => {
                 if (props.payload?.isPostTime) {
-                  return <circle cx={props.cx} cy={props.cy} r={5} fill="#ef4444" stroke="#ef4444" strokeWidth={2} />;
+                  return <circle cx={props.cx} cy={props.cy} r={6} fill="#ef4444" stroke="#ffffff" strokeWidth={2} />;
                 }
-                return <circle cx={props.cx} cy={props.cy} r={3} fill="#60a5fa" stroke="#60a5fa" strokeWidth={2} />;
+                return <circle cx={props.cx} cy={props.cy} r={4} fill="#60a5fa" stroke="#ffffff" strokeWidth={1} />;
               }}
-              activeDot={{ r: 5, stroke: '#60a5fa', strokeWidth: 2 }}
+              activeDot={{ r: 7, stroke: '#60a5fa', strokeWidth: 3, fill: '#ffffff' }}
             />
           </LineChart>
         </ResponsiveContainer>
       </div>
       
-      {/* 거래량 차트 */}
+      {/* 거래량 차트 - 크기 증가 */}
       <div>
-        <h5 className="text-sm font-medium mb-2">거래량 변화</h5>
-        <div className="h-32">
+        <h5 className="text-sm font-medium mb-3">거래량 변화</h5>
+        <div className="h-48">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={volumeChartData}>
+            <BarChart data={volumeChartData} margin={{ top: 5, right: 30, left: 20, bottom: 60 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
               <XAxis 
                 dataKey="time" 
-                tick={{ fontSize: 8, fill: 'rgba(255,255,255,0.6)' }}
+                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }}
                 angle={-45}
                 textAnchor="end"
-                height={40}
+                height={60}
+                interval={0}
               />
-              <YAxis tick={{ fontSize: 8, fill: 'rgba(255,255,255,0.6)' }} />
+              <YAxis 
+                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }} 
+                width={60}
+              />
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: 'rgba(0,0,0,0.8)', 
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  borderRadius: '8px'
+                  backgroundColor: 'rgba(0,0,0,0.9)', 
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  borderRadius: '8px',
+                  fontSize: '12px'
                 }}
                 formatter={(value: any) => [value.toLocaleString(), '거래량']}
+                labelStyle={{ color: 'rgba(255,255,255,0.8)' }}
               />
               <Bar 
                 dataKey="volume" 
                 fill="#60a5fa"
-                opacity={0.6} 
+                opacity={0.7}
+                stroke="#60a5fa"
+                strokeWidth={1}
               />
             </BarChart>
           </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* 차트 범례 */}
+      <div className="mt-4 p-3 glass-subtle rounded-lg">
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-1">
+              <div className="w-3 h-3 rounded-full bg-blue-400"></div>
+              <span>일반 시점</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <div className="w-3 h-3 rounded-full bg-red-400"></div>
+              <span>게시 시점</span>
+            </div>
+          </div>
+          <span className="text-foreground/60">
+            핵심 데이터 포인트만 표시됨
+          </span>
         </div>
       </div>
     </div>

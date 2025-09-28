@@ -52,7 +52,8 @@ export function SNSPage({ onPostClick }: SNSPageProps) {
     loadMore,
     refresh,
     hasMore,
-    totalLoaded
+    totalLoaded,
+    isLoadingMore
   } = useSNSList({
     initialParams: toApiParams(),
     autoFetch: true
@@ -213,11 +214,11 @@ export function SNSPage({ onPostClick }: SNSPageProps) {
         <div className="flex justify-center pt-4">
           <Button
             onClick={loadMore}
-            disabled={loading}
+            disabled={isLoadingMore}
             variant="outline"
             className="glass-card hover:glass"
           >
-            {loading ? (
+            {isLoadingMore ? (
               <>
                 <div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full mr-2"></div>
                 로딩 중...

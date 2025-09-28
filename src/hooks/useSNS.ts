@@ -1,6 +1,6 @@
 // src/hooks/useSNS.ts
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useSWRApi } from './useApi';
 import { snsApiService, type SNSPost, type SNSListParams } from '../services/SNSService';
 
@@ -23,6 +23,9 @@ export function useSNSList(options: UseSNSListOptions = {}) {
     ...initialParams
   });
 
+  const [allPosts, setAllPosts] = useState<SNSPost[]>([]);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
   // SWR 키 생성
   const swrKey = useMemo(() => {
     if (!autoFetch) return null;
@@ -31,9 +34,9 @@ export function useSNSList(options: UseSNSListOptions = {}) {
 
   // SWR을 사용한 데이터 페칭
   const {
-    data: posts,
+    data: currentPagePosts,
     error,
-    isLoading,
+    isLoading: isInitialLoading,
     mutate: refetch
   } = useSWRApi(
     swrKey,
@@ -44,6 +47,20 @@ export function useSNSList(options: UseSNSListOptions = {}) {
     }
   );
 
+  // 새로운 데이터가 로드되면 누적
+  useEffect(() => {
+    if (currentPagePosts) {
+      if (params.skip === 0) {
+        // 첫 페이지 또는 새로고침
+        setAllPosts(currentPagePosts);
+      } else {
+        // 추가 페이지 로드
+        setAllPosts(prev => [...prev, ...currentPagePosts]);
+      }
+      setIsLoadingMore(false);
+    }
+  }, [currentPagePosts, params.skip]);
+
   // 필터 업데이트
   const updateFilter = useCallback((newParams: Partial<SNSListParams>) => {
     setParams(prev => ({
@@ -51,17 +68,19 @@ export function useSNSList(options: UseSNSListOptions = {}) {
       ...newParams,
       skip: newParams.skip !== undefined ? newParams.skip : 0 // 필터 변경시 첫 페이지로
     }));
+    setAllPosts([]); // 필터 변경시 기존 데이터 클리어
   }, []);
 
   // 페이지네이션
   const loadMore = useCallback(() => {
-    if (posts && posts.length > 0) {
+    if (currentPagePosts && currentPagePosts.length > 0 && !isLoadingMore) {
+      setIsLoadingMore(true);
       setParams(prev => ({
         ...prev,
         skip: (prev.skip || 0) + (prev.limit || 20)
       }));
     }
-  }, [posts]);
+  }, [currentPagePosts, isLoadingMore]);
 
   // 검색
   const search = useCallback((searchParams: SNSListParams) => {
@@ -74,14 +93,15 @@ export function useSNSList(options: UseSNSListOptions = {}) {
 
   // 새로고침
   const refresh = useCallback(() => {
+    setAllPosts([]);
     setParams(prev => ({ ...prev, skip: 0 }));
     refetch();
   }, [refetch]);
 
   return {
     // 데이터
-    posts: posts || [],
-    loading: isLoading,
+    posts: allPosts,
+    loading: isInitialLoading || (isLoadingMore && params.skip === 0),
     error,
     
     // 필터 상태
@@ -95,8 +115,9 @@ export function useSNSList(options: UseSNSListOptions = {}) {
     refetch,
     
     // 계산된 값
-    hasMore: posts ? posts.length >= (params.limit || 20) : false,
-    totalLoaded: posts?.length || 0
+    hasMore: currentPagePosts ? currentPagePosts.length >= (params.limit || 20) : false,
+    totalLoaded: allPosts.length,
+    isLoadingMore
   };
 }
 
