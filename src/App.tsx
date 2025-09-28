@@ -17,6 +17,7 @@ import { NewsPage } from "./components/NewsPage";
 import NewsDetailPage, { NewsItem as DetailNewsItem } from "./components/NewsDetailPage";
 import { SNSPage } from "./components/SNSPage";
 import { SNSDetailPage } from "./components/SNSDetailPage";
+import { SNSPost } from "./types/sns-type";
 import { AIAnalysis } from "./components/AIAnalysis";
 import OptimizedEconomicDashboard from "./components/EconomicDashboard";
 import { LoginPage } from "./components/auth/LoginPage";
@@ -83,21 +84,6 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
 type AuthState = "guest" | "login" | "signup" | "authenticated";
 type ViewState = "welcome" | "main" | "auth" | "profile" | "sns-detail" | "stock-news" | "news-detail" | "stock-detail" | "crypto-detail" | "etf-detail";
 
-interface SNSPost {
-  id: string;
-  content: string;
-  author: string;
-  platform: "X" | "Truth Social";
-  category?: string;
-  timestamp: string;
-  likes?: number;
-  retweets?: number;
-  replies?: number;
-  verified: boolean;
-  profileImage: string;
-  hasMarketImpact: boolean;
-  impactScore?: number;
-}
 
 interface StockNewsItem {
   symbol: string;
