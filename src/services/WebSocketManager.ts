@@ -72,7 +72,7 @@ export class WebSocketManager {
         earnings_calendar: 1000,
         earnings_news: 1500,
         sp500: 3000,
-        etf: 6000
+        etf: 1500 // 1.5초로 통일
       }
     };
 
@@ -589,7 +589,7 @@ export const webSocketManager = new WebSocketManager({
     earnings_calendar: 1000,  // 1초 후 (홈페이지 필수)
     earnings_news: 1500,      // 1.5초 후 (홈페이지 필수)
     sp500: 3000,             // 3초 후 (백그라운드)
-    etf: 3500                // 6초 후 (백그라운드)
+    etf: 1500                // 1.5초로 통일 (백그라운드)
   }
 });
 

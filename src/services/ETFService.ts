@@ -277,9 +277,12 @@ export class ETFService extends BaseService {
       const response = await fetch(url, {
         method: 'GET',
         headers: {
+          'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
+        },
+        mode: 'cors',
+        credentials: 'omit',
+        signal: AbortSignal.timeout(30000)
       });
 
       if (!response.ok) {

@@ -72,7 +72,13 @@ export function useSNSList(options: UseSNSListOptions = {}) {
       skip: newParams.skip !== undefined ? newParams.skip : 0 // 필터 변경시 첫 페이지로
     }));
     setAllPosts([]); // 필터 변경시 기존 데이터 클리어
-  }, []);
+    setLoadedPages(new Set()); // 로드된 페이지도 초기화
+    
+    // 필터 변경 시 SWR 재검증 트리거
+    setTimeout(() => {
+      refetch();
+    }, 100);
+  }, [refetch]);
 
   // 페이지네이션 - 직접 API 호출
   const loadMore = useCallback(async () => {
