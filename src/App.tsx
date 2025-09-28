@@ -8,7 +8,6 @@ import { webSocketManager } from './services/WebSocketManager';
 import { BottomNavigation } from "./components/BottomNavigation";
 import EnhancedTopGainersBanner from "./components/TopGainersBanner";
 import { EarningsCalendar } from "./components/EarningsCalendar";
-import { HomeSocialFeed } from "./components/HomeSocialFeed";
 import MarketPage from "./components/MarketPage";
 import { MarketDetailPage } from "./components/SP500Detail";
 import { CryptoDetailPage } from "./components/CryptoDetailPage"; // 추가
@@ -17,7 +16,7 @@ import { NewsPage } from "./components/NewsPage";
 import NewsDetailPage, { NewsItem as DetailNewsItem } from "./components/NewsDetailPage";
 import { SNSPage } from "./components/SNSPage";
 import { SNSDetailPage } from "./components/SNSDetailPage";
-import { SNSPost } from "./types/sns-type";
+import { snsApiService, type SNSPost } from "./services/SNSService";
 import { AIAnalysis } from "./components/AIAnalysis";
 import OptimizedEconomicDashboard from "./components/EconomicDashboard";
 import { LoginPage } from "./components/auth/LoginPage";
@@ -289,18 +288,8 @@ function AppContent() {
   };
 
   const handleSNSPostClick = (post: SNSPost) => {
-    if (post.hasMarketImpact) {
-      // 새로운 SNSPost 타입에 필요한 모든 속성이 있는지 확인
-      const completePost: SNSPost = {
-        ...post,
-        affectedAssets: post.affectedAssets || [],
-        analysisStatus: post.analysisStatus || 'complete',
-        postSource: post.postSource || (post.platform === 'X' ? 'x' : 'truth_social_posts'),
-        hasMedia: post.hasMedia || false,
-        mediaThumbnail: post.mediaThumbnail,
-        mediaType: post.mediaType
-      };
-      setSelectedSNSPost(completePost);
+    if (post.analysis.analysis_status === 'complete') {
+      setSelectedSNSPost(post);
       setViewState("sns-detail");
     }
   };
@@ -400,7 +389,8 @@ function AppContent() {
       <div className="min-h-screen relative z-10">
         <div className="max-w-md mx-auto px-4 pt-4 pb-20">
           <SNSDetailPage
-            post={selectedSNSPost}
+            postSource={selectedSNSPost.analysis.post_source}
+            postId={selectedSNSPost.analysis.post_id}
             onBack={() => {
               setViewState("main");
               setSelectedSNSPost(null);
@@ -616,7 +606,6 @@ function AppContent() {
             {renderHeader()}
             <EnhancedTopGainersBanner />
             <EarningsCalendar />
-            <HomeSocialFeed isLoggedIn={isLoggedIn} onPostClick={handleSNSPostClick} />
           </div>
         );
 
@@ -651,8 +640,6 @@ function AppContent() {
               </div>
             </div>
             <SNSPage 
-              isLoggedIn={isLoggedIn} 
-              onLoginPrompt={handleLoginClick}
               onPostClick={handleSNSPostClick}
             />
           </div>
