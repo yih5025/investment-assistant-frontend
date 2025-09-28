@@ -73,7 +73,7 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   };
   (window as any).clearQueryCache = () => {
     queryClient.clear();
-    console.log('🗑️ React Query 캐시  클리어됨');
+    console.log('🗑️ React Query 캐시 클리어됨');
   };
 }
 
