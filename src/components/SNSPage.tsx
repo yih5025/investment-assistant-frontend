@@ -137,39 +137,21 @@ export function SNSPage({ isLoggedIn, onLoginPrompt, onPostClick }: SNSPageProps
               {/* 헤더 */}
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center space-x-3">
-                  <div className="relative">
-                    <img
-                      src={post.profileImage}
-                      alt={post.author}
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
+                  <div className="flex items-center space-x-2">
+                    <p className="font-medium">{post.author}</p>
+                    <Badge variant="secondary" className="text-xs">
+                      {post.platform}
+                    </Badge>
                     {post.verified && (
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                      <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
                           <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2" fill="none"/>
                         </svg>
                       </div>
                     )}
                   </div>
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <p className="font-medium">{post.author}</p>
-                      <Badge variant="secondary" className="text-xs">
-                        {post.platform}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-foreground/60">{formatRelativeTime(post.timestamp)}</p>
-                  </div>
                 </div>
-
-                {post.hasMarketImpact && post.impactScore && (
-                  <div className="flex items-center space-x-1">
-                    <TrendingUp size={16} className="text-primary" />
-                    <span className="text-xs text-primary font-medium">
-                      {post.impactScore.toFixed(1)}%
-                    </span>
-                  </div>
-                )}
+                <p className="text-xs text-foreground/60">{formatRelativeTime(post.timestamp)}</p>
               </div>
 
               {/* 내용 */}
@@ -178,16 +160,18 @@ export function SNSPage({ isLoggedIn, onLoginPrompt, onPostClick }: SNSPageProps
               {/* 미디어 표시 */}
               {post.hasMedia && post.mediaThumbnail && (
                 <div className="mb-3">
-                  <img
-                    src={post.mediaThumbnail}
-                    alt="미디어 썸네일"
-                    className="w-full h-32 object-cover rounded-lg"
-                  />
-                  {post.mediaType && (
-                    <p className="text-xs text-foreground/60 mt-1">
-                      {post.mediaType === 'video' ? '📹 비디오' : '🖼️ 이미지'}
-                    </p>
-                  )}
+                  <div className="relative w-full aspect-video bg-gray-800 rounded-lg overflow-hidden">
+                    <img
+                      src={post.mediaThumbnail}
+                      alt="미디어 썸네일"
+                      className="w-full h-full object-cover"
+                    />
+                    {post.mediaType && (
+                      <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/70 rounded text-xs text-white">
+                        {post.mediaType === 'video' ? '📹 비디오' : '🖼️ 이미지'}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -211,26 +195,12 @@ export function SNSPage({ isLoggedIn, onLoginPrompt, onPostClick }: SNSPageProps
 
               {/* 인게이지먼트 (X만) */}
               {post.platform === "X" && (post.likes || post.retweets || post.replies) && (
-                <div className="flex items-center justify-between text-foreground/60 text-xs">
+                <div className="flex items-center text-foreground/60 text-xs">
                   <div className="flex space-x-4">
                     {post.replies && <span>💬 {formatNumber(post.replies)}</span>}
                     {post.retweets && <span>🔄 {formatNumber(post.retweets)}</span>}
                     {post.likes && <span>❤️ {formatNumber(post.likes)}</span>}
                   </div>
-                  {post.hasMarketImpact && (
-                    <Badge className="bg-primary/20 text-primary text-xs">
-                      시장 영향 분석 완료
-                    </Badge>
-                  )}
-                </div>
-              )}
-
-              {/* Truth Social 분석 완료 표시 */}
-              {post.platform === "Truth Social" && post.hasMarketImpact && (
-                <div className="flex justify-end">
-                  <Badge className="bg-primary/20 text-primary text-xs">
-                    시장 영향 분석 완료
-                  </Badge>
                 </div>
               )}
             </div>

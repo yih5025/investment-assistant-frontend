@@ -77,37 +77,23 @@ export function HomeSocialFeed({ isLoggedIn, onPostClick }: SocialFeedProps) {
             onClick={() => onPostClick?.(post)}
             className="p-3 glass-subtle rounded-lg cursor-pointer hover:glass transition-all group"
           >
-            <div className="flex items-start space-x-3">
-              <div className="relative flex-shrink-0">
-                <img
-                  src={post.profileImage}
-                  alt={post.author}
-                  className="w-8 h-8 rounded-full object-cover"
-                />
-                {post.verified && (
-                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
-                    <svg width="8" height="8" viewBox="0 0 24 24" fill="white">
-                      <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="3" fill="none"/>
-                    </svg>
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center space-x-2 mb-1">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2">
                   <p className="font-medium text-sm truncate">{post.author}</p>
                   <Badge variant="secondary" className="text-xs">
                     {post.platform}
                   </Badge>
-                  {post.hasMarketImpact && post.impactScore && (
-                    <div className="flex items-center space-x-1">
-                      <TrendingUp size={12} className="text-primary" />
-                      <span className="text-xs text-primary font-medium">
-                        {post.impactScore.toFixed(1)}%
-                      </span>
+                  {post.verified && (
+                    <div className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
+                      <svg width="8" height="8" viewBox="0 0 24 24" fill="white">
+                        <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="3" fill="none"/>
+                      </svg>
                     </div>
                   )}
                 </div>
+                <span className="text-xs text-foreground/50">{formatRelativeTime(post.timestamp)}</span>
+              </div>
                 
                 <p className="text-xs text-foreground/80 line-clamp-2 mb-2">
                   {post.content}
@@ -129,17 +115,13 @@ export function HomeSocialFeed({ isLoggedIn, onPostClick }: SocialFeedProps) {
                   </div>
                 )}
                 
-                <div className="flex items-center justify-between text-xs text-foreground/50">
-                  <span>{formatRelativeTime(post.timestamp)}</span>
-                  {post.platform === "X" && (post.likes || post.retweets || post.replies) && (
-                    <div className="flex space-x-3">
-                      {post.replies && <span>💬 {formatNumber(post.replies)}</span>}
-                      {post.retweets && <span>🔄 {formatNumber(post.retweets)}</span>}
-                      {post.likes && <span>❤️ {formatNumber(post.likes)}</span>}
-                    </div>
-                  )}
+              {post.platform === "X" && (post.likes || post.retweets || post.replies) && (
+                <div className="flex space-x-3 text-xs text-foreground/50">
+                  {post.replies && <span>💬 {formatNumber(post.replies)}</span>}
+                  {post.retweets && <span>🔄 {formatNumber(post.retweets)}</span>}
+                  {post.likes && <span>❤️ {formatNumber(post.likes)}</span>}
                 </div>
-              </div>
+              )}
             </div>
           </div>
         ))}
