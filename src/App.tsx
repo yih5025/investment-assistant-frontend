@@ -290,7 +290,17 @@ function AppContent() {
 
   const handleSNSPostClick = (post: SNSPost) => {
     if (post.hasMarketImpact) {
-      setSelectedSNSPost(post);
+      // 새로운 SNSPost 타입에 필요한 모든 속성이 있는지 확인
+      const completePost: SNSPost = {
+        ...post,
+        affectedAssets: post.affectedAssets || [],
+        analysisStatus: post.analysisStatus || 'complete',
+        postSource: post.postSource || (post.platform === 'X' ? 'x' : 'truth_social_posts'),
+        hasMedia: post.hasMedia || false,
+        mediaThumbnail: post.mediaThumbnail,
+        mediaType: post.mediaType
+      };
+      setSelectedSNSPost(completePost);
       setViewState("sns-detail");
     }
   };

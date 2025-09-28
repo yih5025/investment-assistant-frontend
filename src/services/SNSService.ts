@@ -8,7 +8,7 @@ import {
 } from '../types/sns-type';
 
 export class SNSService {
-  private readonly baseUrl = '/api/v1/sns/analysis';
+  private readonly baseUrl = 'https://api.investment-assistant.site/api/v1/sns/analysis';
 
   /**
    * HTTP GET 요청 헬퍼
