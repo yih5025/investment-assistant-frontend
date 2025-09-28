@@ -441,7 +441,9 @@ function AssetChartCard({ post, symbol, formatPrice }: AssetChartCardProps) {
   const { 
     priceChartData, 
     volumeChartData, 
-    hasData 
+    hasData, 
+    totalDataPoints, 
+    filteredDataPoints 
   } = useSNSChartData(post, symbol);
 
   if (!hasData) {
@@ -460,112 +462,155 @@ function AssetChartCard({ post, symbol, formatPrice }: AssetChartCardProps) {
       <div className="flex items-center justify-between mb-4">
         <h4 className="font-medium">{symbol} 가격 변화</h4>
         <div className="text-xs text-foreground/60">
-          {priceChartData.length} 포인트
+          {filteredDataPoints}/{totalDataPoints} 포인트 (최적화됨)
         </div>
       </div>
       
-      {/* 가격 차트 - 크기 증가 */}
+      {/* 가격 차트 - 개선된 버전 */}
       <div className="h-80 mb-6">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={priceChartData} margin={{ top: 5, right: 30, left: 20, bottom: 60 }}>
+          <LineChart 
+            data={priceChartData} 
+            margin={{ top: 20, right: 30, left: 60, bottom: 80 }}
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
             <XAxis 
               dataKey="time" 
-              tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.7)' }}
-              angle={-45}
-              textAnchor="end"
-              height={80}
+              tick={{ 
+                fontSize: 10, 
+                fill: 'rgba(255,255,255,0.8)',
+                textAnchor: 'middle'
+              }}
+              angle={0}
+              height={60}
               interval={0}
+              axisLine={{ stroke: 'rgba(255,255,255,0.3)' }}
+              tickLine={{ stroke: 'rgba(255,255,255,0.3)' }}
             />
             <YAxis 
-              tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.7)' }}
-              domain={['dataMin - 2%', 'dataMax + 2%']}
-              width={80}
+              tick={{ 
+                fontSize: 10, 
+                fill: 'rgba(255,255,255,0.8)' 
+              }}
+              domain={['dataMin - 1%', 'dataMax + 1%']}
+              width={60}
+              axisLine={{ stroke: 'rgba(255,255,255,0.3)' }}
+              tickLine={{ stroke: 'rgba(255,255,255,0.3)' }}
+              tickFormatter={(value) => formatPrice(value, symbol)}
             />
             <Tooltip 
               contentStyle={{ 
-                backgroundColor: 'rgba(0,0,0,0.9)', 
-                border: '1px solid rgba(255,255,255,0.3)',
+                backgroundColor: 'rgba(0,0,0,0.95)', 
+                border: '1px solid rgba(255,255,255,0.4)',
                 borderRadius: '8px',
-                fontSize: '12px'
+                fontSize: '12px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
               }}
               formatter={(value: any) => [formatPrice(value, symbol), '가격']}
-              labelStyle={{ color: 'rgba(255,255,255,0.8)' }}
+              labelStyle={{ 
+                color: 'rgba(255,255,255,0.9)',
+                fontWeight: 'bold'
+              }}
             />
             <Line 
               type="monotone" 
               dataKey="price" 
               stroke="#60a5fa" 
               strokeWidth={3}
-              dot={(props) => {
-                if (props.payload?.isPostTime) {
-                  return <circle cx={props.cx} cy={props.cy} r={6} fill="#ef4444" stroke="#ffffff" strokeWidth={2} />;
-                }
-                return <circle cx={props.cx} cy={props.cy} r={4} fill="#60a5fa" stroke="#ffffff" strokeWidth={1} />;
+              dot={false}
+              activeDot={{ 
+                r: 6, 
+                stroke: '#60a5fa', 
+                strokeWidth: 3, 
+                fill: '#ffffff' 
               }}
-              activeDot={{ r: 7, stroke: '#60a5fa', strokeWidth: 3, fill: '#ffffff' }}
             />
           </LineChart>
         </ResponsiveContainer>
       </div>
       
-      {/* 거래량 차트 - 크기 증가 */}
+      {/* 거래량 차트 - 개선된 버전 */}
       <div>
         <h5 className="text-sm font-medium mb-3">거래량 변화</h5>
         <div className="h-48">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={volumeChartData} margin={{ top: 5, right: 30, left: 20, bottom: 60 }}>
+            <BarChart 
+              data={volumeChartData} 
+              margin={{ top: 20, right: 30, left: 60, bottom: 60 }}
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
               <XAxis 
                 dataKey="time" 
-                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }}
-                angle={-45}
-                textAnchor="end"
-                height={60}
+                tick={{ 
+                  fontSize: 10, 
+                  fill: 'rgba(255,255,255,0.8)',
+                  textAnchor: 'middle'
+                }}
+                angle={0}
+                height={50}
                 interval={0}
+                axisLine={{ stroke: 'rgba(255,255,255,0.3)' }}
+                tickLine={{ stroke: 'rgba(255,255,255,0.3)' }}
               />
               <YAxis 
-                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }} 
+                tick={{ 
+                  fontSize: 10, 
+                  fill: 'rgba(255,255,255,0.8)' 
+                }} 
                 width={60}
+                axisLine={{ stroke: 'rgba(255,255,255,0.3)' }}
+                tickLine={{ stroke: 'rgba(255,255,255,0.3)' }}
+                tickFormatter={(value) => {
+                  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+                  if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+                  return value.toString();
+                }}
               />
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: 'rgba(0,0,0,0.9)', 
-                  border: '1px solid rgba(255,255,255,0.3)',
+                  backgroundColor: 'rgba(0,0,0,0.95)', 
+                  border: '1px solid rgba(255,255,255,0.4)',
                   borderRadius: '8px',
-                  fontSize: '12px'
+                  fontSize: '12px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
                 }}
                 formatter={(value: any) => [value.toLocaleString(), '거래량']}
-                labelStyle={{ color: 'rgba(255,255,255,0.8)' }}
+                labelStyle={{ 
+                  color: 'rgba(255,255,255,0.9)',
+                  fontWeight: 'bold'
+                }}
               />
               <Bar 
                 dataKey="volume" 
                 fill="#60a5fa"
-                opacity={0.7}
-                stroke="#60a5fa"
+                stroke="#ffffff"
                 strokeWidth={1}
+                opacity={0.8}
               />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* 차트 범례 */}
+      {/* 개선된 차트 범례 */}
       <div className="mt-4 p-3 glass-subtle rounded-lg">
         <div className="flex items-center justify-between text-xs">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-1">
-              <div className="w-3 h-3 rounded-full bg-blue-400"></div>
+          <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 rounded-full bg-blue-400 border-2 border-white"></div>
               <span>일반 시점</span>
             </div>
-            <div className="flex items-center space-x-1">
-              <div className="w-3 h-3 rounded-full bg-red-400"></div>
-              <span>게시 시점</span>
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 rounded-full bg-red-400 border-2 border-white"></div>
+              <span>SNS 게시 시점</span>
             </div>
           </div>
-          <span className="text-foreground/60">
-            핵심 데이터 포인트만 표시됨
-          </span>
+          <div className="text-foreground/60">
+            <span>총 {totalDataPoints}개 → {filteredDataPoints}개로 최적화</span>
+          </div>
+        </div>
+        <div className="mt-2 text-xs text-foreground/50">
+          시간대별 핵심 포인트만 표시하여 트렌드를 명확하게 파악할 수 있습니다
         </div>
       </div>
     </div>
