@@ -393,6 +393,11 @@ export function useMarketData() {
     return webSocketManager.getETFPaginationState();
   }, []);
 
+  // ETF 서비스 즉시 초기화
+  const ensureETFInitialized = useCallback(() => {
+    webSocketManager.ensureETFInitialized();
+  }, []);
+
   // 🎯 불필요한 초기화 로직 제거 - App.tsx에서 이미 처리됨
   // useEffect 없음: 페이지 마운트/언마운트와 독립적
 
@@ -413,6 +418,7 @@ export function useMarketData() {
     getSP500PaginationState,
     loadMoreETF,
     getETFPaginationState,
+    ensureETFInitialized,
     isEmpty: allMarketData.length === 0,
     cryptoCount: cryptoData.length,
     stockCount: sp500Data.length,

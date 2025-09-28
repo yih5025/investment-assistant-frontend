@@ -151,8 +151,8 @@ export class WebSocketManager {
     const delays = config.backgroundLoadingDelays || {
       crypto: 0,
       topgainers: 500,
-      sp500: 3000,
-      etf: 6000
+      sp500: 1000,
+      etf: 1500 // 6초에서 1.5초로 단축
     };
     
     // 1. Crypto (즉시 시작 - WebSocket)
@@ -406,7 +406,7 @@ export class WebSocketManager {
     // 3순위: ETF
     setTimeout(() => {
       this.etfService.refreshData();
-    }, 4000);
+    }, 2500);
     
     // WebSocket 서비스는 연결 상태만 확인
     const cryptoStatus = this.cryptoService.getConnectionStatus();
@@ -436,6 +436,14 @@ export class WebSocketManager {
 
   public getETFPaginationState() {
     return this.etfService.getPaginationState();
+  }
+
+  // ETF 서비스 즉시 초기화 (탭 클릭 시 사용)
+  public ensureETFInitialized(): void {
+    if (!this.etfService['isInitialized']) {
+      console.log('🚀 ETF 탭 클릭 - 즉시 초기화 시작');
+      this.etfService.initialize();
+    }
   }
 
   // TopGainers 전용 메서드들
@@ -581,7 +589,7 @@ export const webSocketManager = new WebSocketManager({
     earnings_calendar: 1000,  // 1초 후 (홈페이지 필수)
     earnings_news: 1500,      // 1.5초 후 (홈페이지 필수)
     sp500: 3000,             // 3초 후 (백그라운드)
-    etf: 6000                // 6초 후 (백그라운드)
+    etf: 3500                // 6초 후 (백그라운드)
   }
 });
 

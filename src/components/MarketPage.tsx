@@ -69,7 +69,8 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick, on
     loadMoreSP500,
     getSP500PaginationState,
     loadMoreETF,
-    getETFPaginationState
+    getETFPaginationState,
+    ensureETFInitialized
   } = useMarketData();
 
   // 주식 클릭 핸들러
@@ -170,7 +171,10 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick, on
         </button>
         
         <button
-          onClick={() => setActiveTab('etf')}
+          onClick={() => {
+            setActiveTab('etf');
+            ensureETFInitialized(); // ETF 탭 클릭 시 즉시 초기화
+          }}
           className={`flex-1 py-3 px-4 rounded-lg transition-all text-sm font-medium ${
             activeTab === 'etf' 
               ? 'glass-strong text-primary' 
