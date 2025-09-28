@@ -1,23 +1,9 @@
-import { useState } from "react";
-import { Search, Filter, X, MessageSquare, TrendingUp, Calendar, ExternalLink } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Filter, MessageSquare, TrendingUp, RefreshCw, Loader2 } from "lucide-react";
 import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
-
-interface SNSPost {
-  id: string;
-  content: string;
-  author: string;
-  platform: "X" | "Truth Social";
-  category?: string;
-  timestamp: string;
-  likes?: number;
-  retweets?: number;
-  replies?: number;
-  verified: boolean;
-  profileImage: string;
-  hasMarketImpact: boolean;
-  impactScore?: number;
-}
+import { useSNSFeed, useSNSUtils } from "../hooks/useSNSData";
+import { SNSPost } from "../types/sns-type";
 
 interface SNSPageProps {
   isLoggedIn: boolean;
@@ -25,138 +11,50 @@ interface SNSPageProps {
   onPostClick: (post: SNSPost) => void;
 }
 
-const xCategories = ["crypto", "core_investors", "tech_ceo", "institutional", "corporate"];
-const truthSocialUsers = ["Donald J. Trump", "Donald Trump Jr.", "The White House"];
-
-const mockSNSData: SNSPost[] = [
-  {
-    id: "1951082319277859202",
-    content: "The future of cryptocurrency is looking incredibly promising. Major institutional adoption is accelerating faster than ever before. 🚀 #Crypto #Bitcoin",
-    author: "elonmusk",
-    platform: "X",
-    category: "tech_ceo",
-    timestamp: "2025-01-28T09:47:28.000Z",
-    likes: 45672,
-    retweets: 12843,
-    replies: 3421,
-    verified: true,
-    profileImage: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
-    hasMarketImpact: true,
-    impactScore: 87.3
-  },
-  {
-    id: "1951083421277859203",
-    content: "Despite the fake news media's constant attacks, America's economy is stronger than ever! Our policies are working and the American people are winning! 🇺🇸",
-    author: "Donald J. Trump",
-    platform: "Truth Social",
-    timestamp: "2025-01-28T08:32:15.000Z",
-    verified: true,
-    profileImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
-    hasMarketImpact: true,
-    impactScore: 73.2
-  },
-  {
-    id: "1951084522277859204",
-    content: "BlackRock's Bitcoin ETF has now reached $25 billion in assets under management. This is institutional adoption at unprecedented scale.",
-    author: "ARKInvest",
-    platform: "X",
-    category: "institutional",
-    timestamp: "2025-01-28T07:15:42.000Z",
-    likes: 28391,
-    retweets: 8765,
-    replies: 1892,
-    verified: true,
-    profileImage: "https://images.unsplash.com/photo-1494790108755-2616b88b9b2c?w=40&h=40&fit=crop&crop=face",
-    hasMarketImpact: true,
-    impactScore: 65.8
-  },
-  {
-    id: "1951085623277859205",
-    content: "Tesla's Q4 delivery numbers exceeded all expectations. The sustainable energy revolution is unstoppable! 🔋⚡",
-    author: "elonmusk",
-    platform: "X", 
-    category: "tech_ceo",
-    timestamp: "2025-01-28T06:44:18.000Z",
-    likes: 67421,
-    retweets: 19832,
-    replies: 4567,
-    verified: true,
-    profileImage: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
-    hasMarketImpact: true,
-    impactScore: 91.5
-  },
-  {
-    id: "1951086724277859206",
-    content: "The White House continues to work tirelessly for the American people. Today's economic indicators show remarkable progress across all sectors.",
-    author: "The White House",
-    platform: "Truth Social",
-    timestamp: "2025-01-28T05:28:33.000Z",
-    verified: true,
-    profileImage: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=40&h=40&fit=crop&crop=face",
-    hasMarketImpact: false
-  }
-];
-
 export function SNSPage({ isLoggedIn, onLoginPrompt, onPostClick }: SNSPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState<"all" | "X" | "Truth Social">("all");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [showFilters, setShowFilters] = useState(false);
-  const [sortBy, setSortBy] = useState<"recent" | "impact" | "engagement">("recent");
+  const [sortBy, setSortBy] = useState<"recent" | "impact">("recent");
+  
+  // 실제 API 데이터 사용
+  const { posts, loading, error, hasMore, loadMorePosts, refresh } = useSNSFeed();
+  const { formatNumber, formatRelativeTime } = useSNSUtils();
 
-  const filteredPosts = mockSNSData.filter(post => {
+  // 필터링된 게시글
+  const filteredPosts = posts.filter(post => {
     const matchesSearch = post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          post.author.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesPlatform = selectedPlatform === "all" || post.platform === selectedPlatform;
     
-    let matchesCategory = true;
-    if (selectedCategory !== "all") {
-      if (post.platform === "X") {
-        matchesCategory = post.category === selectedCategory;
-      } else if (post.platform === "Truth Social") {
-        matchesCategory = post.author === selectedCategory;
-      }
-    }
-    
-    return matchesSearch && matchesPlatform && matchesCategory;
+    return matchesSearch && matchesPlatform;
   }).sort((a, b) => {
     switch (sortBy) {
       case "impact":
         return (b.impactScore || 0) - (a.impactScore || 0);
-      case "engagement":
-        const aEngagement = (a.likes || 0) + (a.retweets || 0) + (a.replies || 0);
-        const bEngagement = (b.likes || 0) + (b.retweets || 0) + (b.replies || 0);
-        return bEngagement - aEngagement;
       default:
         return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
     }
   });
 
-  const formatTimestamp = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    
-    if (diffMins < 60) {
-      return `${diffMins}분 전`;
-    } else if (diffHours < 24) {
-      return `${diffHours}시간 전`;
-    } else {
-      return date.toLocaleDateString("ko-KR", { month: "short", day: "numeric" });
-    }
-  };
-
-  const formatNumber = (num: number): string => {
-    if (num >= 1000000) {
-      return (num / 1000000).toFixed(1) + "M";
-    } else if (num >= 1000) {
-      return (num / 1000).toFixed(1) + "K";
-    }
-    return num.toString();
-  };
+  // 에러 처리
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <div className="glass-card p-8 text-center">
+          <MessageSquare size={48} className="mx-auto mb-4 text-red-400" />
+          <p className="text-red-400 mb-4">{error}</p>
+          <button
+            onClick={refresh}
+            className="px-4 py-2 glass rounded-lg hover:glass-strong transition-all flex items-center space-x-2 mx-auto"
+          >
+            <RefreshCw size={16} />
+            <span>다시 시도</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -199,88 +97,35 @@ export function SNSPage({ isLoggedIn, onLoginPrompt, onPostClick }: SNSPageProps
             >
               <option value="recent">최신순</option>
               <option value="impact">영향도순</option>
-              <option value="engagement">인기순</option>
             </select>
 
             <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`p-2 rounded-lg transition-all ${
-                showFilters ? "glass text-primary" : "glass-subtle text-foreground/70"
-              }`}
+              onClick={refresh}
+              disabled={loading}
+              className="p-2 rounded-lg glass-subtle hover:glass transition-all disabled:opacity-50"
             >
-              <Filter size={18} />
+              <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
             </button>
           </div>
         </div>
-
-        {/* 카테고리 필터 */}
-        {showFilters && (
-          <div className="glass-card p-4 rounded-xl space-y-3">
-            <h3 className="font-medium">카테고리 필터</h3>
-            
-            {selectedPlatform !== "Truth Social" && (
-              <div>
-                <p className="text-sm text-foreground/70 mb-2">X 카테고리</p>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => setSelectedCategory("all")}
-                    className={`px-3 py-1 rounded-lg text-xs transition-all ${
-                      selectedCategory === "all" ? "glass text-primary" : "glass-subtle"
-                    }`}
-                  >
-                    전체
-                  </button>
-                  {xCategories.map((category) => (
-                    <button
-                      key={category}
-                      onClick={() => setSelectedCategory(category)}
-                      className={`px-3 py-1 rounded-lg text-xs transition-all ${
-                        selectedCategory === category ? "glass text-primary" : "glass-subtle"
-                      }`}
-                    >
-                      {category.replace("_", " ")}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedPlatform !== "X" && (
-              <div>
-                <p className="text-sm text-foreground/70 mb-2">Truth Social 인물</p>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => setSelectedCategory("all")}
-                    className={`px-3 py-1 rounded-lg text-xs transition-all ${
-                      selectedCategory === "all" ? "glass text-primary" : "glass-subtle"
-                    }`}
-                  >
-                    전체
-                  </button>
-                  {truthSocialUsers.map((user) => (
-                    <button
-                      key={user}
-                      onClick={() => setSelectedCategory(user)}
-                      className={`px-3 py-1 rounded-lg text-xs transition-all ${
-                        selectedCategory === user ? "glass text-primary" : "glass-subtle"
-                      }`}
-                    >
-                      {user}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
       </div>
+
+      {/* 로딩 상태 */}
+      {loading && posts.length === 0 && (
+        <div className="glass-card p-8 text-center">
+          <Loader2 size={48} className="mx-auto mb-4 text-primary animate-spin" />
+          <p className="text-foreground/70">SNS 분석 데이터를 불러오는 중...</p>
+        </div>
+      )}
 
       {/* SNS 피드 목록 */}
       <div className="space-y-3">
-        {filteredPosts.length === 0 ? (
+        {filteredPosts.length === 0 && !loading ? (
           <div className="glass-card p-8 text-center">
             <MessageSquare size={48} className="mx-auto mb-4 text-foreground/30" />
-            <p className="text-foreground/70">검색 결과가 없습니다</p>
+            <p className="text-foreground/70">
+              {searchQuery ? "검색 결과가 없습니다" : "분석된 게시글이 없습니다"}
+            </p>
           </div>
         ) : (
           filteredPosts.map((post) => (
@@ -312,21 +157,16 @@ export function SNSPage({ isLoggedIn, onLoginPrompt, onPostClick }: SNSPageProps
                       <Badge variant="secondary" className="text-xs">
                         {post.platform}
                       </Badge>
-                      {post.category && (
-                        <Badge variant="outline" className="text-xs">
-                          {post.category.replace("_", " ")}
-                        </Badge>
-                      )}
                     </div>
-                    <p className="text-xs text-foreground/60">{formatTimestamp(post.timestamp)}</p>
+                    <p className="text-xs text-foreground/60">{formatRelativeTime(post.timestamp)}</p>
                   </div>
                 </div>
 
-                {post.hasMarketImpact && (
+                {post.hasMarketImpact && post.impactScore && (
                   <div className="flex items-center space-x-1">
                     <TrendingUp size={16} className="text-primary" />
                     <span className="text-xs text-primary font-medium">
-                      {post.impactScore?.toFixed(1)}%
+                      {post.impactScore.toFixed(1)}%
                     </span>
                   </div>
                 )}
@@ -335,26 +175,61 @@ export function SNSPage({ isLoggedIn, onLoginPrompt, onPostClick }: SNSPageProps
               {/* 내용 */}
               <p className="text-sm mb-3 line-clamp-3">{post.content}</p>
 
-              {/* 인게이지먼트 */}
-              {post.platform === "X" && (
+              {/* 미디어 표시 */}
+              {post.hasMedia && post.mediaThumbnail && (
+                <div className="mb-3">
+                  <img
+                    src={post.mediaThumbnail}
+                    alt="미디어 썸네일"
+                    className="w-full h-32 object-cover rounded-lg"
+                  />
+                  {post.mediaType && (
+                    <p className="text-xs text-foreground/60 mt-1">
+                      {post.mediaType === 'video' ? '📹 비디오' : '🖼️ 이미지'}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* 영향받는 자산 표시 */}
+              {post.affectedAssets.length > 0 && (
+                <div className="mb-3">
+                  <div className="flex flex-wrap gap-1">
+                    {post.affectedAssets.slice(0, 3).map((asset, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {asset.symbol}
+                      </Badge>
+                    ))}
+                    {post.affectedAssets.length > 3 && (
+                      <Badge variant="outline" className="text-xs">
+                        +{post.affectedAssets.length - 3}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* 인게이지먼트 (X만) */}
+              {post.platform === "X" && (post.likes || post.retweets || post.replies) && (
                 <div className="flex items-center justify-between text-foreground/60 text-xs">
                   <div className="flex space-x-4">
-                    <span>💬 {formatNumber(post.replies || 0)}</span>
-                    <span>🔄 {formatNumber(post.retweets || 0)}</span>
-                    <span>❤️ {formatNumber(post.likes || 0)}</span>
+                    {post.replies && <span>💬 {formatNumber(post.replies)}</span>}
+                    {post.retweets && <span>🔄 {formatNumber(post.retweets)}</span>}
+                    {post.likes && <span>❤️ {formatNumber(post.likes)}</span>}
                   </div>
                   {post.hasMarketImpact && (
                     <Badge className="bg-primary/20 text-primary text-xs">
-                      시장 영향 분석 가능
+                      시장 영향 분석 완료
                     </Badge>
                   )}
                 </div>
               )}
 
+              {/* Truth Social 분석 완료 표시 */}
               {post.platform === "Truth Social" && post.hasMarketImpact && (
                 <div className="flex justify-end">
                   <Badge className="bg-primary/20 text-primary text-xs">
-                    시장 영향 분석 가능
+                    시장 영향 분석 완료
                   </Badge>
                 </div>
               )}
@@ -363,12 +238,24 @@ export function SNSPage({ isLoggedIn, onLoginPrompt, onPostClick }: SNSPageProps
         )}
       </div>
 
-      {/* 로딩 더보기 버튼 */}
-      <div className="flex justify-center pt-4">
-        <button className="px-6 py-2 glass-card rounded-xl hover:glass transition-all">
-          더 많은 게시글 보기
-        </button>
-      </div>
+      {/* 더보기 버튼 */}
+      {hasMore && !loading && filteredPosts.length > 0 && (
+        <div className="flex justify-center pt-4">
+          <button
+            onClick={loadMorePosts}
+            className="px-6 py-2 glass-card rounded-xl hover:glass transition-all flex items-center space-x-2"
+          >
+            <span>더 많은 게시글 보기</span>
+          </button>
+        </div>
+      )}
+
+      {/* 추가 로딩 */}
+      {loading && posts.length > 0 && (
+        <div className="flex justify-center pt-4">
+          <Loader2 size={24} className="text-primary animate-spin" />
+        </div>
+      )}
     </div>
   );
 }
