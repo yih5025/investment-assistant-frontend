@@ -1,6 +1,6 @@
 // src/components/SNSDetailPage.tsx
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   ArrowLeft, 
   ExternalLink, 
@@ -437,6 +437,15 @@ function GeneralAnalysisCard({
     hasData 
   } = useSNSChartData(post, symbol);
 
+  const postTimePoint = useMemo(() => {
+    return bollingerBandData.find(d => d.isPostTime);
+  }, [bollingerBandData]);
+
+  const dualAxisPostTimePoint = useMemo(() => {
+    return dualAxisData.find(d => d.isPostTime);
+  }, [dualAxisData]);
+
+  
   if (!hasData) {
     return (
       <div className="glass-card p-4 rounded-xl">
@@ -566,34 +575,14 @@ function GeneralAnalysisCard({
               />
 
               {/* 게시 시점 표시 */}
-              {(() => {
-                if (!post.analysis.post_timestamp || bollingerBandData.length === 0) return null;
-                
-                const postTime = new Date(post.analysis.post_timestamp).getTime();
-                const dataTimeRange = {
-                  start: new Date(bollingerBandData[0].timestamp).getTime(),
-                  end: new Date(bollingerBandData[bollingerBandData.length - 1].timestamp).getTime()
-                };
-                
-                // 게시 시점이 데이터 범위 내에 있는지 확인
-                if (postTime < dataTimeRange.start || postTime > dataTimeRange.end) return null;
-                
-                // 가장 가까운 데이터 포인트 찾기
-                const closestDataPoint = bollingerBandData.reduce((prev, curr) => {
-                  const prevDiff = Math.abs(new Date(prev.timestamp).getTime() - postTime);
-                  const currDiff = Math.abs(new Date(curr.timestamp).getTime() - postTime);
-                  return currDiff < prevDiff ? curr : prev;
-                });
-                
-                return (
-                  <ReferenceLine 
-                    x={closestDataPoint.timestamp} 
-                    stroke="#f59e0b" 
-                    strokeWidth={2}
-                    label={{ value: '게시', position: 'top', fill: '#f59e0b' }}
-                  />
-                );
-              })()}
+              {postTimePoint && (
+                <ReferenceLine 
+                  x={postTimePoint.timestamp} 
+                  stroke="#f59e0b" 
+                  strokeWidth={2}
+                  label={{ value: '게시', position: 'top', fill: '#f59e0b' }}
+                />
+              )}
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -672,33 +661,13 @@ function GeneralAnalysisCard({
               />
 
               {/* 게시 시점 */}
-              {(() => {
-                if (!post.analysis.post_timestamp || dualAxisData.length === 0) return null;
-                
-                const postTime = new Date(post.analysis.post_timestamp).getTime();
-                const dataTimeRange = {
-                  start: new Date(dualAxisData[0].timestamp).getTime(),
-                  end: new Date(dualAxisData[dualAxisData.length - 1].timestamp).getTime()
-                };
-                
-                // 게시 시점이 데이터 범위 내에 있는지 확인
-                if (postTime < dataTimeRange.start || postTime > dataTimeRange.end) return null;
-                
-                // 가장 가까운 데이터 포인트 찾기
-                const closestDataPoint = dualAxisData.reduce((prev, curr) => {
-                  const prevDiff = Math.abs(new Date(prev.timestamp).getTime() - postTime);
-                  const currDiff = Math.abs(new Date(curr.timestamp).getTime() - postTime);
-                  return currDiff < prevDiff ? curr : prev;
-                });
-                
-                return (
-                  <ReferenceLine 
-                    x={closestDataPoint.timestamp} 
-                    stroke="#f59e0b" 
-                    strokeWidth={2}
-                  />
-                );
-              })()}
+              {dualAxisPostTimePoint && (
+                <ReferenceLine 
+                  x={dualAxisPostTimePoint.timestamp} 
+                  stroke="#f59e0b" 
+                  strokeWidth={2}
+                />
+              )}
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -790,6 +759,10 @@ function AdvancedAnalysisCard({
     volumeChangeSummary,
     hasData 
   } = useSNSChartData(post, symbol);
+
+  const candlestickPostTimePoint = useMemo(() => {
+    return candlestickData.find(d => d.isPostTime);
+  }, [candlestickData]);
 
   if (!hasData) {
     return (
@@ -883,34 +856,14 @@ function AdvancedAnalysisCard({
               />
 
               {/* 게시 시점 */}
-              {(() => {
-                if (!post.analysis.post_timestamp || candlestickData.length === 0) return null;
-                
-                const postTime = new Date(post.analysis.post_timestamp).getTime();
-                const dataTimeRange = {
-                  start: new Date(candlestickData[0].timestamp).getTime(),
-                  end: new Date(candlestickData[candlestickData.length - 1].timestamp).getTime()
-                };
-                
-                // 게시 시점이 데이터 범위 내에 있는지 확인
-                if (postTime < dataTimeRange.start || postTime > dataTimeRange.end) return null;
-                
-                // 가장 가까운 데이터 포인트 찾기
-                const closestDataPoint = candlestickData.reduce((prev, curr) => {
-                  const prevDiff = Math.abs(new Date(prev.timestamp).getTime() - postTime);
-                  const currDiff = Math.abs(new Date(curr.timestamp).getTime() - postTime);
-                  return currDiff < prevDiff ? curr : prev;
-                });
-                
-                return (
-                  <ReferenceLine 
-                    x={closestDataPoint.timestamp} 
-                    stroke="#f59e0b" 
-                    strokeWidth={2}
-                    label={{ value: '게시', position: 'top', fill: '#f59e0b' }}
-                  />
-                );
-              })()}
+              {candlestickPostTimePoint && (
+                <ReferenceLine 
+                  x={candlestickPostTimePoint.timestamp} 
+                  stroke="#f59e0b" 
+                  strokeWidth={2}
+                  label={{ value: '게시', position: 'top', fill: '#f59e0b' }}
+                />
+              )}
             </ComposedChart>
           </ResponsiveContainer>
         </div>
