@@ -43,14 +43,20 @@ export class ETFService extends BaseService {
       console.log('✅ ETFService 이미 초기화됨 - 기존 폴링 유지');
       return;
     }
-
+  
     if (this.isShutdown) {
       console.log('⚠️ ETFService가 종료된 상태입니다. 재시작이 필요합니다.');
       return;
     }
-
+  
     console.log('🚀 ETFService 초기화 시작');
-    this.startApiPolling();
+    
+    // ✅ 즉시 데이터 로드 보장
+    this.fetchDataFromApi().then(() => {
+      this.setConnectionStatus('api_mode');
+      this.startApiPolling();
+    });
+    
     this.isInitialized = true;
     console.log('✅ ETFService 초기화 완료');
   }
@@ -60,27 +66,22 @@ export class ETFService extends BaseService {
     return `${BASE_URL}/etf/polling?limit=${limit}&sort_by=price&order=desc`;
   }
 
-  // 수정 2: 폴링 시작 로직 개선 (즉시 데이터 로드 보장)
   private startApiPolling(): void {
     this.stopApiPolling();
-
+  
     const baseInterval = this.getPollingInterval();
     const priorityOffset = this.getPriorityOffset('etf');
     const finalInterval = baseInterval;
-
-    console.log(`🔄 ETF API 폴링 시작 (${finalInterval}ms 간격, 오프셋: ${priorityOffset}ms)`);
-
+  
+    console.log(`🔄 ETF API 폴링 시작 (${finalInterval}ms 간격)`);
+  
     const pollData = async () => {
       if (this.isInitialized && !this.isShutdown) {
         await this.fetchDataFromApi();
       }
     };
-
-    // 핵심 수정: 즉시 한 번 실행 후 api_mode 설정
-    this.loadWithCachePriority(pollData);
-    this.setConnectionStatus('api_mode');
     
-    // 우선순위 오프셋 적용하여 정기 폴링 시작
+    // 정기 폴링만 설정 (초기 로드는 initialize에서 이미 완료)
     setTimeout(() => {
       this.pollingInterval = setInterval(pollData, finalInterval);
     }, priorityOffset);
