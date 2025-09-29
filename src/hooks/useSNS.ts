@@ -27,21 +27,11 @@ export function useSNSList(options: UseSNSListOptions = {}) {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [loadedPages, setLoadedPages] = useState<Set<number>>(new Set());
 
-  // SWR 키 생성 - 첫 페이지는 항상 캐시
+  // 새 코드:
   const swrKey = useMemo(() => {
-    if (!autoFetch) {
-      console.log('🚫 SWR key is null (autoFetch disabled)');
-      return null;
-    }
-    // 모든 params를 포함하여 키 생성 (skip, limit 제외)
-    const keyParams = { 
-      post_source: params.post_source,
-      // 다른 필터 파라미터들도 추가 가능
-    };
-    const key = `sns-posts-${JSON.stringify(keyParams)}`;
-    console.log('🔑 SWR key generated:', { key, keyParams, fullParams: params, autoFetch });
-    return key;
-  }, [params.post_source, params.limit, params.skip, autoFetch]); // 모든 관련 params 포함
+    if (!autoFetch) return null;
+    return `sns-posts-${params.post_source}`;
+  }, [params.post_source, autoFetch]);
 
   // SWR을 사용한 데이터 페칭 - 첫 페이지만
   const {
@@ -52,14 +42,17 @@ export function useSNSList(options: UseSNSListOptions = {}) {
   } = useSWRApi(
     swrKey,
     async () => {
-      console.log('🚀 SWR fetcher called with params:', { ...params, skip: 0, limit: 20 });
-      const result = await snsApiService.getPosts({ ...params, skip: 0, limit: 20 });
-      console.log('📦 SWR fetcher result:', result);
+      console.log('🚀 SWR fetcher:', params.post_source);
+      const result = await snsApiService.getPosts({ 
+        skip: 0, 
+        limit: 20,
+        post_source: params.post_source 
+      });
       return result;
     },
     {
       revalidateOnFocus: false,
-      dedupingInterval: 5000, // 5초로 단축 - 필터 변경 시 빠른 응답
+      dedupingInterval: 60000, // 1분간 중복 요청 방지
       revalidateOnMount: true, // 마운트 시 항상 재검증
       refreshInterval: 0, // 자동 새로고침 비활성화
       onError: (error) => {
@@ -71,62 +64,36 @@ export function useSNSList(options: UseSNSListOptions = {}) {
     }
   );
 
-  // 첫 페이지 데이터 초기화
   useEffect(() => {
-    console.log('🔄 First page data effect:', {
-      firstPagePosts,
-      hasData: firstPagePosts && firstPagePosts.length > 0,
-      currentAllPosts: allPosts.length,
-      isInitialLoading,
-      error
-    });
-    
-    if (firstPagePosts && firstPagePosts.length > 0) {
-      console.log('✅ Setting first page posts:', firstPagePosts.length);
+    if (!isInitialLoading && firstPagePosts) {
+      console.log('✅ 첫 페이지 데이터 설정:', firstPagePosts.length);
       setAllPosts(firstPagePosts);
       setLoadedPages(new Set([0]));
       setIsLoadingMore(false);
-    } else if (firstPagePosts && firstPagePosts.length === 0) {
-      console.log('📭 First page returned empty array');
-      setAllPosts([]);
-      setLoadedPages(new Set([0]));
-      setIsLoadingMore(false);
     }
-  }, [firstPagePosts, isInitialLoading, error]);
+  }, [firstPagePosts, isInitialLoading]);
 
-  // 필터 변경 시 초기화 (post_source 변경 감지)
-  useEffect(() => {
-    console.log('🔄 Post source changed, clearing data:', params.post_source);
+  const updateFilter = useCallback((newParams: Partial<SNSListParams>) => {
+    console.log('🔄 필터 업데이트:', newParams);
+    
+    setParams(prev => {
+      if (prev.post_source === newParams.post_source) {
+        console.log('⚠️ 동일한 필터 - 업데이트 스킵');
+        return prev;
+      }
+      
+      return {
+        ...prev,
+        ...newParams,
+        skip: 0
+      };
+    });
+    
     setAllPosts([]);
     setLoadedPages(new Set());
     setIsLoadingMore(false);
-  }, [params.post_source]);
+  }, []);
 
-  // 필터 업데이트
-  const updateFilter = useCallback((newParams: Partial<SNSListParams>) => {
-    console.log('🔄 Filter update called:', { newParams, currentParams: params });
-    
-    const updatedParams = {
-      ...params,
-      ...newParams,
-      skip: newParams.skip !== undefined ? newParams.skip : 0 // 필터 변경시 첫 페이지로
-    };
-    
-    console.log('📝 Setting new params:', updatedParams);
-    setParams(updatedParams);
-    
-    // 즉시 상태 초기화
-    console.log('🧹 Clearing existing data');
-    setAllPosts([]); 
-    setLoadedPages(new Set()); 
-    setIsLoadingMore(false);
-    
-    // SWR 캐시 무효화 및 재검증 (즉시 실행)
-    console.log('🔄 Triggering SWR revalidation');
-    refetch();
-  }, [params, refetch]);
-
-  // 페이지네이션 - 직접 API 호출
   const loadMore = useCallback(async () => {
     if (isLoadingMore) return;
     
@@ -151,15 +118,19 @@ export function useSNSList(options: UseSNSListOptions = {}) {
     } finally {
       setIsLoadingMore(false);
     }
-  }, [allPosts.length, loadedPages, isLoadingMore, params]);
+  }, [allPosts.length, loadedPages, isLoadingMore, params.post_source]);
 
   // 검색
   const search = useCallback((searchParams: SNSListParams) => {
+    console.log('🔍 Search called:', searchParams);
     setParams(prev => ({
       ...prev,
       ...searchParams,
       skip: 0
     }));
+    setAllPosts([]);
+    setLoadedPages(new Set());
+    setIsLoadingMore(false);
   }, []);
 
   // 새로고침

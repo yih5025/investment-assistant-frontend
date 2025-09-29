@@ -132,25 +132,14 @@ export function SNSPage({ onPostClick }: SNSPageProps) {
     isLoadingMore
   });
 
-  // 필터 변경시 API 파라미터 업데이트
   useEffect(() => {
     const apiParams = toApiParams();
-    console.log('🎯 Filter changed, updating API params:', { 
-      filter, 
-      apiParams,
-      previousParams: params 
-    });
-    updateFilter(apiParams);
-  }, [filter.platform, filter.sortBy, filter.searchQuery, updateFilter, toApiParams]);
-
-  // 검색 처리 (디바운싱)
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      updateSearchQuery(localSearchQuery);
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, [localSearchQuery, updateSearchQuery]);
+    
+    if (apiParams.post_source !== params.post_source) {
+      console.log('🎯 필터 변경 감지:', apiParams);
+      updateFilter(apiParams);
+    }
+  }, [filter.platform]);
 
   // 에러 처리
   if (error) {

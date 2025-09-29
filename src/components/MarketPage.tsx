@@ -238,7 +238,7 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({
   getSP500PaginationState
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'price' | 'change' | 'volume'>('change');
+  const [sortBy, setSortBy] = useState<'price' | 'change' | 'volume'>('price'); // 기본값을 주가순으로 변경
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const filteredAndSortedStocks = useMemo(() => {
@@ -346,8 +346,8 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({
         {/* 정렬 옵션 */}
         <div className="flex space-x-2">
           {[
-            { key: 'change', label: '변동률순' },
             { key: 'price', label: '주가순' },
+            { key: 'change', label: '변동률순' },
             { key: 'volume', label: '거래량순' }
           ].map((option) => (
             <button
@@ -460,7 +460,7 @@ const CryptoMarketTab: React.FC<CryptoMarketTabProps> = ({
   connectionStatus 
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'price' | 'change' | 'volume'>('change');
+  const [sortBy, setSortBy] = useState<'price' | 'change' | 'volume'>('price'); // 기본값을 가격순으로 변경
   const [displayCount, setDisplayCount] = useState(100); // 초기 100개 표시
 
   const filteredAndSortedCrypto = useMemo(() => {
@@ -551,8 +551,8 @@ const CryptoMarketTab: React.FC<CryptoMarketTabProps> = ({
 
         <div className="flex space-x-2">
           {[
-            { key: 'change', label: '변동률순' },
             { key: 'price', label: '가격순' },
+            { key: 'change', label: '변동률순' },
             { key: 'volume', label: '거래량순' }
           ].map((option) => (
             <button
