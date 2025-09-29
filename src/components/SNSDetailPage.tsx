@@ -575,7 +575,8 @@ function GeneralAnalysisCard({
               />
 
               {/* 게시 시점 표시 */}
-              {postTimePoint && (
+              {postTimePoint && bollingerBandData.length > 0 && 
+               bollingerBandData.some(d => d.timestamp === postTimePoint.timestamp) && (
                 <ReferenceLine 
                   x={postTimePoint.timestamp} 
                   stroke="#f59e0b" 
@@ -661,7 +662,8 @@ function GeneralAnalysisCard({
               />
 
               {/* 게시 시점 */}
-              {dualAxisPostTimePoint && (
+              {dualAxisPostTimePoint && dualAxisData.length > 0 && 
+               dualAxisData.some(d => d.timestamp === dualAxisPostTimePoint.timestamp) && (
                 <ReferenceLine 
                   x={dualAxisPostTimePoint.timestamp} 
                   stroke="#f59e0b" 
@@ -856,7 +858,8 @@ function AdvancedAnalysisCard({
               />
 
               {/* 게시 시점 */}
-              {candlestickPostTimePoint && (
+              {candlestickPostTimePoint && candlestickData.length > 0 && 
+               candlestickData.some(d => d.timestamp === candlestickPostTimePoint.timestamp) && (
                 <ReferenceLine 
                   x={candlestickPostTimePoint.timestamp} 
                   stroke="#f59e0b" 
