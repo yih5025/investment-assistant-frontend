@@ -114,7 +114,7 @@ export function useETFDetail(initialSymbol?: string): UseETFDetailReturn {
 
     try {
       // 백엔드 엔드포인트: GET /api/v1/etf/symbol/{symbol} (차트 데이터 제외)
-      const response = await fetch(`/api/v1/etf/symbol/${symbol.toUpperCase()}`);
+      const response = await fetch(`https://api.investment-assistant.site/api/v1/etf/symbol/${symbol.toUpperCase()}`);
       
       if (!response.ok) {
         if (response.status === 404) {
@@ -195,7 +195,7 @@ export function useETFDetail(initialSymbol?: string): UseETFDetailReturn {
 
     try {
       // 백엔드 엔드포인트: GET /api/v1/etf/symbol/{symbol}/chart?timeframe={timeframe}
-      const chartResponse = await fetch(`/api/v1/etf/symbol/${currentSymbol.toUpperCase()}/chart?timeframe=${timeframe}`);
+      const chartResponse = await fetch(`https://api.investment-assistant.site/api/v1/etf/symbol/${currentSymbol.toUpperCase()}/chart?timeframe=${timeframe}`);
       
       if (!chartResponse.ok) {
         console.warn(`Chart API 오류! status: ${chartResponse.status}`);
@@ -282,7 +282,7 @@ export function useETFSearch() {
 
     try {
       // 백엔드 엔드포인트: GET /api/v1/etf/search?q={query}&limit={limit}
-      const response = await fetch(`/api/v1/etf/search?q=${encodeURIComponent(query)}&limit=${limit}`);
+      const response = await fetch(`https://api.investment-assistant.site/api/v1/etf/search?q=${encodeURIComponent(query)}&limit=${limit}`);
       
       if (!response.ok) {
         throw new Error(`Search API 오류: ${response.status} ${response.statusText}`);
@@ -336,7 +336,7 @@ export function useETFBasicInfo() {
 
     try {
       // 백엔드 엔드포인트: GET /api/v1/etf/symbol/{symbol}/basic
-      const response = await fetch(`/api/v1/etf/symbol/${symbol.toUpperCase()}/basic`);
+      const response = await fetch(`https://api.investment-assistant.site/api/v1/etf/symbol/${symbol.toUpperCase()}/basic`);
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
