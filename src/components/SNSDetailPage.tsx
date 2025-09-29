@@ -10,7 +10,7 @@ import {
   AlertCircle,
   RefreshCw
 } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, ComposedChart, Area, ReferenceLine } from 'recharts';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
@@ -93,7 +93,7 @@ function getAvatarGradient(username: string): string {
 // ============================================================================
 
 export function SNSDetailPage({ postSource, postId, onBack }: SNSDetailPageProps) {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("general");
 
   // SNS 상세 데이터 조회
   const {
@@ -202,14 +202,13 @@ export function SNSDetailPage({ postSource, postId, onBack }: SNSDetailPageProps
 
       {/* 상세 분석 탭 */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 glass-card">
-          <TabsTrigger value="overview">개요</TabsTrigger>
-          <TabsTrigger value="charts">차트</TabsTrigger>
-          <TabsTrigger value="analysis">분석</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 glass-card">
+          <TabsTrigger value="general">일반 분석</TabsTrigger>
+          <TabsTrigger value="advanced">전문 분석</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-4">
-          <OverviewTab 
+        <TabsContent value="general" className="space-y-4">
+          <GeneralAnalysisTab 
             post={post}
             affectedAssets={affectedAssets}
             formatPrice={formatPrice}
@@ -217,16 +216,12 @@ export function SNSDetailPage({ postSource, postId, onBack }: SNSDetailPageProps
           />
         </TabsContent>
 
-        <TabsContent value="charts" className="space-y-4">
-          <ChartsTab 
+        <TabsContent value="advanced" className="space-y-4">
+          <AdvancedAnalysisTab 
             post={post}
             affectedAssets={affectedAssets}
             formatPrice={formatPrice}
           />
-        </TabsContent>
-
-        <TabsContent value="analysis" className="space-y-4">
-          <AnalysisTab />
         </TabsContent>
       </Tabs>
     </div>
@@ -386,100 +381,342 @@ function AffectedAssetsOverview({
 }
 
 // ============================================================================
-// 개요 탭
+// 일반 분석 탭 - 신규
 // ============================================================================
 
-interface OverviewTabProps {
+interface GeneralAnalysisTabProps {
   post: SNSPost;
   affectedAssets: any[];
   formatPrice: (price: number, symbol: string) => string;
   getChangeColor: (change: number) => string;
 }
 
-function OverviewTab({ post, affectedAssets, formatPrice, getChangeColor }: OverviewTabProps) {
-  const { analysis } = post;
-
+function GeneralAnalysisTab({ 
+  post, 
+  affectedAssets, 
+  formatPrice, 
+  getChangeColor 
+}: GeneralAnalysisTabProps) {
   return (
     <>
-      {affectedAssets.map((asset) => {
-        const priceData = analysis.price_analysis?.[asset.symbol];
-        const volumeData = analysis.volume_analysis?.[asset.symbol];
-        
-        if (!priceData) return null;
-
-        return (
-          <div key={asset.symbol} className="glass-card p-4 rounded-xl">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="font-medium">{asset.symbol}</h4>
-              <Badge variant="outline">
-                {priceData.base_price ? formatPrice(priceData.base_price, asset.symbol) : 'N/A'}
-              </Badge>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-4 text-sm">
-              <div>
-                <p className="text-foreground/60">1시간 후</p>
-                <div className={`flex items-center space-x-1 ${getChangeColor(priceData["1h_change"] || 0)}`}>
-                  {(priceData["1h_change"] || 0) >= 0 ? 
-                    <TrendingUp size={12} /> : <TrendingDown size={12} />
-                  }
-                  <span>{(priceData["1h_change"] || 0).toFixed(2)}%</span>
-                </div>
-              </div>
-              <div>
-                <p className="text-foreground/60">12시간 후</p>
-                <div className={`flex items-center space-x-1 ${getChangeColor(priceData["12h_change"] || 0)}`}>
-                  {(priceData["12h_change"] || 0) >= 0 ? 
-                    <TrendingUp size={12} /> : <TrendingDown size={12} />
-                  }
-                  <span>{(priceData["12h_change"] || 0).toFixed(2)}%</span>
-                </div>
-              </div>
-              <div>
-                <p className="text-foreground/60">24시간 후</p>
-                <div className={`flex items-center space-x-1 ${getChangeColor(priceData["24h_change"] || 0)}`}>
-                  {(priceData["24h_change"] || 0) >= 0 ? 
-                    <TrendingUp size={12} /> : <TrendingDown size={12} />
-                  }
-                  <span>{(priceData["24h_change"] || 0).toFixed(2)}%</span>
-                </div>
-              </div>
-            </div>
-
-            {volumeData && (
-              <div className="mt-3 pt-3 border-t border-white/10">
-                <div className="flex justify-between text-xs text-foreground/60">
-                  <span>
-                    거래량 변화: {volumeData.volume_spike_ratio_1h ? 
-                      `${(volumeData.volume_spike_ratio_1h * 100).toFixed(1)}%` : 'N/A'
-                    }
-                  </span>
-                  <span>우선순위: {asset.priority}</span>
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      })}
+      {affectedAssets.map((asset) => (
+        <GeneralAnalysisCard
+          key={asset.symbol}
+          post={post}
+          symbol={asset.symbol}
+          formatPrice={formatPrice}
+          getChangeColor={getChangeColor}
+        />
+      ))}
     </>
   );
 }
 
 // ============================================================================
-// 차트 탭
+// 일반 분석 카드 (자산별)
 // ============================================================================
 
-interface ChartsTabProps {
+interface GeneralAnalysisCardProps {
+  post: SNSPost;
+  symbol: string;
+  formatPrice: (price: number, symbol: string) => string;
+  getChangeColor: (change: number) => string;
+}
+
+function GeneralAnalysisCard({ 
+  post, 
+  symbol, 
+  formatPrice, 
+  getChangeColor 
+}: GeneralAnalysisCardProps) {
+  const { 
+    bollingerBandData,
+    dualAxisData,
+    priceChangeSummary,
+    volumeChangeSummary,
+    hasData 
+  } = useSNSChartData(post, symbol);
+
+  if (!hasData) {
+    return (
+      <div className="glass-card p-4 rounded-xl">
+        <h4 className="font-medium mb-4">{symbol} 분석</h4>
+        <div className="text-center py-8 text-foreground/60">
+          데이터가 없습니다
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="glass-card p-4 rounded-xl space-y-6">
+      <h4 className="font-medium text-lg">{symbol} 일반 분석</h4>
+
+      {/* 1. 가격 변화 요약 */}
+      {priceChangeSummary && (
+        <div className="glass-subtle p-4 rounded-lg">
+          <h5 className="text-sm font-medium mb-3">📊 가격 변화 요약</h5>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-foreground/60 mb-1">게시 시점 가격</p>
+              <p className="font-medium">{formatPrice(priceChangeSummary.postPrice, symbol)}</p>
+            </div>
+            <div>
+              <p className="text-foreground/60 mb-1">게시 후 최고가</p>
+              <p className={`font-medium ${getChangeColor(priceChangeSummary.maxPriceChange)}`}>
+                {formatPrice(priceChangeSummary.maxPrice, symbol)}
+                <span className="text-xs ml-1">
+                  ({priceChangeSummary.maxPriceChange >= 0 ? '+' : ''}
+                  {priceChangeSummary.maxPriceChange.toFixed(2)}%)
+                </span>
+              </p>
+            </div>
+            <div>
+              <p className="text-foreground/60 mb-1">게시 후 최저가</p>
+              <p className={`font-medium ${getChangeColor(priceChangeSummary.minPriceChange)}`}>
+                {formatPrice(priceChangeSummary.minPrice, symbol)}
+                <span className="text-xs ml-1">
+                  ({priceChangeSummary.minPriceChange >= 0 ? '+' : ''}
+                  {priceChangeSummary.minPriceChange.toFixed(2)}%)
+                </span>
+              </p>
+            </div>
+            <div>
+              <p className="text-foreground/60 mb-1">현재가 (1시간 후)</p>
+              <p className={`font-medium ${getChangeColor(priceChangeSummary.currentPriceChange)}`}>
+                {formatPrice(priceChangeSummary.currentPrice, symbol)}
+                <span className="text-xs ml-1">
+                  ({priceChangeSummary.currentPriceChange >= 0 ? '+' : ''}
+                  {priceChangeSummary.currentPriceChange.toFixed(2)}%)
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2. 볼린저 밴드 차트 */}
+      <div>
+        <h5 className="text-sm font-medium mb-3">📈 볼린저 밴드 차트</h5>
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={bollingerBandData} margin={{ top: 20, right: 30, left: 60, bottom: 60 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+              <XAxis 
+                dataKey="timestamp" 
+                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
+                tickFormatter={(value) => {
+                  const date = new Date(value);
+                  return `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+                }}
+                angle={-45}
+                textAnchor="end"
+                height={60}
+              />
+              <YAxis 
+                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
+                tickFormatter={(value) => formatPrice(value, symbol)}
+                width={80}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'rgba(0,0,0,0.95)', 
+                  border: '1px solid rgba(255,255,255,0.4)',
+                  borderRadius: '8px'
+                }}
+                formatter={(value: any) => formatPrice(value, symbol)}
+              />
+              
+              {/* 상단 밴드 */}
+              <Line 
+                type="monotone" 
+                dataKey="upper" 
+                stroke="#ef4444" 
+                strokeWidth={1}
+                dot={false}
+                strokeDasharray="5 5"
+              />
+              
+              {/* 중심선 (이동평균) */}
+              <Line 
+                type="monotone" 
+                dataKey="middle" 
+                stroke="#60a5fa" 
+                strokeWidth={2}
+                dot={false}
+              />
+              
+              {/* 하단 밴드 */}
+              <Line 
+                type="monotone" 
+                dataKey="lower" 
+                stroke="#ef4444" 
+                strokeWidth={1}
+                dot={false}
+                strokeDasharray="5 5"
+              />
+              
+              {/* 실제 가격 */}
+              <Line 
+                type="monotone" 
+                dataKey="close" 
+                stroke="#10b981" 
+                strokeWidth={3}
+                dot={false}
+              />
+
+              {/* 게시 시점 표시 */}
+              {post.analysis.post_timestamp && (
+                <ReferenceLine 
+                  x={post.analysis.post_timestamp} 
+                  stroke="#f59e0b" 
+                  strokeWidth={2}
+                  label={{ value: '게시', position: 'top', fill: '#f59e0b' }}
+                />
+              )}
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="mt-2 text-xs text-foreground/60 space-y-1">
+          <p>• <span className="text-green-400">초록선</span>: 실제 가격</p>
+          <p>• <span className="text-blue-400">파란선</span>: 이동평균 (중심선)</p>
+          <p>• <span className="text-red-400">빨간 점선</span>: 변동성 구간 (상한/하한)</p>
+          <p>• <span className="text-orange-400">주황 선</span>: SNS 게시 시점</p>
+        </div>
+      </div>
+
+      {/* 3. 듀얼 축 차트 (가격 + 거래량) */}
+      <div>
+        <h5 className="text-sm font-medium mb-3">📊 가격 & 거래량 차트</h5>
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={dualAxisData} margin={{ top: 20, right: 60, left: 60, bottom: 60 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+              <XAxis 
+                dataKey="timestamp"
+                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
+                tickFormatter={(value) => {
+                  const date = new Date(value);
+                  return `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+                }}
+                angle={-45}
+                textAnchor="end"
+                height={60}
+              />
+              
+              {/* 왼쪽 Y축 - 가격 */}
+              <YAxis 
+                yAxisId="left"
+                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
+                tickFormatter={(value) => formatPrice(value, symbol)}
+                width={80}
+              />
+              
+              {/* 오른쪽 Y축 - 거래량 */}
+              <YAxis 
+                yAxisId="right"
+                orientation="right"
+                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
+                tickFormatter={(value) => {
+                  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+                  if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+                  return value.toString();
+                }}
+                width={60}
+              />
+              
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'rgba(0,0,0,0.95)', 
+                  border: '1px solid rgba(255,255,255,0.4)',
+                  borderRadius: '8px'
+                }}
+              />
+              
+              {/* 가격 Area Chart */}
+              <Area
+                yAxisId="left"
+                type="monotone"
+                dataKey="price"
+                stroke="#60a5fa"
+                fill="rgba(96,165,250,0.1)"
+                strokeWidth={2}
+              />
+              
+              {/* 거래량 Bar Chart */}
+              <Bar
+                yAxisId="right"
+                dataKey="volume"
+                fill="#10b981"
+                opacity={0.6}
+              />
+
+              {/* 게시 시점 */}
+              {post.analysis.post_timestamp && (
+                <ReferenceLine 
+                  x={post.analysis.post_timestamp} 
+                  stroke="#f59e0b" 
+                  strokeWidth={2}
+                />
+              )}
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="mt-2 text-xs text-foreground/60 space-y-1">
+          <p>• <span className="text-blue-400">파란 영역</span>: 가격 (왼쪽 축)</p>
+          <p>• <span className="text-green-400">초록 막대</span>: 거래량 (오른쪽 축)</p>
+        </div>
+      </div>
+
+      {/* 4. 거래량 변화 인사이트 */}
+      {volumeChangeSummary && (
+        <div className="glass-subtle p-4 rounded-lg">
+          <h5 className="text-sm font-medium mb-3">🔥 거래량 급증</h5>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-foreground/60">게시 전 평균</span>
+              <span className="font-medium">
+                {volumeChangeSummary.avgVolumeBefore.toFixed(0)} {symbol}/분
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-foreground/60">게시 후 최대</span>
+              <span className="font-medium text-green-400">
+                {volumeChangeSummary.maxVolume.toFixed(0)} {symbol}/분
+              </span>
+            </div>
+            <div className="mt-3 p-2 bg-primary/10 rounded text-center">
+              <p className="text-xs text-foreground/60 mb-1">거래량 증가율</p>
+              <p className="text-lg font-bold text-primary">
+                {volumeChangeSummary.volumeIncreaseRatio.toFixed(0)}배 증가
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
+// 전문 분석 탭 - 신규
+// ============================================================================
+
+interface AdvancedAnalysisTabProps {
   post: SNSPost;
   affectedAssets: any[];
   formatPrice: (price: number, symbol: string) => string;
 }
 
-function ChartsTab({ post, affectedAssets, formatPrice }: ChartsTabProps) {
+function AdvancedAnalysisTab({ 
+  post, 
+  affectedAssets, 
+  formatPrice 
+}: AdvancedAnalysisTabProps) {
   return (
     <>
       {affectedAssets.map((asset) => (
-        <AssetChartCard 
+        <AdvancedAnalysisCard
           key={asset.symbol}
           post={post}
           symbol={asset.symbol}
@@ -491,213 +728,315 @@ function ChartsTab({ post, affectedAssets, formatPrice }: ChartsTabProps) {
 }
 
 // ============================================================================
-// 자산 차트 카드
+// 전문 분석 카드 (자산별)
 // ============================================================================
 
-interface AssetChartCardProps {
+interface AdvancedAnalysisCardProps {
   post: SNSPost;
   symbol: string;
   formatPrice: (price: number, symbol: string) => string;
 }
 
-function AssetChartCard({ post, symbol, formatPrice }: AssetChartCardProps) {
+function AdvancedAnalysisCard({ 
+  post, 
+  symbol, 
+  formatPrice 
+}: AdvancedAnalysisCardProps) {
   const { 
-    priceChartData, 
-    volumeChartData, 
-    hasData, 
-    totalDataPoints, 
-    filteredDataPoints 
+    candlestickData,
+    priceDistribution,
+    volatilityData,
+    priceChangeSummary,
+    volumeChangeSummary,
+    hasData 
   } = useSNSChartData(post, symbol);
 
   if (!hasData) {
     return (
       <div className="glass-card p-4 rounded-xl">
-        <h4 className="font-medium mb-4">{symbol} 가격 변화</h4>
+        <h4 className="font-medium mb-4">{symbol} 전문 분석</h4>
         <div className="text-center py-8 text-foreground/60">
-          차트 데이터가 없습니다
+          데이터가 없습니다
         </div>
       </div>
     );
   }
 
   return (
-    <div className="glass-card p-4 rounded-xl">
-      <div className="flex items-center justify-between mb-4">
-        <h4 className="font-medium">{symbol} 가격 변화</h4>
-        <div className="text-xs text-foreground/60">
-          {filteredDataPoints}/{totalDataPoints} 포인트 (최적화됨)
-        </div>
-      </div>
-      
-      {/* 가격 차트 - 개선된 버전 */}
-      <div className="h-80 mb-6">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart 
-            data={priceChartData} 
-            margin={{ top: 20, right: 30, left: 60, bottom: 80 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-            <XAxis 
-              dataKey="time" 
-              tick={{ 
-                fontSize: 10, 
-                fill: 'rgba(255,255,255,0.8)',
-                textAnchor: 'middle'
-              }}
-              angle={0}
-              height={60}
-              interval={0}
-              axisLine={{ stroke: 'rgba(255,255,255,0.3)' }}
-              tickLine={{ stroke: 'rgba(255,255,255,0.3)' }}
-            />
-            <YAxis 
-              tick={{ 
-                fontSize: 10, 
-                fill: 'rgba(255,255,255,0.8)' 
-              }}
-              domain={['dataMin - 1%', 'dataMax + 1%']}
-              width={60}
-              axisLine={{ stroke: 'rgba(255,255,255,0.3)' }}
-              tickLine={{ stroke: 'rgba(255,255,255,0.3)' }}
-              tickFormatter={(value) => formatPrice(value, symbol)}
-            />
-            <Tooltip 
-              contentStyle={{ 
-                backgroundColor: 'rgba(0,0,0,0.95)', 
-                border: '1px solid rgba(255,255,255,0.4)',
-                borderRadius: '8px',
-                fontSize: '12px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
-              }}
-              formatter={(value: any) => [formatPrice(value, symbol), '가격']}
-              labelStyle={{ 
-                color: 'rgba(255,255,255,0.9)',
-                fontWeight: 'bold'
-              }}
-            />
-            <Line 
-              type="monotone" 
-              dataKey="price" 
-              stroke="#60a5fa" 
-              strokeWidth={3}
-              dot={false}
-              activeDot={{ 
-                r: 6, 
-                stroke: '#60a5fa', 
-                strokeWidth: 3, 
-                fill: '#ffffff' 
-              }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-      
-      {/* 거래량 차트 - 개선된 버전 */}
+    <div className="glass-card p-4 rounded-xl space-y-6">
+      <h4 className="font-medium text-lg">{symbol} 전문 분석</h4>
+
+      {/* 1. 캔들스틱 차트 */}
       <div>
-        <h5 className="text-sm font-medium mb-3">거래량 변화</h5>
-        <div className="h-48">
+        <h5 className="text-sm font-medium mb-3">🕯️ 캔들스틱 차트</h5>
+        <div className="h-96">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart 
-              data={volumeChartData} 
-              margin={{ top: 20, right: 30, left: 60, bottom: 60 }}
-            >
+            <ComposedChart data={candlestickData} margin={{ top: 20, right: 30, left: 60, bottom: 60 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
               <XAxis 
-                dataKey="time" 
-                tick={{ 
-                  fontSize: 10, 
-                  fill: 'rgba(255,255,255,0.8)',
-                  textAnchor: 'middle'
+                dataKey="timestamp"
+                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
+                tickFormatter={(value) => {
+                  const date = new Date(value);
+                  return `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
                 }}
-                angle={0}
-                height={50}
-                interval={0}
-                axisLine={{ stroke: 'rgba(255,255,255,0.3)' }}
-                tickLine={{ stroke: 'rgba(255,255,255,0.3)' }}
+                angle={-45}
+                textAnchor="end"
+                height={60}
               />
               <YAxis 
-                tick={{ 
-                  fontSize: 10, 
-                  fill: 'rgba(255,255,255,0.8)' 
-                }} 
-                width={60}
-                axisLine={{ stroke: 'rgba(255,255,255,0.3)' }}
-                tickLine={{ stroke: 'rgba(255,255,255,0.3)' }}
-                tickFormatter={(value) => {
-                  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
-                  if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
-                  return value.toString();
-                }}
+                domain={['dataMin - 2%', 'dataMax + 2%']}
+                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
+                tickFormatter={(value) => formatPrice(value, symbol)}
+                width={80}
               />
               <Tooltip 
                 contentStyle={{ 
                   backgroundColor: 'rgba(0,0,0,0.95)', 
                   border: '1px solid rgba(255,255,255,0.4)',
-                  borderRadius: '8px',
-                  fontSize: '12px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
+                  borderRadius: '8px'
                 }}
-                formatter={(value: any) => [value.toLocaleString(), '거래량']}
-                labelStyle={{ 
-                  color: 'rgba(255,255,255,0.9)',
-                  fontWeight: 'bold'
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    const data = payload[0].payload;
+                    return (
+                      <div className="p-3 text-xs">
+                        <p className="font-medium mb-2">
+                          {new Date(data.timestamp).toLocaleString('ko-KR')}
+                        </p>
+                        <div className="space-y-1">
+                          <p>시가: {formatPrice(data.open, symbol)}</p>
+                          <p className="text-green-400">고가: {formatPrice(data.high, symbol)}</p>
+                          <p className="text-red-400">저가: {formatPrice(data.low, symbol)}</p>
+                          <p>종가: {formatPrice(data.close, symbol)}</p>
+                          <p className="text-blue-400">거래량: {data.volume.toLocaleString()}</p>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
                 }}
               />
-              <Bar 
-                dataKey="volume" 
-                fill="#60a5fa"
-                stroke="#ffffff"
+              
+              {/* 간단한 캔들스틱 표현 - High-Low 라인 */}
+              <Line 
+                type="monotone"
+                dataKey="high"
+                stroke="rgba(96,165,250,0.8)"
                 strokeWidth={1}
-                opacity={0.8}
+                dot={false}
+                connectNulls={false}
               />
-            </BarChart>
+              <Line 
+                type="monotone"
+                dataKey="low"
+                stroke="rgba(96,165,250,0.8)"
+                strokeWidth={1}
+                dot={false}
+                connectNulls={false}
+              />
+              
+              {/* Open-Close 막대 */}
+              <Bar 
+                dataKey="bodyData"
+                fill="rgba(96,165,250,0.7)"
+              />
+
+              {/* 게시 시점 */}
+              {post.analysis.post_timestamp && (
+                <ReferenceLine 
+                  x={post.analysis.post_timestamp} 
+                  stroke="#f59e0b" 
+                  strokeWidth={2}
+                  label={{ value: '게시', position: 'top', fill: '#f59e0b' }}
+                />
+              )}
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
-      </div>
-
-      {/* 개선된 차트 범례 */}
-      <div className="mt-4 p-3 glass-subtle rounded-lg">
-        <div className="flex items-center justify-between text-xs">
-          <div className="flex items-center space-x-6">
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 rounded-full bg-blue-400 border-2 border-white"></div>
-              <span>일반 시점</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 rounded-full bg-red-400 border-2 border-white"></div>
-              <span>SNS 게시 시점</span>
-            </div>
-          </div>
-          <div className="text-foreground/60">
-            <span>총 {totalDataPoints}개 → {filteredDataPoints}개로 최적화</span>
-          </div>
-        </div>
-        <div className="mt-2 text-xs text-foreground/50">
-          시간대별 핵심 포인트만 표시하여 트렌드를 명확하게 파악할 수 있습니다
+        <div className="mt-2 text-xs text-foreground/60 space-y-1">
+          <p>• <span className="text-green-400">초록 막대</span>: 상승 (종가 {'>'} 시가)</p>
+          <p>• <span className="text-red-400">빨간 막대</span>: 하락 (종가 {'<'} 시가)</p>
+          <p>• 막대의 위아래 끝: 고가와 저가</p>
         </div>
       </div>
-    </div>
-  );
-}
 
-// ============================================================================
-// 분석 탭 (미구현)
-// ============================================================================
+      {/* 2. 핵심 인사이트 (기존 개요 탭 내용) */}
+      <div className="glass-subtle p-4 rounded-lg">
+        <h5 className="text-sm font-medium mb-3">💡 핵심 인사이트</h5>
+        
+        {/* 가격 변화 */}
+        {priceChangeSummary && (
+          <div className="mb-4">
+            <p className="text-xs text-foreground/60 mb-2">🎯 가격 반응</p>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="p-2 glass-subtle rounded">
+                <p className="text-foreground/60">초기 반응 속도</p>
+                <p className="font-medium">
+                  {Math.abs(priceChangeSummary.maxPriceChange) > 2 ? '빠름' : '보통'}
+                  {priceChangeSummary.maxPriceChange > 0 && ' (5분 내 상승)'}
+                </p>
+              </div>
+              <div className="p-2 glass-subtle rounded">
+                <p className="text-foreground/60">회복 여부</p>
+                <p className="font-medium">
+                  {priceChangeSummary.currentPriceChange > priceChangeSummary.maxPriceChange * 0.5
+                    ? '부분 회복'
+                    : '완전 회복'}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
-function AnalysisTab() {
-  return (
-    <div className="glass-card p-8 rounded-xl text-center">
-      <AlertCircle size={48} className="mx-auto mb-4 text-foreground/30" />
-      <h3 className="text-lg font-medium mb-2">통계 분석</h3>
-      <p className="text-foreground/70 mb-4">이 기능은 추후 구현 예정입니다</p>
-      <div className="text-sm text-foreground/60">
-        <p>구현 예정 기능:</p>
-        <ul className="mt-2 space-y-1">
-          <li>• 상관관계 분석</li>
-          <li>• 시계열 분석</li>
-          <li>• 대조군 비교</li>
-          <li>• 통계적 유의성 검증</li>
-        </ul>
+        {/* 거래량 급증 */}
+        {volumeChangeSummary && (
+          <div className="mb-4">
+            <p className="text-xs text-foreground/60 mb-2">🔥 거래량 급증</p>
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-foreground/60">게시 전 평균:</span>
+                <span>{volumeChangeSummary.avgVolumeBefore.toFixed(0)} {symbol}/분</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-foreground/60">게시 후 최대:</span>
+                <span className="text-green-400 font-medium">
+                  {volumeChangeSummary.maxVolume.toLocaleString()} {symbol}/분
+                </span>
+              </div>
+              <div className="w-full bg-white/10 rounded-full h-2 mt-2">
+                <div 
+                  className="bg-primary h-2 rounded-full transition-all"
+                  style={{ 
+                    width: `${Math.min(100, (volumeChangeSummary.volumeIncreaseRatio / 30) * 100)}%` 
+                  }}
+                />
+              </div>
+              <p className="text-center font-bold text-primary">
+                {volumeChangeSummary.volumeIncreaseRatio.toFixed(0)}배 증가
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* 변동성 점수 */}
+        {post.analysis.affected_assets.find(a => a.symbol === symbol)?.volatility_score && (
+          <div>
+            <p className="text-xs text-foreground/60 mb-2">⚡ 변동성 점수</p>
+            <div className="space-y-2">
+              <div className="w-full bg-white/10 rounded-full h-3">
+                <div 
+                  className="bg-gradient-to-r from-yellow-500 to-red-500 h-3 rounded-full"
+                  style={{ 
+                    width: `${Math.min(100, 
+                      (post.analysis.affected_assets.find(a => a.symbol === symbol)!.volatility_score! / 1000) * 100
+                    )}%` 
+                  }}
+                />
+              </div>
+              <div className="flex justify-between text-xs">
+                <span>{post.analysis.affected_assets.find(a => a.symbol === symbol)!.volatility_score!.toFixed(0)}점</span>
+                <span className="text-foreground/60">
+                  {post.analysis.affected_assets.find(a => a.symbol === symbol)!.volatility_score! > 700 
+                    ? '상위 5% 수준' 
+                    : post.analysis.affected_assets.find(a => a.symbol === symbol)!.volatility_score! > 500
+                    ? '상위 20% 수준'
+                    : '보통 수준'}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 3. 가격대별 거래 분포 */}
+      <div>
+        <h5 className="text-sm font-medium mb-3">📊 가격대별 거래 분포</h5>
+        <div className="space-y-2">
+          {priceDistribution.map((bin, index) => {
+            const maxVolume = Math.max(...priceDistribution.map(b => b.volume));
+            const percentage = (bin.volume / maxVolume) * 100;
+            
+            return (
+              <div key={index} className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <span className="text-foreground/60">{bin.label}</span>
+                  <span className="font-medium">{bin.volume.toLocaleString()} {symbol}</span>
+                </div>
+                <div className="w-full bg-white/10 rounded-full h-2">
+                  <div 
+                    className="bg-blue-400 h-2 rounded-full transition-all"
+                    style={{ width: `${percentage}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <p className="mt-3 text-xs text-foreground/60">
+          💡 가장 많은 거래가 일어난 구간: {
+            priceDistribution.reduce((max, bin) => bin.volume > max.volume ? bin : max).label
+          }
+        </p>
+      </div>
+
+      {/* 4. 시간대별 변동폭 */}
+      <div>
+        <h5 className="text-sm font-medium mb-3">📉 시간대별 변동폭</h5>
+        <div className="space-y-3">
+          <div className="text-xs text-foreground/60">
+            각 분의 변동폭 = (고가 - 저가) / 시가 × 100
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="glass-subtle p-3 rounded-lg">
+              <p className="text-xs text-foreground/60 mb-2">게시 전 평균</p>
+              <p className="text-2xl font-bold">{volatilityData?.avgBefore?.toFixed(2) || '0.00'}%</p>
+            </div>
+            <div className="glass-subtle p-3 rounded-lg">
+              <p className="text-xs text-foreground/60 mb-2">게시 후 평균</p>
+              <p className="text-2xl font-bold text-primary">{volatilityData?.avgAfter?.toFixed(2) || '0.00'}%</p>
+            </div>
+          </div>
+
+          <div className="p-3 glass-subtle rounded-lg">
+            <p className="text-xs text-foreground/60 mb-2">📊 변동폭 비교</p>
+            <p className="text-sm">
+              게시 후 변동폭이 게시 전 대비{' '}
+              <span className="font-bold text-primary">
+                {volatilityData?.avgBefore && volatilityData.avgBefore > 0 
+                  ? (volatilityData.avgAfter! / volatilityData.avgBefore).toFixed(1) 
+                  : '0'}배
+              </span>{' '}
+              증가
+            </p>
+            <p className="text-xs text-foreground/60 mt-2">
+              💡 해석: 게시물이 가격 불확실성을{' '}
+              {volatilityData?.avgAfter && volatilityData?.avgBefore && 
+               volatilityData.avgAfter > volatilityData.avgBefore * 2 
+                ? '크게 증가시킴' 
+                : '다소 증가시킴'}
+            </p>
+          </div>
+
+          {/* 시각적 표현 */}
+          <div className="flex items-end justify-between h-20 px-4">
+            <div className="text-center">
+              <div 
+                className="w-12 bg-blue-400 rounded-t"
+                style={{ height: `${Math.min(100, ((volatilityData?.avgBefore || 0) / 5) * 100)}%` }}
+              />
+              <p className="text-xs mt-2">게시 전</p>
+            </div>
+            <div className="text-center">
+              <div 
+                className="w-12 bg-primary rounded-t"
+                style={{ height: `${Math.min(100, ((volatilityData?.avgAfter || 0) / 5) * 100)}%` }}
+              />
+              <p className="text-xs mt-2">게시 후</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

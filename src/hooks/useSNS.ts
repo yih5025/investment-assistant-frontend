@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useSWRApi } from './useApi';
-import { snsApiService, type SNSPost, type SNSListParams } from '../services/SNSService';
+import { snsApiService, type SNSPost, type SNSListParams, type OHLCVData } from '../services/SNSService';
 
 // ============================================================================
 // SNS 목록 조회 훅
@@ -119,27 +119,12 @@ export function useSNSList(options: UseSNSListOptions = {}) {
       setIsLoadingMore(false);
     }
   }, [allPosts.length, loadedPages, isLoadingMore, params.post_source]);
-
-  // 검색
-  const search = useCallback((searchParams: SNSListParams) => {
-    console.log('🔍 Search called:', searchParams);
-    setParams(prev => ({
-      ...prev,
-      ...searchParams,
-      skip: 0
-    }));
-    setAllPosts([]);
-    setLoadedPages(new Set());
-    setIsLoadingMore(false);
-  }, []);
-
-  // 새로고침
+  
   const refresh = useCallback(() => {
-    console.log('🔄 Refresh called');
+    console.log('🔄 새로고침');
     setAllPosts([]);
     setLoadedPages(new Set());
     setIsLoadingMore(false);
-    setParams(prev => ({ ...prev, skip: 0 }));
     refetch();
   }, [refetch]);
 
@@ -155,7 +140,6 @@ export function useSNSList(options: UseSNSListOptions = {}) {
     // 액션
     updateFilter,
     loadMore,
-    search,
     refresh,
     refetch,
     
@@ -294,145 +278,241 @@ export function useSNSFilter(initialFilter: Partial<SNSFilter> = {}) {
 // ============================================================================
 
 export function useSNSChartData(post: SNSPost | null, symbol: string) {
-  // 가격 차트 데이터 생성 (강력한 필터링)
-  const priceChartData = useMemo(() => {
-    if (!post?.analysis.market_data?.[symbol]?.price_timeline) return [];
+  const postTimestamp = post ? new Date(post.analysis.post_timestamp) : null;
+  const ohlcvData = post?.analysis.market_data?.[symbol]?.price_timeline || [];
 
-    const timeline = post.analysis.market_data[symbol].price_timeline;
-    const postTime = new Date(post.analysis.post_timestamp);
+  // 1. 볼린저 밴드 계산
+  const bollingerBandData = useMemo(() => {
+    if (ohlcvData.length === 0) return [];
 
-    // 시간순 정렬
-    const sortedTimeline = timeline
-      .map((point, index) => {
-        const pointTime = new Date(point.timestamp);
-        const timeDiff = (pointTime.getTime() - postTime.getTime()) / (1000 * 60); // 분 단위
-        
+    const period = Math.min(20, ohlcvData.length); // 최대 20개 또는 전체 데이터
+    
+    return ohlcvData.map((point, index) => {
+      if (index < period - 1) {
+        // 데이터가 부족한 초기 구간
         return {
-          ...point,
-          timeDiff,
-          originalIndex: index
+          timestamp: point.timestamp,
+          close: point.close,
+          upper: null,
+          middle: null,
+          lower: null,
+          isPostTime: postTimestamp ? 
+            Math.abs(new Date(point.timestamp).getTime() - postTimestamp.getTime()) < 60000 : false
         };
-      })
-      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-
-    // 스마트 데이터 샘플링 (최대 12개 포인트)
-    const getSmartSample = (data: any[]) => {
-      if (data.length <= 12) return data;
-
-      const keyPoints: any[] = [];
-      const postTimeIndex = data.findIndex(point => Math.abs(point.timeDiff) < 5);
-      
-      // 1. 게시 시점 (필수)
-      if (postTimeIndex >= 0) {
-        keyPoints.push({ ...data[postTimeIndex], isPostTime: true });
       }
 
-      // 2. 시간 구간별로 대표 포인트 선택 (총 10-11개)
-      const timeSegments = [
-        { start: -Infinity, end: -180, count: 1, label: '게시 전' }, // 3시간 이전
-        { start: -180, end: -60, count: 2, label: '게시 3-1시간 전' },
-        { start: -60, end: -10, count: 2, label: '게시 1시간-10분 전' },
-        { start: 10, end: 60, count: 2, label: '게시 10분-1시간 후' },
-        { start: 60, end: 360, count: 2, label: '게시 1-6시간 후' },
-        { start: 360, end: Infinity, count: 2, label: '게시 6시간 후' }
-      ];
-
-      timeSegments.forEach(segment => {
-        const segmentPoints = data.filter(point => 
-          point.timeDiff >= segment.start && point.timeDiff < segment.end
-        );
-        
-        if (segmentPoints.length > 0) {
-          // 구간 내에서 균등하게 샘플링
-          const step = Math.max(1, Math.floor(segmentPoints.length / segment.count));
-          
-          for (let i = 0; i < segment.count && i * step < segmentPoints.length; i++) {
-            const selectedPoint = segmentPoints[i * step];
-            if (!keyPoints.find((p: any) => p.timestamp === selectedPoint.timestamp)) {
-              keyPoints.push({ ...selectedPoint, isPostTime: false });
-            }
-          }
-        }
-      });
-
-      // 시간순으로 정렬하고 최대 12개로 제한
-      return keyPoints
-        .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-        .slice(0, 12);
-    };
-
-    const sampledPoints = getSmartSample(sortedTimeline);
-
-    return sampledPoints.map((point, index) => {
-      const timeDiff = point.timeDiff;
+      // 이동평균 계산 (최근 period개)
+      const recentCloses = ohlcvData
+        .slice(Math.max(0, index - period + 1), index + 1)
+        .map(d => d.close);
       
-      // 간단하고 명확한 시간 라벨
-      let timeLabel: string;
-      if (timeDiff < -120) {
-        timeLabel = `${Math.abs(Math.round(timeDiff / 60))}h전`;
-      } else if (timeDiff < -10) {
-        timeLabel = `${Math.abs(Math.round(timeDiff))}m전`;
-      } else if (Math.abs(timeDiff) <= 10) {
-        timeLabel = '게시시점';
-      } else if (timeDiff < 120) {
-        timeLabel = `+${Math.round(timeDiff)}m`;
-      } else {
-        timeLabel = `+${Math.round(timeDiff / 60)}h`;
-      }
-
+      const sma = recentCloses.reduce((sum, val) => sum + val, 0) / recentCloses.length;
+      
+      // 표준편차 계산
+      const squaredDiffs = recentCloses.map(val => Math.pow(val - sma, 2));
+      const variance = squaredDiffs.reduce((sum, val) => sum + val, 0) / recentCloses.length;
+      const stdDev = Math.sqrt(variance);
+      
       return {
-        time: timeLabel,
-        price: point.price,
-        volume: point.volume,
         timestamp: point.timestamp,
-        isPostTime: point.isPostTime || Math.abs(timeDiff) <= 10,
-        index: index // 차트에서 간격 조정용
+        close: point.close,
+        upper: sma + (stdDev * 2),
+        middle: sma,
+        lower: sma - (stdDev * 2),
+        isPostTime: postTimestamp ? 
+          Math.abs(new Date(point.timestamp).getTime() - postTimestamp.getTime()) < 60000 : false
       };
     });
-  }, [post, symbol]);
+  }, [ohlcvData, postTimestamp]);
 
-  // 거래량 차트 데이터 생성
-  const volumeChartData = useMemo(() => {
-    return priceChartData.map(point => ({
-      time: point.time,
+  // 2. 듀얼 축 차트 데이터 (가격 + 거래량)
+  const dualAxisData = useMemo(() => {
+    if (ohlcvData.length === 0) return [];
+
+    return ohlcvData.map(point => ({
+      timestamp: point.timestamp,
+      price: point.close,
       volume: point.volume,
-      isPostTime: point.isPostTime,
-      index: point.index
+      isPostTime: postTimestamp ? 
+        Math.abs(new Date(point.timestamp).getTime() - postTimestamp.getTime()) < 60000 : false
     }));
-  }, [priceChartData]);
+  }, [ohlcvData, postTimestamp]);
 
-  // 가격 변화 통계
-  const priceStats = useMemo(() => {
-    if (!post?.analysis.price_analysis?.[symbol]) return null;
+  // 3. 캔들스틱 데이터 (전문 분석용)
+  const candlestickData = useMemo(() => {
+    return ohlcvData.map(point => {
+      const isGreen = point.close >= point.open;
+      return {
+        timestamp: point.timestamp,
+        open: point.open,
+        high: point.high,
+        low: point.low,
+        close: point.close,
+        volume: point.volume,
+        // 캔들스틱 차트용 데이터
+        shadowData: [point.low, point.high], // 그림자 (위아래 선)
+        bodyData: isGreen ? [point.open, point.close] : [point.close, point.open], // 몸체
+        isGreen: isGreen,
+        isPostTime: postTimestamp ? 
+          Math.abs(new Date(point.timestamp).getTime() - postTimestamp.getTime()) < 60000 : false
+      };
+    });
+  }, [ohlcvData, postTimestamp]);
 
-    const priceData = post.analysis.price_analysis[symbol];
+  // 4. 가격 변화 요약 (일반 분석용)
+  const priceChangeSummary = useMemo(() => {
+    if (!postTimestamp || ohlcvData.length === 0) return null;
+
+    // 게시 시점 찾기
+    const postIndex = ohlcvData.findIndex(point => 
+      Math.abs(new Date(point.timestamp).getTime() - postTimestamp.getTime()) < 60000
+    );
+
+    if (postIndex === -1) return null;
+
+    const postPrice = ohlcvData[postIndex].close;
+    
+    // 게시 후 데이터
+    const afterPost = ohlcvData.slice(postIndex);
+    const maxPrice = Math.max(...afterPost.map(d => d.high));
+    const minPrice = Math.min(...afterPost.map(d => d.low));
+    const maxPricePoint = afterPost.find(d => d.high === maxPrice);
+    const minPricePoint = afterPost.find(d => d.low === minPrice);
+    
+    // 현재가 (마지막 데이터)
+    const currentPrice = ohlcvData[ohlcvData.length - 1].close;
+
     return {
-      basePrice: priceData.base_price || 0,
-      change1h: priceData["1h_change"] || 0,
-      change12h: priceData["12h_change"] || 0,
-      change24h: priceData["24h_change"] || 0
+      postPrice,
+      maxPrice,
+      minPrice,
+      currentPrice,
+      maxPriceTime: maxPricePoint ? maxPricePoint.timestamp : null,
+      minPriceTime: minPricePoint ? minPricePoint.timestamp : null,
+      maxPriceChange: ((maxPrice - postPrice) / postPrice) * 100,
+      minPriceChange: ((minPrice - postPrice) / postPrice) * 100,
+      currentPriceChange: ((currentPrice - postPrice) / postPrice) * 100
     };
-  }, [post, symbol]);
+  }, [ohlcvData, postTimestamp]);
 
-  // 거래량 통계
-  const volumeStats = useMemo(() => {
-    if (!post?.analysis.volume_analysis?.[symbol]) return null;
+  // 5. 거래량 변화 요약
+  const volumeChangeSummary = useMemo(() => {
+    if (!postTimestamp || ohlcvData.length === 0) return null;
 
-    const volumeData = post.analysis.volume_analysis[symbol];
+    const postIndex = ohlcvData.findIndex(point => 
+      Math.abs(new Date(point.timestamp).getTime() - postTimestamp.getTime()) < 60000
+    );
+
+    if (postIndex === -1) return null;
+
+    // 게시 전 평균 (최대 60분)
+    const beforePost = ohlcvData.slice(Math.max(0, postIndex - 60), postIndex);
+    const avgVolumeBefore = beforePost.length > 0 
+      ? beforePost.reduce((sum, d) => sum + d.volume, 0) / beforePost.length 
+      : 0;
+
+    // 게시 후 평균 (최대 60분)
+    const afterPost = ohlcvData.slice(postIndex, Math.min(ohlcvData.length, postIndex + 60));
+    const avgVolumeAfter = afterPost.length > 0
+      ? afterPost.reduce((sum, d) => sum + d.volume, 0) / afterPost.length
+      : 0;
+
+    // 최대 거래량
+    const maxVolume = Math.max(...afterPost.map(d => d.volume));
+    const maxVolumePoint = afterPost.find(d => d.volume === maxVolume);
+
     return {
-      beforeVolume: volumeData.volume_in_prior_hour || 0,
-      afterVolume: volumeData.volume_in_post_hour || 0,
-      spikeRatio: volumeData.volume_spike_ratio_1h || 0
+      avgVolumeBefore,
+      avgVolumeAfter,
+      maxVolume,
+      maxVolumeTime: maxVolumePoint ? maxVolumePoint.timestamp : null,
+      volumeIncreaseRatio: avgVolumeBefore > 0 ? avgVolumeAfter / avgVolumeBefore : 0
     };
-  }, [post, symbol]);
+  }, [ohlcvData, postTimestamp]);
+
+  // 6. 가격대별 거래 분포 (전문 분석용)
+  const priceDistribution = useMemo(() => {
+    if (ohlcvData.length === 0) return [];
+
+    // 가격 범위 계산
+    const allPrices = ohlcvData.flatMap(d => [d.high, d.low]);
+    const minPrice = Math.min(...allPrices);
+    const maxPrice = Math.max(...allPrices);
+    
+    // 5개 구간으로 나누기
+    const binCount = 5;
+    const binSize = (maxPrice - minPrice) / binCount;
+    
+    const bins = Array.from({ length: binCount }, (_, i) => ({
+      rangeStart: minPrice + (binSize * i),
+      rangeEnd: minPrice + (binSize * (i + 1)),
+      volume: 0,
+      label: `$${(minPrice + binSize * i).toFixed(2)}-${(minPrice + binSize * (i + 1)).toFixed(2)}`
+    }));
+
+    // 각 구간에 거래량 집계
+    ohlcvData.forEach(point => {
+      const avgPrice = (point.high + point.low) / 2;
+      const binIndex = Math.min(
+        binCount - 1, 
+        Math.floor((avgPrice - minPrice) / binSize)
+      );
+      bins[binIndex].volume += point.volume;
+    });
+
+    return bins;
+  }, [ohlcvData]);
+
+  // 7. 시간대별 변동폭 (전문 분석용)
+  const volatilityData = useMemo(() => {
+    if (!postTimestamp || ohlcvData.length === 0) return { before: [], after: [] };
+
+    const postIndex = ohlcvData.findIndex(point => 
+      Math.abs(new Date(point.timestamp).getTime() - postTimestamp.getTime()) < 60000
+    );
+
+    if (postIndex === -1) return { before: [], after: [] };
+
+    const calculateVolatility = (data: OHLCVData[]) => {
+      return data.map(point => ({
+        timestamp: point.timestamp,
+        volatility: point.open > 0 ? ((point.high - point.low) / point.open) * 100 : 0
+      }));
+    };
+
+    return {
+      before: calculateVolatility(ohlcvData.slice(Math.max(0, postIndex - 60), postIndex)),
+      after: calculateVolatility(ohlcvData.slice(postIndex, Math.min(ohlcvData.length, postIndex + 60))),
+      avgBefore: 0, // 계산
+      avgAfter: 0   // 계산
+    };
+  }, [ohlcvData, postTimestamp]);
+
+  // 평균 계산 추가
+  if (volatilityData.before.length > 0) {
+    volatilityData.avgBefore = 
+      volatilityData.before.reduce((sum, d) => sum + d.volatility, 0) / volatilityData.before.length;
+  }
+  if (volatilityData.after.length > 0) {
+    volatilityData.avgAfter = 
+      volatilityData.after.reduce((sum, d) => sum + d.volatility, 0) / volatilityData.after.length;
+  }
 
   return {
-    priceChartData,
-    volumeChartData,
-    priceStats,
-    volumeStats,
-    hasData: priceChartData.length > 0,
-    totalDataPoints: post?.analysis.market_data?.[symbol]?.price_timeline?.length || 0,
-    filteredDataPoints: priceChartData.length
+    // 일반 분석용
+    bollingerBandData,
+    dualAxisData,
+    priceChangeSummary,
+    volumeChangeSummary,
+    
+    // 전문 분석용
+    candlestickData,
+    priceDistribution,
+    volatilityData,
+    
+    // 메타 정보
+    hasData: ohlcvData.length > 0,
+    totalDataPoints: ohlcvData.length,
+    postTimestamp: postTimestamp?.toISOString() || null
   };
 }

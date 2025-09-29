@@ -4,6 +4,15 @@
 // ============================================================================
 // 타입 정의
 // ============================================================================
+// 추가: OHLCV 데이터 타입
+export interface OHLCVData {
+  timestamp: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
 
 export interface SNSPost {
   analysis: {
@@ -28,28 +37,14 @@ export interface SNSPost {
     };
     volume_analysis?: {
       [symbol: string]: {
-        volume_in_post_hour?: number;
-        volume_in_prior_hour?: number;
-        volume_spike_ratio_1h?: number;
-        avg_volume_before?: number | null;
-        avg_volume_after?: number | null;
+        total_volume_after_1h?: number;
+        total_volume_before_1h?: number;
       };
     };
+    // 🔴 변경: market_data 구조 단순화 (OHLCV)
     market_data?: {
       [symbol: string]: {
-        asset_info: {
-          source: string;
-          symbol: string;
-          priority: number;
-          volatility_score?: number;
-        };
-        data_source: string;
-        price_timeline: Array<{
-          price: number;
-          volume: number;
-          timestamp: string;
-          acc_volume: number;
-        }>;
+        price_timeline: OHLCVData[];  // 🔴 OHLCV 배열로 변경
       };
     };
   };
