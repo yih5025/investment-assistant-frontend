@@ -504,217 +504,259 @@ function GeneralAnalysisCard({
         </div>
       )}
 
-      {/* 2. 볼린저 밴드 차트 */}
+      {/* 볼린저 밴드 차트 */}
       <div>
-        <h5 className="text-sm font-medium mb-3">📈 볼린저 밴드 차트</h5>
-          <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={bollingerBandData} margin={{ top: 20, right: 30, left: 60, bottom: 60 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-              <XAxis 
-                dataKey="timestamp" 
-                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
-                tickFormatter={(value) => {
-                  const date = new Date(value);
-                  return `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
-                }}
-                angle={-45}
-                textAnchor="end"
-                height={60}
-              />
-              <YAxis 
-                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
-                tickFormatter={(value) => formatPrice(value, symbol)}
-                width={80}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'rgba(0,0,0,0.95)', 
-                  border: '1px solid rgba(255,255,255,0.4)',
-                  borderRadius: '8px'
-                }}
-                formatter={(value: any) => formatPrice(value, symbol)}
-              />
-              
-              {/* 상단 밴드 */}
-              <Line 
-                type="monotone" 
-                dataKey="upper" 
-                stroke="#ef4444" 
-                strokeWidth={1}
-                dot={false}
-                strokeDasharray="5 5"
-              />
-              
-              {/* 중심선 */}
-              <Line 
-                type="monotone" 
-                dataKey="middle" 
-                stroke="#60a5fa" 
-                strokeWidth={2}
-                dot={false}
-              />
-              
-              {/* 하단 밴드 */}
-              <Line 
-                type="monotone" 
-                dataKey="lower" 
-                stroke="#ef4444" 
-                strokeWidth={1}
-                dot={false}
-                strokeDasharray="5 5"
-              />
-              
-              {/* 실제 가격 - 게시 시점만 큰 점으로 표시 */}
-              <Line 
+        <h5 className="text-sm font-medium mb-2">📈 볼린저 밴드 차트</h5>
+        
+        {/* 스크롤 컨테이너 */}
+        <div className="overflow-x-auto overflow-y-hidden -mx-4 px-4">
+          <div className="h-[420px] min-w-[700px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart 
+                data={bollingerBandData} 
+                margin={{ top: 10, right: 5, left: 5, bottom: 50 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                
+                <XAxis 
+                  dataKey="timestamp" 
+                  tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
+                  tickFormatter={(value) => {
+                    const date = new Date(value);
+                    const hours = date.getHours();
+                    const mins = date.getMinutes();
+                    return `${hours}:${String(mins).padStart(2, '0')}`;
+                  }}
+                  angle={-35}
+                  textAnchor="end"
+                  height={50}
+                  interval="preserveStartEnd"
+                />
+                
+                <YAxis 
+                  tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
+                  tickFormatter={(value) => {
+                    // 간결한 포맷
+                    if (value >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(1)}B`;
+                    if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+                    if (value >= 1_000) return `${(value / 1_000).toFixed(0)}K`;
+                    if (value >= 1) return value.toFixed(1);
+                    return value.toFixed(3);
+                  }}
+                  width={50}
+                />
+                
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'rgba(0,0,0,0.95)', 
+                    border: '1px solid rgba(255,255,255,0.4)',
+                    borderRadius: '6px',
+                    padding: '8px',
+                    fontSize: '11px'
+                  }}
+                  formatter={(value: any) => formatPrice(value, symbol)}
+                  labelFormatter={(label) => {
+                    const date = new Date(label);
+                    return date.toLocaleTimeString('ko-KR');
+                  }}
+                />
+                
+                {/* 상단 밴드 */}
+                <Line 
+                  type="monotone" 
+                  dataKey="upper" 
+                  stroke="#ef4444" 
+                  strokeWidth={1}
+                  dot={false}
+                  strokeDasharray="3 3"
+                />
+                
+                {/* 중심선 */}
+                <Line 
+                  type="monotone" 
+                  dataKey="middle" 
+                  stroke="#60a5fa" 
+                  strokeWidth={1.5}
+                  dot={false}
+                />
+                
+                {/* 하단 밴드 */}
+                <Line 
+                  type="monotone" 
+                  dataKey="lower" 
+                  stroke="#ef4444" 
+                  strokeWidth={1}
+                  dot={false}
+                  strokeDasharray="3 3"
+                />
+                
+                {/* 실제 가격 - 게시 시점 강조 */}
+                <Line 
                 type="monotone" 
                 dataKey="close" 
                 stroke="#10b981" 
-                strokeWidth={3}
+                strokeWidth={2}
                 dot={(props: any) => {
                   const { cx, cy, payload } = props;
-                  if (!payload || typeof cx !== 'number' || typeof cy !== 'number') {
-                    return <circle cx={0} cy={0} r={0} fill="transparent" />;
-                  }
+                  if (!payload || cx === undefined || cy === undefined) return <></>;  // 🔴
                   
-                  // 게시 시점이면 큰 주황색 점
                   if (payload.isPostTime) {
                     return (
-                      <>
-                        {/* 외곽 원 (강조) */}
+                      <g>
                         <circle 
                           cx={cx} 
                           cy={cy} 
-                          r={10} 
+                          r={8} 
                           fill="rgba(245, 158, 11, 0.2)"
-                          stroke="none"
                         />
-                        {/* 메인 원 */}
                         <circle 
                           cx={cx} 
                           cy={cy} 
-                          r={6} 
+                          r={5} 
                           fill="#f59e0b" 
                           stroke="#fff"
                           strokeWidth={2}
                         />
-                      </>
+                      </g>
                     );
                   }
-                  return <circle cx={0} cy={0} r={0} fill="transparent" />;
+                  return <></>;  // 🔴
                 }}
-                activeDot={{ r: 6 }}
+                activeDot={{ r: 4 }}
               />
-            </ComposedChart>
-          </ResponsiveContainer>
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-        <div className="mt-2 text-xs text-foreground/60 space-y-1">
-          <p>• <span className="text-green-400">초록선</span>: 실제 가격</p>
-          <p>• <span className="text-blue-400">파란선</span>: 이동평균 (중심선)</p>
-          <p>• <span className="text-red-400">빨간 점선</span>: 변동성 구간 (상한/하한)</p>
-          <p>• <span className="inline-block w-3 h-3 rounded-full bg-orange-400 border-2 border-white"></span> <span className="text-orange-400">주황 점</span>: SNS 게시 시점</p>
+        
+        {/* 범례 - 간결하게 */}
+        <div className="mt-1 text-[10px] text-foreground/60 space-y-0.5">
+          <p>• <span className="text-green-400">초록</span>: 실제가 • <span className="text-blue-400">파랑</span>: 평균 • <span className="text-red-400">빨강점선</span>: 변동성구간</p>
+          <p>• <span className="inline-block w-2 h-2 rounded-full bg-orange-400"></span> 주황: 게시시점</p>
         </div>
       </div>
 
-      {/* 3. 듀얼 축 차트 (가격 + 거래량) */}
+      {/* 가격 & 거래량 차트 */}
       <div>
-        <h5 className="text-sm font-medium mb-3">📊 가격 & 거래량 차트</h5>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={dualAxisData} margin={{ top: 20, right: 60, left: 60, bottom: 60 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-              <XAxis 
-                dataKey="timestamp"
-                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
-                tickFormatter={(value) => {
-                  const date = new Date(value);
-                  return `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
-                }}
-                angle={-45}
-                textAnchor="end"
-                height={60}
-              />
-              
-              {/* 왼쪽 Y축 - 가격 */}
-              <YAxis 
-                yAxisId="left"
-                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
-                tickFormatter={(value) => formatPrice(value, symbol)}
-                width={80}
-              />
-              
-              {/* 오른쪽 Y축 - 거래량 */}
-              <YAxis 
-                yAxisId="right"
-                orientation="right"
-                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
-                tickFormatter={(value) => {
-                  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
-                  if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
-                  return value.toString();
-                }}
-                width={60}
-              />
-              
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'rgba(0,0,0,0.95)', 
-                  border: '1px solid rgba(255,255,255,0.4)',
-                  borderRadius: '8px'
-                }}
-              />
-              
-              {/* 가격 Area Chart - 게시 시점만 점 표시 */}
-              <Area
+        <h5 className="text-sm font-medium mb-2">📊 가격 & 거래량</h5>
+        
+        <div className="overflow-x-auto overflow-y-hidden -mx-4 px-4">
+          <div className="h-[420px] min-w-[700px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart 
+                data={dualAxisData} 
+                margin={{ top: 10, right: 45, left: 5, bottom: 50 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                
+                <XAxis 
+                  dataKey="timestamp"
+                  tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
+                  tickFormatter={(value) => {
+                    const date = new Date(value);
+                    return `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+                  }}
+                  angle={-35}
+                  textAnchor="end"
+                  height={50}
+                  interval="preserveStartEnd"
+                />
+                
+                {/* 왼쪽 Y축 - 가격 */}
+                <YAxis 
+                  yAxisId="left"
+                  tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
+                  tickFormatter={(value) => {
+                    if (value >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(1)}B`;
+                    if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+                    if (value >= 1_000) return `${(value / 1_000).toFixed(0)}K`;
+                    if (value >= 1) return value.toFixed(1);
+                    return value.toFixed(3);
+                  }}
+                  width={48}
+                />
+                
+                {/* 오른쪽 Y축 - 거래량 */}
+                <YAxis 
+                  yAxisId="right"
+                  orientation="right"
+                  tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
+                  tickFormatter={(value) => {
+                    if (value >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(1)}B`;
+                    if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+                    if (value >= 1_000) return `${(value / 1_000).toFixed(0)}K`;
+                    return value.toString();
+                  }}
+                  width={42}
+                />
+                
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'rgba(0,0,0,0.95)', 
+                    border: '1px solid rgba(255,255,255,0.4)',
+                    borderRadius: '6px',
+                    padding: '8px',
+                    fontSize: '11px'
+                  }}
+                  labelFormatter={(label) => new Date(label).toLocaleTimeString('ko-KR')}
+                />
+                
+                {/* 가격 Area */}
+                <Area
                 yAxisId="left"
                 type="monotone"
                 dataKey="price"
                 stroke="#60a5fa"
-                fill="rgba(96,165,250,0.1)"
+                fill="rgba(96,165,250,0.15)"
                 strokeWidth={2}
-                dot={false}
-              />
-              
-              {/* 거래량 Bar Chart - 게시 시점만 다른 색 */}
-              <Bar
-                yAxisId="right"
-                dataKey="volume"
-                fill="#10b981"
-                opacity={0.6}
-                shape={(props: any) => {
-                  const { fill, x, y, width, height, payload } = props;
+                dot={(props: any) => {
+                  const { cx, cy, payload } = props;
+                  if (!payload || cx === undefined || cy === undefined) return <></>;  // 🔴 빈 fragment 반환
                   
-                  // 게시 시점이면 주황색
-                  if (payload && payload.isPostTime) {
+                  if (payload.isPostTime) {
                     return (
-                      <rect 
-                        x={x} 
-                        y={y} 
-                        width={width} 
-                        height={height} 
-                        fill="#f59e0b"
-                        opacity={0.8}
-                      />
+                      <g>
+                        <circle cx={cx} cy={cy} r={8} fill="rgba(245, 158, 11, 0.2)" />
+                        <circle cx={cx} cy={cy} r={5} fill="#f59e0b" stroke="#fff" strokeWidth={2} />
+                      </g>
                     );
                   }
-                  
-                  return (
-                    <rect 
-                      x={x} 
-                      y={y} 
-                      width={width} 
-                      height={height} 
-                      fill={fill}
-                    />
-                  );
+                  return <></>;  // 🔴 빈 fragment 반환
                 }}
               />
-            </ComposedChart>
-          </ResponsiveContainer>
+                
+                {/* 거래량 Bar */}
+                <Bar
+                  yAxisId="right"
+                  dataKey="volume"
+                  fill="#10b981"
+                  opacity={0.6}
+                  shape={(props: any) => {
+                    const { fill, x, y, width, height, payload } = props;
+                    
+                    if (payload && payload.isPostTime) {
+                      return (
+                        <rect 
+                          x={x} 
+                          y={y} 
+                          width={width} 
+                          height={height} 
+                          fill="#f59e0b"
+                          opacity={0.9}
+                        />
+                      );
+                    }
+                    
+                    return <rect x={x} y={y} width={width} height={height} fill={fill} />;
+                  }}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-        <div className="mt-2 text-xs text-foreground/60 space-y-1">
-          <p>• <span className="text-blue-400">파란 영역</span>: 가격 (왼쪽 축)</p>
-          <p>• <span className="text-green-400">초록 막대</span>: 거래량 (오른쪽 축)</p>
+        
+        <div className="mt-1 text-[10px] text-foreground/60">
+          • <span className="text-blue-400">파랑영역</span>: 가격(좌) • <span className="text-green-400">초록막대</span>: 거래량(우)
         </div>
       </div>
 
@@ -820,102 +862,120 @@ function AdvancedAnalysisCard({
     <div className="glass-card p-4 rounded-xl space-y-6">
       <h4 className="font-medium text-lg">{symbol} 전문 분석</h4>
 
-      {/* 1. 캔들스틱 차트 */}
+      {/* 캔들스틱 차트 */}
       <div>
-        <h5 className="text-sm font-medium mb-3">🕯️ 캔들스틱 차트</h5>
-        <div className="h-96">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={candlestickData} margin={{ top: 20, right: 30, left: 60, bottom: 60 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-              <XAxis 
-                dataKey="timestamp"
-                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
-                tickFormatter={(value) => {
-                  const date = new Date(value);
-                  return `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
-                }}
-                angle={-45}
-                textAnchor="end"
-                height={60}
-              />
-              <YAxis 
-                domain={['dataMin - 2%', 'dataMax + 2%']}
-                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
-                tickFormatter={(value) => formatPrice(value, symbol)}
-                width={80}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'rgba(0,0,0,0.95)', 
-                  border: '1px solid rgba(255,255,255,0.4)',
-                  borderRadius: '8px'
-                }}
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    const data = payload[0].payload;
-                    return (
-                      <div className="p-3 text-xs">
-                        <p className="font-medium mb-2">
-                          {new Date(data.timestamp).toLocaleString('ko-KR')}
-                        </p>
-                        {data.isPostTime && (
-                          <p className="text-orange-400 mb-2 font-bold">📍 게시 시점</p>
-                        )}
-                        <div className="space-y-1">
-                          <p>시가: {formatPrice(data.open, symbol)}</p>
-                          <p className="text-green-400">고가: {formatPrice(data.high, symbol)}</p>
-                          <p className="text-red-400">저가: {formatPrice(data.low, symbol)}</p>
-                          <p>종가: {formatPrice(data.close, symbol)}</p>
-                          <p className="text-blue-400">거래량: {data.volume.toLocaleString()}</p>
-                        </div>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              
-              {/* 간단한 캔들스틱 표현 - High-Low 라인 */}
-              <Line 
-                type="monotone"
-                dataKey="high"
-                stroke="rgba(96,165,250,0.8)"
-                strokeWidth={1}
-                dot={false}
-                connectNulls={false}
-              />
-              <Line 
-                type="monotone"
-                dataKey="low"
-                stroke="rgba(96,165,250,0.8)"
-                strokeWidth={1}
-                dot={false}
-                connectNulls={false}
-              />
-              
-              {/* Open-Close 막대 */}
-              <Bar 
-                dataKey="bodyData"
-                fill="rgba(96,165,250,0.7)"
-              />
-
-              {/* 게시 시점 */}
-              {candlestickPostTimePoint && candlestickData.length > 0 && 
-               candlestickData.some(d => d.timestamp === candlestickPostTimePoint.timestamp) && (
-                <ReferenceLine 
-                  x={candlestickPostTimePoint.timestamp} 
-                  stroke="#f59e0b" 
-                  strokeWidth={2}
-                  label={{ value: '게시', position: 'top', fill: '#f59e0b' }}
+        <h5 className="text-sm font-medium mb-2">🕯️ 캔들스틱 차트</h5>
+        
+        <div className="overflow-x-auto overflow-y-hidden -mx-4 px-4">
+          <div className="h-[480px] min-w-[800px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart 
+                data={candlestickData} 
+                margin={{ top: 10, right: 5, left: 5, bottom: 50 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                
+                <XAxis 
+                  dataKey="timestamp"
+                  tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
+                  tickFormatter={(value) => {
+                    const date = new Date(value);
+                    return `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+                  }}
+                  angle={-35}
+                  textAnchor="end"
+                  height={50}
+                  interval="preserveStartEnd"
                 />
-              )}
-            </ComposedChart>
-          </ResponsiveContainer>
+                
+                <YAxis 
+                  domain={['dataMin - 1%', 'dataMax + 1%']}
+                  tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
+                  tickFormatter={(value) => {
+                    if (value >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(2)}B`;
+                    if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+                    if (value >= 1_000) return `${(value / 1_000).toFixed(0)}K`;
+                    if (value >= 1) return value.toFixed(1);
+                    return value.toFixed(3);
+                  }}
+                  width={55}
+                />
+                
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'rgba(0,0,0,0.95)', 
+                    border: '1px solid rgba(255,255,255,0.4)',
+                    borderRadius: '6px',
+                    padding: '8px'
+                  }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="text-[11px] space-y-1">
+                          <p className="font-medium">
+                            {new Date(data.timestamp).toLocaleTimeString('ko-KR')}
+                          </p>
+                          {data.isPostTime && (
+                            <p className="text-orange-400 font-bold">📍 게시시점</p>
+                          )}
+                          <p>시: {formatPrice(data.open, symbol)}</p>
+                          <p className="text-green-400">고: {formatPrice(data.high, symbol)}</p>
+                          <p className="text-red-400">저: {formatPrice(data.low, symbol)}</p>
+                          <p>종: {formatPrice(data.close, symbol)}</p>
+                          <p className="text-blue-400">량: {data.volume.toLocaleString()}</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                
+                {/* High-Low 선 */}
+                <Line 
+                  type="monotone"
+                  dataKey="high"
+                  stroke="transparent"
+                  dot={false}
+                />
+                <Line 
+                  type="monotone"
+                  dataKey="low"
+                  stroke="transparent"
+                  dot={false}
+                />
+                
+                {/* 캔들 몸통 */}
+                <Bar 
+                  dataKey={(data: any) => data.close >= data.open ? [data.open, data.close] : [data.close, data.open]}
+                  shape={(props: any) => {  // 🔴 타입 명시
+                    const { x, y, width, height, payload } = props;
+                    if (!payload) {
+                      return <rect x={0} y={0} width={0} height={0} fill="transparent" />;
+                    }
+                    
+                    const fill = payload.close >= payload.open 
+                      ? 'rgba(16,185,129,0.8)' 
+                      : 'rgba(239,68,68,0.8)';
+                    
+                    return (
+                      <rect 
+                        x={x} 
+                        y={y} 
+                        width={width} 
+                        height={height} 
+                        fill={fill}
+                      />
+                    );
+                  }}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-        <div className="mt-2 text-xs text-foreground/60 space-y-1">
-          <p>• <span className="text-green-400">초록 막대</span>: 상승 (종가 {'>'} 시가)</p>
-          <p>• <span className="text-red-400">빨간 막대</span>: 하락 (종가 {'<'} 시가)</p>
-          <p>• 막대의 위아래 끝: 고가와 저가</p>
+        
+        <div className="mt-1 text-[10px] text-foreground/60">
+          • <span className="text-green-400">초록</span>: 상승 • <span className="text-red-400">빨강</span>: 하락
         </div>
       </div>
 
