@@ -1,6 +1,5 @@
-// src/services/snsApi.ts
-
-import { apiClient } from './api';
+// src/services/SNSService.ts
+// SNS 분석 데이터 관련 API 통신 서비스
 
 // ============================================================================
 // 타입 정의
@@ -79,34 +78,163 @@ export interface SNSListParams {
 }
 
 // ============================================================================
+// API 설정 및 유틸리티
+// ============================================================================
+
+/**
+ * API 설정
+ */
+const API_BASE_URL = 'https://api.investment-assistant.site/api/v1';
+const DEFAULT_TIMEOUT = 30000;
+
+/**
+ * API 에러 클래스
+ */
+class SNSApiError extends Error {
+  constructor(
+    message: string,
+    public status?: number,
+    public statusText?: string
+  ) {
+    super(message);
+    this.name = 'SNSApiError';
+  }
+}
+
+/**
+ * HTTP 요청 유틸리티
+ */
+async function apiRequest<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const url = `${API_BASE_URL}${endpoint}`;
+  
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT);
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      throw new SNSApiError(
+        `API 요청 실패: ${response.statusText}`,
+        response.status,
+        response.statusText
+      );
+    }
+    
+    return await response.json();
+    
+  } catch (error) {
+    clearTimeout(timeoutId);
+    
+    if (error instanceof SNSApiError) {
+      throw error;
+    }
+    
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new SNSApiError('요청 시간 초과');
+    }
+    
+    throw new SNSApiError(
+      `네트워크 오류: ${error instanceof Error ? error.message : '알 수 없는 오류'}`
+    );
+  }
+}
+
+/**
+ * URL 쿼리 파라미터 생성
+ */
+function buildQueryParams(params: Record<string, any>): string {
+  const searchParams = new URLSearchParams();
+  
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      searchParams.append(key, String(value));
+    }
+  });
+  
+  const query = searchParams.toString();
+  return query ? `?${query}` : '';
+}
+
+// ============================================================================
 // API 서비스 클래스
 // ============================================================================
 
 class SNSApiService {
-  private readonly baseUrl = '/sns/analysis';
-
+  
   /**
    * 분석된 SNS 게시글 목록을 가져옵니다
    */
   async getPosts(params: SNSListParams = {}): Promise<SNSPost[]> {
-    const searchParams = new URLSearchParams();
+    const queryString = buildQueryParams(params);
+    const endpoint = `/sns/analysis/posts${queryString}`;
+    const fullUrl = `${API_BASE_URL}${endpoint}`;
     
-    if (params.skip !== undefined) searchParams.append('skip', params.skip.toString());
-    if (params.limit !== undefined) searchParams.append('limit', params.limit.toString());
-    if (params.post_source && params.post_source !== 'all') {
-      searchParams.append('post_source', params.post_source);
+    console.log('🔍 SNS Posts Request:', { 
+      endpoint, 
+      fullUrl, 
+      params,
+      queryString 
+    });
+    
+    try {
+      const response = await apiRequest<SNSPost[]>(endpoint);
+      
+      console.log('✅ SNS Posts Response:', { 
+        type: typeof response,
+        isArray: Array.isArray(response),
+        count: Array.isArray(response) ? response.length : 'Not an array',
+        firstItem: Array.isArray(response) && response.length > 0 ? response[0] : null,
+        rawResponse: response
+      });
+      
+      // 응답이 배열이 아닌 경우 처리
+      if (!Array.isArray(response)) {
+        console.warn('⚠️ Response is not an array:', response);
+        return [];
+      }
+      
+      return response;
+    } catch (error) {
+      console.error('❌ SNS posts fetch error:', {
+        error,
+        endpoint,
+        fullUrl,
+        params
+      });
+      throw error;
     }
-
-    const response = await apiClient.get(`${this.baseUrl}/posts?${searchParams.toString()}`);
-    return response.data;
   }
 
   /**
    * 특정 게시글의 상세 분석 데이터를 가져옵니다
    */
   async getPostDetail(postSource: string, postId: string): Promise<SNSPost> {
-    const response = await apiClient.get(`${this.baseUrl}/posts/${postSource}/${postId}`);
-    return response.data;
+    const endpoint = `/sns/analysis/posts/${postSource}/${postId}`;
+    
+    console.log('Fetching SNS post detail:', { postSource, postId });
+    
+    const response = await apiRequest<SNSPost>(endpoint);
+    
+    console.log('SNS post detail response:', {
+      postId: response.analysis.post_id,
+      source: response.analysis.post_source
+    });
+    
+    return response;
   }
 
   /**
@@ -207,5 +335,12 @@ class SNSApiService {
 
 }
 
-// 싱글톤 인스턴스 생성
+/**
+ * 싱글톤 서비스 인스턴스
+ */
 export const snsApiService = new SNSApiService();
+
+/**
+ * 추가: SNSService export (다른 파일에서 사용)
+ */
+export { snsApiService as SNSService };

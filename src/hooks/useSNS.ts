@@ -29,9 +29,19 @@ export function useSNSList(options: UseSNSListOptions = {}) {
 
   // SWR 키 생성 - 첫 페이지는 항상 캐시
   const swrKey = useMemo(() => {
-    if (!autoFetch) return null;
-    return `sns-posts-${JSON.stringify({ ...params, skip: 0, limit: 20 })}`;
-  }, [params.post_source, autoFetch]); // skip과 limit 제외하고 필터만 고려
+    if (!autoFetch) {
+      console.log('🚫 SWR key is null (autoFetch disabled)');
+      return null;
+    }
+    // 모든 params를 포함하여 키 생성 (skip, limit 제외)
+    const keyParams = { 
+      post_source: params.post_source,
+      // 다른 필터 파라미터들도 추가 가능
+    };
+    const key = `sns-posts-${JSON.stringify(keyParams)}`;
+    console.log('🔑 SWR key generated:', { key, keyParams, fullParams: params, autoFetch });
+    return key;
+  }, [params.post_source, params.limit, params.skip, autoFetch]); // 모든 관련 params 포함
 
   // SWR을 사용한 데이터 페칭 - 첫 페이지만
   const {
@@ -41,44 +51,80 @@ export function useSNSList(options: UseSNSListOptions = {}) {
     mutate: refetch
   } = useSWRApi(
     swrKey,
-    () => snsApiService.getPosts({ ...params, skip: 0, limit: 20 }),
+    async () => {
+      console.log('🚀 SWR fetcher called with params:', { ...params, skip: 0, limit: 20 });
+      const result = await snsApiService.getPosts({ ...params, skip: 0, limit: 20 });
+      console.log('📦 SWR fetcher result:', result);
+      return result;
+    },
     {
       revalidateOnFocus: false,
-      dedupingInterval: 60000, // 1분간 중복 요청 방지
+      dedupingInterval: 5000, // 5초로 단축 - 필터 변경 시 빠른 응답
       revalidateOnMount: true, // 마운트 시 항상 재검증
+      refreshInterval: 0, // 자동 새로고침 비활성화
+      onError: (error) => {
+        console.error('❌ SWR error:', error);
+      },
+      onSuccess: (data) => {
+        console.log('✅ SWR success:', data);
+      }
     }
   );
 
   // 첫 페이지 데이터 초기화
   useEffect(() => {
+    console.log('🔄 First page data effect:', {
+      firstPagePosts,
+      hasData: firstPagePosts && firstPagePosts.length > 0,
+      currentAllPosts: allPosts.length,
+      isInitialLoading,
+      error
+    });
+    
     if (firstPagePosts && firstPagePosts.length > 0) {
+      console.log('✅ Setting first page posts:', firstPagePosts.length);
       setAllPosts(firstPagePosts);
       setLoadedPages(new Set([0]));
       setIsLoadingMore(false);
+    } else if (firstPagePosts && firstPagePosts.length === 0) {
+      console.log('📭 First page returned empty array');
+      setAllPosts([]);
+      setLoadedPages(new Set([0]));
+      setIsLoadingMore(false);
     }
-  }, [firstPagePosts]);
+  }, [firstPagePosts, isInitialLoading, error]);
 
-  // 필터 변경 시 초기화
+  // 필터 변경 시 초기화 (post_source 변경 감지)
   useEffect(() => {
+    console.log('🔄 Post source changed, clearing data:', params.post_source);
     setAllPosts([]);
     setLoadedPages(new Set());
+    setIsLoadingMore(false);
   }, [params.post_source]);
 
   // 필터 업데이트
   const updateFilter = useCallback((newParams: Partial<SNSListParams>) => {
-    setParams(prev => ({
-      ...prev,
+    console.log('🔄 Filter update called:', { newParams, currentParams: params });
+    
+    const updatedParams = {
+      ...params,
       ...newParams,
       skip: newParams.skip !== undefined ? newParams.skip : 0 // 필터 변경시 첫 페이지로
-    }));
-    setAllPosts([]); // 필터 변경시 기존 데이터 클리어
-    setLoadedPages(new Set()); // 로드된 페이지도 초기화
+    };
     
-    // 필터 변경 시 SWR 재검증 트리거
-    setTimeout(() => {
-      refetch();
-    }, 100);
-  }, [refetch]);
+    console.log('📝 Setting new params:', updatedParams);
+    setParams(updatedParams);
+    
+    // 즉시 상태 초기화
+    console.log('🧹 Clearing existing data');
+    setAllPosts([]); 
+    setLoadedPages(new Set()); 
+    setIsLoadingMore(false);
+    
+    // SWR 캐시 무효화 및 재검증 (즉시 실행)
+    console.log('🔄 Triggering SWR revalidation');
+    refetch();
+  }, [params, refetch]);
 
   // 페이지네이션 - 직접 API 호출
   const loadMore = useCallback(async () => {
@@ -118,7 +164,10 @@ export function useSNSList(options: UseSNSListOptions = {}) {
 
   // 새로고침
   const refresh = useCallback(() => {
+    console.log('🔄 Refresh called');
     setAllPosts([]);
+    setLoadedPages(new Set());
+    setIsLoadingMore(false);
     setParams(prev => ({ ...prev, skip: 0 }));
     refetch();
   }, [refetch]);
@@ -251,10 +300,12 @@ export function useSNSFilter(initialFilter: Partial<SNSFilter> = {}) {
 
   // 필터를 API 파라미터로 변환
   const toApiParams = useCallback((): SNSListParams => {
-    return {
+    const apiParams = {
       post_source: filter.platform === 'all' ? 'all' : filter.platform,
       // TODO: 검색과 정렬은 백엔드 API에서 지원할 때 추가
     };
+    console.log('🔄 Converting filter to API params:', { filter, apiParams });
+    return apiParams;
   }, [filter.platform]); // 필요한 속성만 의존성으로 설정
 
   return {

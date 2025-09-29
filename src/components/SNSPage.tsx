@@ -120,10 +120,28 @@ export function SNSPage({ onPostClick }: SNSPageProps) {
     autoFetch: true
   });
 
+  // 디버깅용 로그
+  console.log('📊 SNSPage State:', {
+    posts: posts.length,
+    loading,
+    error,
+    params,
+    filter,
+    hasMore,
+    totalLoaded,
+    isLoadingMore
+  });
+
   // 필터 변경시 API 파라미터 업데이트
   useEffect(() => {
-    updateFilter(toApiParams());
-  }, [filter.platform, filter.sortBy, filter.searchQuery, updateFilter]);
+    const apiParams = toApiParams();
+    console.log('🎯 Filter changed, updating API params:', { 
+      filter, 
+      apiParams,
+      previousParams: params 
+    });
+    updateFilter(apiParams);
+  }, [filter.platform, filter.sortBy, filter.searchQuery, updateFilter, toApiParams]);
 
   // 검색 처리 (디바운싱)
   useEffect(() => {
