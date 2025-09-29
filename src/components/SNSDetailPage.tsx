@@ -566,14 +566,34 @@ function GeneralAnalysisCard({
               />
 
               {/* 게시 시점 표시 */}
-              {post.analysis.post_timestamp && (
-                <ReferenceLine 
-                  x={post.analysis.post_timestamp} 
-                  stroke="#f59e0b" 
-                  strokeWidth={2}
-                  label={{ value: '게시', position: 'top', fill: '#f59e0b' }}
-                />
-              )}
+              {(() => {
+                if (!post.analysis.post_timestamp || bollingerBandData.length === 0) return null;
+                
+                const postTime = new Date(post.analysis.post_timestamp).getTime();
+                const dataTimeRange = {
+                  start: new Date(bollingerBandData[0].timestamp).getTime(),
+                  end: new Date(bollingerBandData[bollingerBandData.length - 1].timestamp).getTime()
+                };
+                
+                // 게시 시점이 데이터 범위 내에 있는지 확인
+                if (postTime < dataTimeRange.start || postTime > dataTimeRange.end) return null;
+                
+                // 가장 가까운 데이터 포인트 찾기
+                const closestDataPoint = bollingerBandData.reduce((prev, curr) => {
+                  const prevDiff = Math.abs(new Date(prev.timestamp).getTime() - postTime);
+                  const currDiff = Math.abs(new Date(curr.timestamp).getTime() - postTime);
+                  return currDiff < prevDiff ? curr : prev;
+                });
+                
+                return (
+                  <ReferenceLine 
+                    x={closestDataPoint.timestamp} 
+                    stroke="#f59e0b" 
+                    strokeWidth={2}
+                    label={{ value: '게시', position: 'top', fill: '#f59e0b' }}
+                  />
+                );
+              })()}
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -652,13 +672,33 @@ function GeneralAnalysisCard({
               />
 
               {/* 게시 시점 */}
-              {post.analysis.post_timestamp && (
-                <ReferenceLine 
-                  x={post.analysis.post_timestamp} 
-                  stroke="#f59e0b" 
-                  strokeWidth={2}
-                />
-              )}
+              {(() => {
+                if (!post.analysis.post_timestamp || dualAxisData.length === 0) return null;
+                
+                const postTime = new Date(post.analysis.post_timestamp).getTime();
+                const dataTimeRange = {
+                  start: new Date(dualAxisData[0].timestamp).getTime(),
+                  end: new Date(dualAxisData[dualAxisData.length - 1].timestamp).getTime()
+                };
+                
+                // 게시 시점이 데이터 범위 내에 있는지 확인
+                if (postTime < dataTimeRange.start || postTime > dataTimeRange.end) return null;
+                
+                // 가장 가까운 데이터 포인트 찾기
+                const closestDataPoint = dualAxisData.reduce((prev, curr) => {
+                  const prevDiff = Math.abs(new Date(prev.timestamp).getTime() - postTime);
+                  const currDiff = Math.abs(new Date(curr.timestamp).getTime() - postTime);
+                  return currDiff < prevDiff ? curr : prev;
+                });
+                
+                return (
+                  <ReferenceLine 
+                    x={closestDataPoint.timestamp} 
+                    stroke="#f59e0b" 
+                    strokeWidth={2}
+                  />
+                );
+              })()}
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -843,14 +883,34 @@ function AdvancedAnalysisCard({
               />
 
               {/* 게시 시점 */}
-              {post.analysis.post_timestamp && (
-                <ReferenceLine 
-                  x={post.analysis.post_timestamp} 
-                  stroke="#f59e0b" 
-                  strokeWidth={2}
-                  label={{ value: '게시', position: 'top', fill: '#f59e0b' }}
-                />
-              )}
+              {(() => {
+                if (!post.analysis.post_timestamp || candlestickData.length === 0) return null;
+                
+                const postTime = new Date(post.analysis.post_timestamp).getTime();
+                const dataTimeRange = {
+                  start: new Date(candlestickData[0].timestamp).getTime(),
+                  end: new Date(candlestickData[candlestickData.length - 1].timestamp).getTime()
+                };
+                
+                // 게시 시점이 데이터 범위 내에 있는지 확인
+                if (postTime < dataTimeRange.start || postTime > dataTimeRange.end) return null;
+                
+                // 가장 가까운 데이터 포인트 찾기
+                const closestDataPoint = candlestickData.reduce((prev, curr) => {
+                  const prevDiff = Math.abs(new Date(prev.timestamp).getTime() - postTime);
+                  const currDiff = Math.abs(new Date(curr.timestamp).getTime() - postTime);
+                  return currDiff < prevDiff ? curr : prev;
+                });
+                
+                return (
+                  <ReferenceLine 
+                    x={closestDataPoint.timestamp} 
+                    stroke="#f59e0b" 
+                    strokeWidth={2}
+                    label={{ value: '게시', position: 'top', fill: '#f59e0b' }}
+                  />
+                );
+              })()}
             </ComposedChart>
           </ResponsiveContainer>
         </div>
