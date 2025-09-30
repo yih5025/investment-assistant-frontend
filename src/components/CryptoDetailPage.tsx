@@ -289,7 +289,7 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
               <div className="glass rounded-xl p-3">
                 <h4 className="font-semibold mb-2 text-orange-400 flex items-center text-sm">
                   <BarChart3 size={14} className="mr-2" />
-                  어떤 데이터가 제공되나요?
+                  어떤 데이터가 있나요?
                 </h4>
                 <ul className="text-xs text-foreground/70 space-y-1">
                   <li>• <span className="font-medium">24시간 실시간 데이터</span> </li>
@@ -321,6 +321,7 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
                     암호화폐는 24시간 거래되고 변동성이 매우 높아요. 
                     <span className="font-medium text-amber-400"> 김치프리미엄이 크면</span> 한국 거래소가 비싸다는 뜻이니 
                     해외 거래소와 비교해보세요. 
+                    <p></p>
                     <span className="font-medium text-amber-400"> 펀딩비가 높으면</span> 투자자들이 상승을 예상하고 있다는 신호예요!
                   </p>
                 </div>

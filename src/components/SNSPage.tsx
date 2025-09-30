@@ -147,11 +147,11 @@ export function SNSPage({ onPostClick }: SNSPageProps) {
       <div className="space-y-4">
         <div className="glass-card p-8 text-center">
           <AlertCircle size={48} className="mx-auto mb-4 text-red-400" />
-          <h3 className="text-lg font-medium mb-2">데이터를 불러올 수 없습니다</h3>
+          <h3 className="text-lg font-medium mb-2">데이터를 불러오지 못 했어요. 잠시 후 다시 시도해주세요.</h3>
           <p className="text-foreground/70 mb-4">{error}</p>
           <Button onClick={refresh} variant="outline">
             <RefreshCw size={16} className="mr-2" />
-            다시 시도
+            새로고침
           </Button>
         </div>
       </div>
@@ -161,12 +161,67 @@ export function SNSPage({ onPostClick }: SNSPageProps) {
   return (
     <div className="space-y-4">
       {/* 검색 및 필터 헤더 */}
+      {/* ✨ 새로 추가: 페이지 안내 섹션 */}
+      <div className="glass-card rounded-2xl p-4">
+        <h2 className="text-base font-bold mb-3 flex items-center">
+          <MessageSquare size={18} className="mr-2 text-purple-400" />
+          SNS 분석 페이지에서 확인할 수 있어요!
+        </h2>
+        
+        <div className="space-y-3">
+          <p className="text-sm text-foreground/80 leading-relaxed">
+            트럼프, 일론 머스크 같은 영향력 있는 인물들의 게시글이 시장에 어떤 영향을 미쳤는지 분석하고 확인해요!
+          </p>
+          
+          <div className="grid grid-cols-2 gap-3">
+            <div className="glass rounded-xl p-3">
+              <h4 className="font-semibold mb-2 text-purple-400 flex items-center text-sm">
+                <MessageSquare size={14} className="mr-2" />
+                데이터로 제공해요
+              </h4>
+              <ul className="text-xs text-foreground/70 space-y-1">
+                <li>• <span className="font-medium">SNS 게시글</span> - X, Truth Social 통합</li>
+                <li>• <span className="font-medium">시장 영향도</span> - 가격 변동과 거래량</li>
+                <li>• <span className="font-medium">영향받은 자산</span> - 주식, ETF, 암호화폐</li>
+              </ul>
+            </div>
+            
+            <div className="glass rounded-xl p-3">
+              <h4 className="font-semibold mb-2 text-primary flex items-center text-sm">
+                <TrendingUp size={14} className="mr-2" />
+                이렇게 활용하세요
+              </h4>
+              <ul className="text-xs text-foreground/70 space-y-1">
+                <li>• <span className="font-medium">트렌드 파악</span> - 인기 주제 확인</li>
+                <li>• <span className="font-medium">영향력 추적</span> - 특정 인물 모니터링</li>
+                <li>• <span className="font-medium">차트 분석</span> - 게시글 클릭 시 상세 차트</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="glass rounded-xl p-3 border border-amber-500/30">
+            <div className="flex items-start space-x-3">
+              <div className="text-amber-400 mt-0.5">💡</div>
+              <div>
+                <h4 className="font-semibold text-amber-400 mb-1 text-sm">투자 전에 확인하세요</h4>
+                <p className="text-xs text-foreground/70 leading-relaxed">
+                  영향력 있는 계정의 게시글이 시장을 움직일 수 있어요. 
+                  <span className="font-medium text-amber-400"> 게시글을 클릭</span>하면 
+                  가격 변동, 거래량 급증, 변동성 등을 실시간 차트로 확인할 수 있어요. 
+                  특히 <span className="font-medium text-amber-400">볼린저 밴드 차트</span>로 
+                  비정상적인 가격 움직임을 한눈에 파악하세요!
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div className="space-y-3">
         {/* 검색바 */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground/50" size={20} />
           <Input
-            placeholder="사용자명 또는 게시글 내용 검색..."
+            placeholder="elonmusk 같이 계정이나 게시글 내용을 검색해보세요!"
             value={localSearchQuery}
             onChange={(e) => setLocalSearchQuery(e.target.value)}
             className="pl-10 glass-card border-white/20 placeholder:text-foreground/50"
@@ -178,8 +233,9 @@ export function SNSPage({ onPostClick }: SNSPageProps) {
           <div className="flex space-x-2">
             {[
               { value: 'all', label: '전체' },
-              { value: 'x', label: 'X' },
-              { value: 'truth_social_posts', label: 'Truth Social' }
+              { value: 'x', label: 'X (구 트위터)' },
+              { value: 'truth_social_posts', label: 'Truth Social (트럼프, 백악관 등)' },
+              { value: 'truth_social_trends', label: 'Truth Social Trend (인기 포스트)' }
             ].map((platform) => (
               <button
                 key={platform.value}
@@ -196,25 +252,6 @@ export function SNSPage({ onPostClick }: SNSPageProps) {
           </div>
 
           <div className="flex items-center space-x-2">
-            <select
-              value={filter.sortBy}
-              onChange={(e) => updateSortBy(e.target.value as any)}
-              className="px-3 py-1.5 rounded-lg glass-card text-sm bg-transparent border-white/20"
-            >
-              <option value="recent">최신순</option>
-              <option value="impact">영향도순</option>
-              <option value="engagement">인기순</option>
-            </select>
-
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`p-2 rounded-lg transition-all ${
-                showFilters ? "glass text-primary" : "glass-subtle text-foreground/70"
-              }`}
-            >
-              <Filter size={18} />
-            </button>
-
             <button
               onClick={refresh}
               disabled={loading}
@@ -253,7 +290,7 @@ export function SNSPage({ onPostClick }: SNSPageProps) {
       {loading && posts.length === 0 && (
         <div className="glass-card p-8 text-center">
           <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-foreground/70">게시글을 불러오는 중...</p>
+          <p className="text-foreground/70">게시글을 불러오는 중이에요!</p>
         </div>
       )}
 
@@ -301,7 +338,7 @@ export function SNSPage({ onPostClick }: SNSPageProps) {
       {/* 로드된 게시글 수 표시 */}
       {totalLoaded > 0 && (
         <div className="text-center text-sm text-foreground/60">
-          총 {totalLoaded}개의 게시글을 불러왔습니다
+          총 {totalLoaded}개의 게시글을 불러왔어요!
         </div>
       )}
     </div>
@@ -352,14 +389,6 @@ function SNSPostCard({ post, onClick }: SNSPostCardProps) {
             >
               {getAvatarText(analysis.author_username)}
             </div>
-            {/* 인증 마크 (주요 계정들) */}
-            {['realDonaldTrump', 'elonmusk', 'WhiteHouse'].includes(analysis.author_username) && (
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
-                  <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2" fill="none"/>
-                </svg>
-              </div>
-            )}
           </div>
           <div>
             <div className="flex items-center space-x-2">

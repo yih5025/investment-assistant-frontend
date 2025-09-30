@@ -722,7 +722,7 @@ function AppContent() {
                 <div className="p-2 rounded-xl glass">
                   <TrendingUp size={24} className="text-primary" />
                 </div>
-                <h1 className="text-2xl font-bold">실시간 시장</h1>
+                <h1 className="text-2xl font-bold">실시간 투자 시장</h1>
               </div>
             </div>
             <MarketPage 
@@ -741,7 +741,7 @@ function AppContent() {
                 <div className="p-2 rounded-xl glass">
                   <MessageSquare size={24} className="text-primary" />
                 </div>
-                <h1 className="text-2xl font-bold">경제 SNS</h1>
+                <h1 className="text-2xl font-bold">SNS 분석</h1>
               </div>
             </div>
             <SNSPage 

@@ -207,28 +207,69 @@ export function ETFDetailPage({ symbol, onBack }: ETFDetailPageProps) {
             </div>
           </div>
         </div>
-
-        {/* ETF 기본 설명 */}
-        <div className="glass-card rounded-xl p-4 mb-6">
-          <div className="flex items-center space-x-2 mb-3">
-            <Info size={18} className="text-primary" />
-            <h2 className="font-bold">ETF란 무엇인가요?</h2>
-          </div>
-          <div className="space-y-3 text-sm text-foreground/80">
-            <p>
-              <strong>ETF(상장지수펀드)</strong>는 주식처럼 거래소에서 사고팔 수 있는 펀드입니다. 
-              여러 주식을 한 번에 살 수 있어 분산투자 효과를 얻을 수 있습니다.
+        {/* ETF 상세 안내 섹션 */}
+        <div className="glass-card rounded-2xl p-4 mb-6">
+          <h2 className="text-base font-bold mb-3 flex items-center">
+            <Info size={18} className="mr-2 text-green-400" />
+            이 페이지에서 확인할 수 있어요
+          </h2>
+          
+          <div className="space-y-3">
+            <p className="text-sm text-foreground/80 leading-relaxed">
+              <strong className="text-green-400">ETF(상장지수펀드)</strong>는 여러 주식을 한 번에 살 수 있는 펀드 상품이에요. 
+              주식처럼 실시간으로 거래되면서도 분산투자 효과를 얻을 수 있어서 초보 투자자에게 인기가 많아요!
             </p>
-            <div className="glass-subtle rounded-lg p-3">
-              <p className="text-xs">
-                💡 <strong>이 ETF는</strong> {etfData.name}로, 
-                {etfData.profile?.sectors?.[0]?.sector?.toLowerCase().includes('technology') ? '기술주' : '다양한 섹터'} 중심으로 구성되어 있으며, 
-                상위 보유종목들로 구성되어 있습니다.
-              </p>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div className="glass rounded-xl p-3">
+                <h4 className="font-semibold mb-2 text-green-400 flex items-center text-sm">
+                  <PieChartIcon size={14} className="mr-2" />
+                  확인할 수 있어요
+                </h4>
+                <ul className="text-xs text-foreground/70 space-y-1">
+                  <li>• <span className="font-medium">실시간 가격</span> - 주식처럼 거래돼요</li>
+                  <li>• <span className="font-medium">섹터 구성</span> - 어떤 업종에 투자하는지</li>
+                  <li>• <span className="font-medium">보유 종목</span> - 어떤 회사 주식들로 이루어졌는지</li>
+                  <li>• <span className="font-medium">수수료</span> - 연간 운용 비용은 얼마인지</li>
+                </ul>
+              </div>
+              
+              <div className="glass rounded-xl p-3">
+                <h4 className="font-semibold mb-2 text-primary flex items-center text-sm">
+                  <BarChart3 size={14} className="mr-2" />
+                  이렇게 활용하세요
+                </h4>
+                <ul className="text-xs text-foreground/70 space-y-1">
+                  <li>• <span className="font-medium">분산 투자</span> - 한 번에 여러 종목 투자</li>
+                  <li>• <span className="font-medium">테마 투자</span> - IT, 에너지 등 원하는 분야</li>
+                  <li>• <span className="font-medium">리스크 관리</span> - 개별 주식보다 안정적</li>
+                  <li>• <span className="font-medium">장기 투자</span> - 낮은 수수료로 장기 보유</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="glass rounded-xl p-3 border border-amber-500/30">
+              <div className="flex items-start space-x-3">
+                <div className="text-amber-400 mt-0.5">💡</div>
+                <div>
+                  <h4 className="font-semibold text-amber-400 mb-1 text-sm">이 ETF는요</h4>
+                  <p className="text-xs text-foreground/70 leading-relaxed">
+                    <strong>{etfData.name}</strong>는 
+                    {etfData.profile?.holdings?.length || 0}개의 종목으로 구성되어 있어요. 
+                    {etfData.profile?.sectors?.[0] && (
+                      <>상위 섹터는 <span className="font-medium text-amber-400">
+                        {etfData.profile.sectors[0].sector}
+                      </span>이고, </>
+                    )}
+                    연간 운용 수수료는 <span className="font-medium text-amber-400">
+                      {formatPercentage(etfData.profile?.net_expense_ratio ?? null)}
+                    </span>예요!
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-
         {/* Navigation Tabs */}
         <div className="flex space-x-1 mb-6 glass-subtle rounded-xl p-1">
           {[
@@ -407,19 +448,19 @@ export function ETFDetailPage({ symbol, onBack }: ETFDetailPageProps) {
                   </div>
                 </>
               ) : (
-                <p className="text-center text-foreground/50 py-8">섹터 데이터를 불러올 수 없습니다</p>
+                <p className="text-center text-foreground/50 py-8">잠시 후에 다시 시도해주세요!</p>
               )}
             </div>
 
             {/* Sector Explanation */}
             <div className="glass-card rounded-xl p-4">
-              <h4 className="font-bold mb-2">섹터 분산투자 효과</h4>
+              <h4 className="font-bold mb-2">섹터 분산투자 장점</h4>
               <p className="text-sm text-foreground/80">
-                이 ETF는 여러 섹터에 분산투자하여 특정 업종의 위험을 줄입니다. 
+                여러 섹터에 분산 투자해서, 특정 섹터가 안 좋아도 다른 섹터가 보안해줘요.
                 {getSectorChartData().length > 0 && (
                   <>
-                    가장 큰 비중을 차지하는 {getSectorChartData()[0]?.name}이 
-                    {getSectorChartData()[0]?.value.toFixed(1)}%를 차지하고 있습니다.
+                    이 ETF는 {getSectorChartData()[0]?.name} 섹터에
+                    가장 많이 투자하고 있고, {getSectorChartData()[0]?.value.toFixed(1)}%를 차지하고 있어요!
                   </>
                 )}
               </p>
@@ -465,7 +506,7 @@ export function ETFDetailPage({ symbol, onBack }: ETFDetailPageProps) {
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <p className="text-center text-foreground/50 py-8">보유종목 데이터를 불러올 수 없습니다</p>
+                <p className="text-center text-foreground/50 py-8">잠시 후에 다시 시도해주세요!</p>
               )}
             </div>
 
@@ -503,11 +544,11 @@ export function ETFDetailPage({ symbol, onBack }: ETFDetailPageProps) {
             <div className="glass-card rounded-xl p-4">
               <h4 className="font-bold mb-2">분산투자의 장점</h4>
               <p className="text-sm text-foreground/80">
-                이 ETF는 {etfData.profile?.holdings?.length || 0}개의 다양한 기업에 투자하여 개별 기업의 위험을 분산시킵니다. 
+                이 ETF는 {etfData.profile?.holdings?.length || 0}개의 다양한 기업에 투자하여 개별 기업의 위험을 분산시켜요.
                 {etfData.profile?.holdings && etfData.profile.holdings.length >= 3 && (
                   <>
                     상위 3개 종목({etfData.profile.holdings.slice(0,3).map(h => h.symbol).join(', ')})이 
-                    전체의 {(etfData.profile.holdings.slice(0,3).reduce((sum, h) => sum + h.weight, 0) * 100).toFixed(1)}%를 차지합니다.
+                    전체의 {(etfData.profile.holdings.slice(0,3).reduce((sum, h) => sum + h.weight, 0) * 100).toFixed(1)}%를 차지하고 있어요!
                   </>
                 )}
               </p>
