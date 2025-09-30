@@ -2,28 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
-@custom-variant dark (&:is(.dark *));
-
 :root {
   --font-size: 14px;
   --foreground: #ffffff;
-  --card: rgba(255, 255, 255, 0.1);
+  --background: #0f172a;
+  --card: rgba(255, 255, 255, 0.08);
   --card-foreground: #ffffff;
-  --popover: rgba(255, 255, 255, 0.15);
+  --popover: rgba(255, 255, 255, 0.12);
   --popover-foreground: #ffffff;
   --primary: #60a5fa;
   --primary-foreground: #ffffff;
+  --primary-light: #93c5fd;
+  --primary-glow: rgba(96, 165, 250, 0.5);
   --secondary: rgba(96, 165, 250, 0.2);
   --secondary-foreground: #ffffff;
-  --muted: rgba(255, 255, 255, 0.1);
+  --muted: rgba(255, 255, 255, 0.08);
   --muted-foreground: rgba(255, 255, 255, 0.7);
   --accent: rgba(96, 165, 250, 0.3);
   --accent-foreground: #ffffff;
+  --accent-light: rgba(96, 165, 250, 0.2);
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.2);
-  --input: rgba(255, 255, 255, 0.1);
-  --input-background: rgba(255, 255, 255, 0.1);
+  --destructive-light: rgba(239, 68, 68, 0.2);
+  --success: #10b981;
+  --success-foreground: #ffffff;
+  --success-light: rgba(16, 185, 129, 0.2);
+  --warning: #f59e0b;
+  --warning-foreground: #ffffff;
+  --warning-light: rgba(245, 158, 11, 0.2);
+  --border: rgba(255, 255, 255, 0.15);
+  --input: rgba(255, 255, 255, 0.08);
+  --input-background: rgba(255, 255, 255, 0.08);
   --switch-background: rgba(255, 255, 255, 0.3);
   --font-weight-medium: 500;
   --font-weight-normal: 400;
@@ -34,68 +43,46 @@
   --chart-4: #34d399;
   --chart-5: #fbbf24;
   --radius: 1rem;
-  --sidebar: rgba(255, 255, 255, 0.1);
+  --bull-green: #10b981;
+  --bear-red: #ef4444;
+  --neutral-gray: #6b7280;
+  --sidebar-background: rgba(255, 255, 255, 0.08);
   --sidebar-foreground: #ffffff;
   --sidebar-primary: #60a5fa;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: rgba(96, 165, 250, 0.2);
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.2);
+  --sidebar-border: rgba(255, 255, 255, 0.15);
   --sidebar-ring: rgba(96, 165, 250, 0.5);
-}
-
-.dark {
-  --foreground: #ffffff;
-  --card: rgba(255, 255, 255, 0.03);
-  --card-foreground: #ffffff;
-  --popover: rgba(255, 255, 255, 0.08);
-  --popover-foreground: #ffffff;
-  --primary: #93c5fd;
-  --primary-foreground: #1e3a8a;
-  --secondary: rgba(147, 197, 253, 0.2);
-  --secondary-foreground: #ffffff;
-  --muted: rgba(255, 255, 255, 0.03);
-  --muted-foreground: rgba(255, 255, 255, 0.6);
-  --accent: rgba(147, 197, 253, 0.3);
-  --accent-foreground: #ffffff;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.03);
-  --ring: rgba(147, 197, 253, 0.5);
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --chart-1: #93c5fd;
-  --chart-2: #67e8f9;
-  --chart-3: #c4b5fd;
-  --chart-4: #6ee7b7;
-  --chart-5: #fde047;
-  --sidebar: rgba(255, 255, 255, 0.03);
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #93c5fd;
-  --sidebar-primary-foreground: #1e3a8a;
-  --sidebar-accent: rgba(147, 197, 253, 0.2);
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: rgba(147, 197, 253, 0.5);
 }
 
 @theme inline {
   --color-foreground: var(--foreground);
+  --color-background: var(--background);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-light: var(--primary-light);
+  --color-primary-glow: var(--primary-glow);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-accent-light: var(--accent-light);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-light: var(--destructive-light);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-light: var(--success-light);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-light: var(--warning-light);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-input-background: var(--input-background);
@@ -106,11 +93,14 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-bull: var(--bull-green);
+  --color-bear: var(--bear-red);
+  --color-neutral: var(--neutral-gray);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: var(--sidebar);
+  --color-sidebar: var(--sidebar-background);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
@@ -127,6 +117,7 @@
 
   html, body {
     color: var(--foreground);
+    background-color: var(--background);
     min-height: 100vh;
     min-height: 100dvh;
     position: relative;
@@ -299,14 +290,14 @@
   }
 }
 
-/* 더욱 투명하고 반짝이는 Liquid Glass 효과 */
+/* 일관된 Glass 효과 */
 .glass {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(2px) saturate(180%);
-  -webkit-backdrop-filter: blur(2px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px) saturate(180%);
+  -webkit-backdrop-filter: blur(8px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 8px 32px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
     inset 0 -1px 0 rgba(255, 255, 255, 0.05);
   position: relative;
@@ -326,14 +317,14 @@
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(2px) saturate(150%);
-  -webkit-backdrop-filter: blur(2px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 
-    0 4px 24px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
+    0 8px 32px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
   position: relative;
 }
 
@@ -351,15 +342,15 @@
 }
 
 .glass-strong {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(2px) saturate(120%);
-  -webkit-backdrop-filter: blur(2px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow: 
-    0 12px 40px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
-    0 0 0 1px rgba(255, 255, 255, 0.1);
+    0 12px 40px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.12);
   position: relative;
 }
 
@@ -377,13 +368,13 @@
 }
 
 .glass-subtle {
-  background: rgba(255, 255, 255, 0.01);
-  backdrop-filter: blur(16px) saturate(120%);
-  -webkit-backdrop-filter: blur(16px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 
-    0 2px 16px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 4px 20px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
   position: relative;
 }
 

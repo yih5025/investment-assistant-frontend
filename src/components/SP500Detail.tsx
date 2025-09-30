@@ -36,11 +36,11 @@ const LoadingSkeleton = () => (
   <div className="min-h-screen">
     <div className="max-w-md mx-auto">
       <div className="animate-pulse">
-        <div className="h-16 bg-gray-700 rounded-xl mb-4"></div>
+        <div className="h-16 glass-card rounded-xl mb-4"></div>
         <div className="px-4 space-y-4">
-          <div className="h-32 bg-gray-700 rounded-xl"></div>
-          <div className="h-48 bg-gray-700 rounded-xl"></div>
-          <div className="h-40 bg-gray-700 rounded-xl"></div>
+          <div className="h-32 glass-card rounded-xl"></div>
+          <div className="h-48 glass-card rounded-xl"></div>
+          <div className="h-40 glass-card rounded-xl"></div>
         </div>
       </div>
     </div>
