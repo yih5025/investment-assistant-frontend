@@ -185,6 +185,9 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
     selectedTimeframe
   } = useMarketDetail(symbol);
 
+  // 데이터 상태 디버깅
+  console.log('데이터 상태:', dataCase.replace('_', ' '));
+
   // 유틸리티 함수들 (useCallback으로 최적화)
   const formatBillion = useCallback((value: number | null | undefined) => {
     if (value === null || value === undefined || isNaN(value)) return '$0.00B';
@@ -315,12 +318,88 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
           </button>
         </div>
 
-        {/* 데이터 케이스 표시 (디버깅용) */}
-        <div className="px-4 mb-2">
-          <div className="text-xs text-foreground/50 text-center">
-            데이터 상태: {dataCase.replace('_', ' ')}
+        {/* ✨ 새로 추가: 페이지 안내 섹션 */}
+        <div className="px-4 mb-4">
+          <div className="glass-card rounded-2xl p-4">
+            <h3 className="text-base font-bold mb-3 flex items-center">
+              <Info size={18} className="mr-2 text-blue-400" />
+              이 페이지에서 확인할 수 있어요
+            </h3>
+            
+            <div className="space-y-3">
+              {/* 투자 인사이트 모드 설명 */}
+              {!isExpertMode ? (
+                <>
+                  <div className="flex items-start space-x-3 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-blue-400 mb-1 text-sm">투자 인사이트 모드</h4>
+                      <p className="text-xs text-foreground/70 leading-relaxed">
+                        이 기업이 투자하기 좋은지 쉽게 알려드려요. 수익성, 안정성, 가격 적정성을 한눈에 확인하세요!
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="glass rounded-lg p-2.5">
+                      <div className="text-xs text-foreground/60 mb-1">실시간 차트</div>
+                      <p className="text-xs text-foreground/80">주가 움직임을 시간대별로 확인</p>
+                    </div>
+                    <div className="glass rounded-lg p-2.5">
+                      <div className="text-xs text-foreground/60 mb-1">투자 매력도</div>
+                      <p className="text-xs text-foreground/80">A~D 등급으로 평가</p>
+                    </div>
+                    <div className="glass rounded-lg p-2.5">
+                      <div className="text-xs text-foreground/60 mb-1">⚠️ 주의사항</div>
+                      <p className="text-xs text-foreground/80">투자 전 꼭 확인할 리스크</p>
+                    </div>
+                    <div className="glass rounded-lg p-2.5">
+                      <div className="text-xs text-foreground/60 mb-1">업종 비교</div>
+                      <p className="text-xs text-foreground/80">같은 업종 다른 회사와 비교</p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-start space-x-3 p-3 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-purple-400 mb-1 text-sm">상세 재무정보 모드</h4>
+                      <p className="text-xs text-foreground/70 leading-relaxed">
+                        기업의 재무 상태를 전문가처럼 자세히 분석할 수 있어요. 재무비율과 업종 평균을 비교해보세요!
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="glass rounded-lg p-2.5">
+                      <div className="text-xs text-foreground/60 mb-1">💰 재무비율</div>
+                      <p className="text-xs text-foreground/80">유동비율, 부채비율 등</p>
+                    </div>
+                    <div className="glass rounded-lg p-2.5">
+                      <div className="text-xs text-foreground/60 mb-1">재무상태표</div>
+                      <p className="text-xs text-foreground/80">자산, 부채, 자본 현황</p>
+                    </div>
+                    <div className="glass rounded-lg p-2.5">
+                      <div className="text-xs text-foreground/60 mb-1">업종 평균 대비</div>
+                      <p className="text-xs text-foreground/80">업계에서 얼마나 잘하는지</p>
+                    </div>
+                    <div className="glass rounded-lg p-2.5">
+                      <div className="text-xs text-foreground/60 mb-1">회사 정보</div>
+                      <p className="text-xs text-foreground/80">사업 설명과 웹사이트</p>
+                    </div>
+                  </div>
+                </>
+              )}
+              
+              {/* 모드 전환 안내 */}
+              <div className="flex items-center justify-center pt-2">
+                <p className="text-xs text-foreground/60 text-center">
+                  💡 아래 버튼으로 <span className="font-semibold text-primary">"투자 인사이트"</span>와 <span className="font-semibold text-primary">"상세 재무정보"</span>를 전환할 수 있어요
+                </p>
+              </div>
+            </div>
           </div>
         </div>
+
 
         {/* 모드 전환 토글 */}
         <div className="px-4 mb-4">
@@ -459,8 +538,8 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
               ) : (
                 <PreparingSection 
                   title="투자 매력도 분석"
-                  message="기업 정보와 재무 데이터를 종합 분석하고 있습니다"
-                  estimatedTime="모든 데이터 수집 완료 후 제공"
+                  message="기업 정보와 재무 데이터를 종합 분석하고 있어요"
+                  estimatedTime="데이터 수집 완료 후에 제공해드릴게요!"
                 />
               )}
 
@@ -496,7 +575,7 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
                     )}
                     {!companyData && !financialData && (
                       <div className="col-span-2 text-center text-sm text-foreground/70">
-                        데이터 수집 진행 중...
+                        데이터 수집 진행 중이에요...
                       </div>
                     )}
                   </div>
@@ -504,8 +583,8 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
               ) : (
                 <PreparingSection 
                   title="기업 규모 및 재무 현황"
-                  message="기업 정보 및 재무 데이터 수집 중입니다"
-                  estimatedTime="곧 업데이트 예정"
+                  message="회사와 재무 데이터를 확인하고 있어요"
+                  estimatedTime="곧 준비 돼요!"
                 />
               )}
 
@@ -528,8 +607,8 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
               ) : (
                 <PreparingSection 
                   title="투자 리스크 분석"
-                  message="종합적인 리스크 분석을 위해 데이터를 수집하고 있습니다"
-                  estimatedTime="완전한 분석을 위해 준비 중"
+                  message="종합적인 리스크 분석을 위해 데이터를 수집하고 있어요"
+                  estimatedTime="리스크 분석을 위해 준비 중이에요!"
                 />
               )}
 
@@ -559,8 +638,8 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
               ) : (
                 <PreparingSection 
                   title="투자 인사이트 요약"
-                  message="모든 데이터를 종합하여 투자 인사이트를 생성하고 있습니다"
-                  estimatedTime="완전한 분석 완료 후 제공"
+                  message="모든 정보를 종합해서 한번에 볼 수 있게 정리하고 있어요"
+                  estimatedTime="분석 완료 후 제공해드릴게요!"
                 />
               )}
             </>
@@ -629,8 +708,8 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
               ) : (
                 <PreparingSection 
                   title="핵심 재무비율"
-                  message="재무제표 데이터를 분석하여 주요 비율을 계산하고 있습니다"
-                  estimatedTime="재무 데이터 수집 중"
+                  message="재무제표 데이터를 분석하여 주요 비율을 계산하고 있어요"
+                  estimatedTime="재무 데이터 수집 중이에요!"
                 />
               )}
 
@@ -664,8 +743,8 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
               ) : (
                 <PreparingSection 
                   title="기업 개요 지표"
-                  message="기업 상세 정보를 수집하고 있습니다"
-                  estimatedTime="곧 업데이트 예정"
+                  message="기업 상세 정보를 수집하고 있어요"
+                  estimatedTime="기업 정보를 수집 중이에요!"
                 />
               )}
 
@@ -704,8 +783,8 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
               ) : (
                 <PreparingSection 
                   title="재무상태표 주요 항목"
-                  message="재무제표 데이터를 분석하고 있습니다"
-                  estimatedTime="데이터 수집 진행 중"
+                  message="재무제표 데이터를 분석하고 있어요"
+                  estimatedTime="데이터 수집 진행 중이에요!"
                 />
               )}
 
@@ -763,8 +842,8 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
               ) : (
                 <PreparingSection 
                   title="업종 평균 대비"
-                  message="업종별 비교 분석을 위해 데이터를 수집하고 있습니다"
-                  estimatedTime="종합 분석 준비 중"
+                  message="업종별 비교 분석을 위해 데이터를 수집하고 있어요"
+                  estimatedTime="종합 분석 준비 중이에요!"
                 />
               )}
 

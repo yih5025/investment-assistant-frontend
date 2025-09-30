@@ -139,7 +139,7 @@ export default function OptimizedEconomicDashboard({
               <div className="glass rounded-xl p-4">
                 <h3 className="font-semibold mb-2 text-blue-400 flex items-center">
                   <BarChart3 size={16} className="mr-2" />
-                  🎯 이런 걸 확인할 수 있어요
+                  이런 걸 확인할 수 있어요
                 </h3>
                 <ul className="text-sm text-foreground/70 space-y-1">
                   <li>• <span className="font-medium">연준 기준금리</span> - 미국 경제 정책의 기준</li>
@@ -152,7 +152,7 @@ export default function OptimizedEconomicDashboard({
               <div className="glass rounded-xl p-4">
                 <h3 className="font-semibold mb-2 text-green-400 flex items-center">
                   <GitCompare size={16} className="mr-2" />
-                  💡 이렇게 활용하세요
+                  이렇게 활용하세요
                 </h3>
                 <ul className="text-sm text-foreground/70 space-y-1">
                   <li>• <span className="font-medium">투자 타이밍</span> - 금리 변화에 따른 투자 전략</li>
@@ -165,7 +165,6 @@ export default function OptimizedEconomicDashboard({
             
             <div className="glass rounded-xl p-4 border border-amber-500/30">
               <div className="flex items-start space-x-3">
-                <div className="text-amber-400 mt-0.5">💎</div>
                 <div>
                   <h4 className="font-semibold text-amber-400 mb-1">투자자를 위한 핵심 포인트</h4>
                   <p className="text-sm text-foreground/70">
@@ -381,7 +380,7 @@ export default function OptimizedEconomicDashboard({
           <div className="glass-card rounded-2xl p-6">
             <h3 className="font-semibold mb-4 flex items-center">
               <GitCompare className="mr-2" size={20} />
-              📈 경제 지표 상관관계 분석
+              경제 지표 상관관계 분석
             </h3>
 
             {/* 상관관계 쌍 선택 */}
@@ -500,7 +499,7 @@ export default function OptimizedEconomicDashboard({
 
               return (
                 <div className="mt-4 glass rounded-xl p-4">
-                  <h4 className="font-medium mb-3 text-blue-400">📊 상관관계 분석 결과</h4>
+                  <h4 className="font-medium mb-3 text-blue-400">상관관계 분석 결과</h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-primary mb-1">
@@ -560,7 +559,7 @@ export default function OptimizedEconomicDashboard({
           </div>
           
           <div className="glass rounded-xl p-4">
-            <h4 className="font-medium mb-2 text-green-400">💡 투자 시사점</h4>
+            <h4 className="font-medium mb-2 text-green-400">투자 시사점</h4>
             <p className="text-sm text-foreground/70">
               • 금리 상승기: 채권 매력도 증가, 성장주 부담<br/>
               • 금리 하락기: 주식 매력도 증가, 특히 성장주 유리<br/>
@@ -571,22 +570,6 @@ export default function OptimizedEconomicDashboard({
           </div>
         </div>
       </div>
-
-      {/* 하단 상태 바 (간소화) */}
-      {!isLoading && economicData.length > 0 && (
-        <div className="glass-card rounded-xl p-4">
-          <div className="flex items-center justify-between text-sm text-foreground/60">
-            <div className="flex items-center space-x-4">
-              <span className="flex items-center space-x-1">
-                <CheckCircle size={14} className="text-green-400" />
-                <span>실시간 연동 활성</span>
-              </span>
-              <span>📊 {economicData.length}개 데이터 포인트</span>
-              <span>🔄 {new Date().toLocaleTimeString('ko-KR')} 업데이트</span>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

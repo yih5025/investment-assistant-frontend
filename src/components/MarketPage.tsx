@@ -201,7 +201,6 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick, on
               
               <div className="glass rounded-xl p-4 border border-green-500/30">
                 <div className="flex items-start space-x-3">
-                  <div className="text-green-400 mt-0.5">⏰</div>
                   <div>
                     <h4 className="font-semibold text-green-400 mb-1">24시간 거래</h4>
                     <p className="text-sm text-foreground/70">
@@ -247,7 +246,6 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick, on
               
               <div className="glass rounded-xl p-4 border border-amber-500/30">
                 <div className="flex items-start space-x-3">
-                  <div className="text-amber-400 mt-0.5">💡</div>
                   <div>
                     <h4 className="font-semibold text-amber-400 mb-1">투자 초보에게 좋은 이유</h4>
                     <p className="text-sm text-foreground/70">
@@ -664,7 +662,7 @@ const CryptoMarketTab: React.FC<CryptoMarketTabProps> = ({
           <Search size={20} className="text-foreground/60" />
           <input 
             type="text" 
-            placeholder="비트코인, BTC 같은 코인명이나, 심볼을 입력하세요"
+            placeholder="비트코인, BTC 같은 코인명, 심볼을 입력하세요"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="flex-1 bg-transparent placeholder-foreground/50 outline-none"
