@@ -114,6 +114,13 @@ function AppContent() {
   const [selectedCryptoSymbol, setSelectedCryptoSymbol] = useState<string | null>(null); // 추가
   const [selectedETFSymbol, setSelectedETFSymbol] = useState<string | null>(null); // ETF 상세 페이지용
   
+  // 브라우저 히스토리 관리를 위한 상태
+  const [historyStack, setHistoryStack] = useState<Array<{
+    viewState: ViewState;
+    activeTab: string;
+    selectedData?: any;
+  }>>([]);
+  
   // 모의 사용자 데이터
   const [user] = useState({
     name: "김투자",
@@ -126,6 +133,75 @@ function AppContent() {
   });
 
   const isLoggedIn = authState === "authenticated";
+
+  // ============================================================================
+  // 브라우저 히스토리 관리
+  // ============================================================================
+  
+  // 현재 상태를 히스토리에 푸시
+  const pushToHistory = (newViewState: ViewState, newActiveTab: string, selectedData?: any) => {
+    // 현재 상태를 히스토리에 추가
+    const currentState = {
+      viewState,
+      activeTab,
+      selectedData: {
+        selectedSNSPost,
+        selectedStockNews,
+        selectedNewsItem,
+        selectedStockSymbol,
+        selectedCryptoSymbol,
+        selectedETFSymbol
+      }
+    };
+    
+    setHistoryStack(prev => [...prev, currentState]);
+    
+    // 브라우저 히스토리에도 추가
+    const historyState = {
+      viewState: newViewState,
+      activeTab: newActiveTab,
+      selectedData
+    };
+    
+    window.history.pushState(historyState, '', `#${newViewState}`);
+  };
+
+  // 브라우저 뒤로가기 처리
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (historyStack.length > 0) {
+        // 히스토리 스택에서 이전 상태 복원
+        const previousState = historyStack[historyStack.length - 1];
+        setHistoryStack(prev => prev.slice(0, -1));
+        
+        setViewState(previousState.viewState);
+        setActiveTab(previousState.activeTab);
+        
+        // 선택된 데이터 복원
+        if (previousState.selectedData) {
+          setSelectedSNSPost(previousState.selectedData.selectedSNSPost || null);
+          setSelectedStockNews(previousState.selectedData.selectedStockNews || null);
+          setSelectedNewsItem(previousState.selectedData.selectedNewsItem || null);
+          setSelectedStockSymbol(previousState.selectedData.selectedStockSymbol || null);
+          setSelectedCryptoSymbol(previousState.selectedData.selectedCryptoSymbol || null);
+          setSelectedETFSymbol(previousState.selectedData.selectedETFSymbol || null);
+        }
+      } else {
+        // 히스토리가 없으면 메인으로
+        setViewState("main");
+        setActiveTab("home");
+        setSelectedSNSPost(null);
+        setSelectedStockNews(null);
+        setSelectedNewsItem(null);
+        setSelectedStockSymbol(null);
+        setSelectedCryptoSymbol(null);
+        setSelectedETFSymbol(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [historyStack, viewState, activeTab, selectedSNSPost, selectedStockNews, selectedNewsItem, selectedStockSymbol, selectedCryptoSymbol, selectedETFSymbol]);
 
   // ============================================================================
   // 최적화된 WebSocket 서비스 초기화 (앱 수준 - 한 번만 실행)
@@ -208,9 +284,18 @@ function AppContent() {
   // ============================================================================
 
   useEffect(() => {
-    const handleNavigateToSNS = () => setActiveTab("sns");
-    const handleNavigateToNews = () => setActiveTab("news");
-    const handleNavigateToMarkets = () => setActiveTab("markets");
+    const handleNavigateToSNS = () => {
+      pushToHistory("main", "sns");
+      setActiveTab("sns");
+    };
+    const handleNavigateToNews = () => {
+      pushToHistory("main", "news");
+      setActiveTab("news");
+    };
+    const handleNavigateToMarkets = () => {
+      pushToHistory("main", "markets");
+      setActiveTab("markets");
+    };
 
     window.addEventListener('navigateToSNS', handleNavigateToSNS);
     window.addEventListener('navigateToNews', handleNavigateToNews);
@@ -243,12 +328,14 @@ function AppContent() {
   };
 
   const handleLoginClick = () => {
+    pushToHistory("auth", activeTab);
     setAuthState("login");
     setViewState("auth");
   };
 
   const handleUserIconClick = () => {
     if (isLoggedIn) {
+      pushToHistory("profile", activeTab);
       setViewState("profile");
     } else {
       handleLoginClick();
@@ -274,48 +361,67 @@ function AppContent() {
     }
   };
 
+  // 초기 히스토리 상태 설정
+  useEffect(() => {
+    // 초기 상태를 브라우저 히스토리에 설정
+    const initialState = {
+      viewState: viewState,
+      activeTab: activeTab,
+      selectedData: null
+    };
+    window.history.replaceState(initialState, '', `#${viewState}`);
+  }, []);
+
   // 웰컴 페이지 완료 후 메인으로 이동
   const handleWelcomeComplete = () => {
     localStorage.setItem('wei-has-visited', 'true');
+    pushToHistory("main", "home");
     setViewState("main");
   };
 
   // 웰컴 페이지 건너뛰기
   const handleWelcomeSkip = () => {
     localStorage.setItem('wei-has-visited', 'true');
+    pushToHistory("main", "home");
     setViewState("main");
   };
 
   const handleSNSPostClick = (post: SNSPost) => {
     if (post.analysis.analysis_status === 'complete') {
+      pushToHistory("sns-detail", activeTab, { selectedSNSPost: post });
       setSelectedSNSPost(post);
       setViewState("sns-detail");
     }
   };
 
   const handleStockNewsClick = (stockNews: StockNewsItem[], symbol: string) => {
+    pushToHistory("stock-news", activeTab, { selectedStockNews: { news: stockNews, symbol } });
     setSelectedStockNews({ news: stockNews, symbol });
     setViewState("stock-news");
   };
 
   const handleNewsClick = (newsItem: DetailNewsItem) => {
+    pushToHistory("news-detail", activeTab, { selectedNewsItem: newsItem });
     setSelectedNewsItem(newsItem);
     setViewState("news-detail");
   };
 
   const handleStockClick = (symbol: string) => {
+    pushToHistory("stock-detail", activeTab, { selectedStockSymbol: symbol });
     setSelectedStockSymbol(symbol);
     setViewState("stock-detail");
   };
 
   // 암호화폐 클릭 핸들러 추가
   const handleCryptoClick = (symbol: string) => {
+    pushToHistory("crypto-detail", activeTab, { selectedCryptoSymbol: symbol });
     setSelectedCryptoSymbol(symbol);
     setViewState("crypto-detail");
   };
 
   // ETF 클릭 핸들러 추가
   const handleETFClick = (symbol: string) => {
+    pushToHistory("etf-detail", activeTab, { selectedETFSymbol: symbol });
     setSelectedETFSymbol(symbol);
     setViewState("etf-detail");
   };
@@ -690,7 +796,15 @@ function AppContent() {
           {renderContent()}
         </div>
 
-        <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+        <BottomNavigation 
+          activeTab={activeTab} 
+          onTabChange={(tab) => {
+            if (tab !== activeTab) {
+              pushToHistory("main", tab);
+              setActiveTab(tab);
+            }
+          }} 
+        />
 
         {isLoggedIn && (
           <NotificationSystem

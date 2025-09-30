@@ -284,24 +284,18 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
             <Info size={18} className="mr-2 text-orange-400" />
             이 페이지에서 확인할 수 있어요
           </h3>
-          
           <div className="space-y-3">
-            <p className="text-sm text-foreground/80 leading-relaxed">
-              이 암호화폐의 모든 투자 정보를 한곳에서 확인할 수 있어요. 
-              가격 분석부터 한국과 해외 거래소 가격 차이까지, 투자 결정에 필요한 정보를 제공합니다.
-            </p>
-            
             <div className="grid grid-cols-2 gap-3">
               <div className="glass rounded-xl p-3">
                 <h4 className="font-semibold mb-2 text-orange-400 flex items-center text-sm">
                   <BarChart3 size={14} className="mr-2" />
-                  확인할 수 있어요
+                  어떤 데이터가 제공되나요?
                 </h4>
                 <ul className="text-xs text-foreground/70 space-y-1">
-                  <li>• <span className="font-medium">실시간 가격</span> - 24시간 쉬지 않고 업데이트</li>
-                  <li>• <span className="font-medium">김치프리미엄</span> - 한국 vs 해외 가격 차이</li>
-                  <li>• <span className="font-medium">시장 심리</span> - 펀딩비로 보는 투자자 심리</li>
-                  <li>• <span className="font-medium">개발 현황</span> - GitHub 활동과 커뮤니티</li>
+                  <li>• <span className="font-medium">24시간 실시간 데이터</span> </li>
+                  <li>• <span className="font-medium">한국 vs 해외 거래소 차이</span></li>
+                  <li>• <span className="font-medium">펀딩비로 보는 투자자 심리</span></li>
+                  <li>• <span className="font-medium">개발 활동과 커뮤니티</span></li>
                 </ul>
               </div>
               
@@ -311,10 +305,10 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
                   이렇게 활용하세요
                 </h4>
                 <ul className="text-xs text-foreground/70 space-y-1">
-                  <li>• <span className="font-medium">투자 타이밍</span> - 김치프리미엄으로 매수/매도 시점 파악</li>
-                  <li>• <span className="font-medium">위험 관리</span> - 변동성과 유동성 확인</li>
-                  <li>• <span className="font-medium">장기 전망</span> - 개발 활동으로 프로젝트 건강도 체크</li>
-                  <li>• <span className="font-medium">거래소 선택</span> - 가장 유리한 거래소 찾기</li>
+                  <li>• <span className="font-medium">희소성 점수 확인</span> </li>
+                  <li>• <span className="font-medium">변동성과 유동성 확인</span> </li>
+                  <li>• <span className="font-medium">프로젝트 개발 현황 확인</span></li>
+                  <li>• <span className="font-medium">가장 저렴한 거래소 찾기</span></li>
                 </ul>
               </div>
             </div>

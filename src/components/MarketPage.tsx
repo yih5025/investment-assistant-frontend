@@ -422,28 +422,12 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({
   };
 
   // 로딩 상태일 때
-  if (isLoading) {
+  if (isLoading || stockData.length === 0) {
     return (
       <LoadingState 
         message="S&P 500 주식 정보를 불러오고 있는 중이에요"
         subMessage="실시간 데이터를 가져오고 있어요, 10초 정도 걸려요!"
       />
-    );
-  }
-
-  // 데이터가 없을 때
-  if (stockData.length === 0) {
-    return (
-      <div className="glass-card rounded-xl p-8 text-center">
-        <BarChart3 size={48} className="mx-auto mb-4 text-foreground/30" />
-        <h3 className="text-lg font-medium mb-2">주식 데이터를 불러오지 못 했습니다.</h3>
-        <p className="text-sm text-foreground/70 mb-4">
-          연결 상태: {connectionStatus}
-        </p>
-        <p className="text-xs text-foreground/50">
-          서버와 연결 중이에요, 잠시 후 다시 시도해주세요.
-        </p>
-      </div>
     );
   }
 
@@ -623,7 +607,7 @@ const CryptoMarketTab: React.FC<CryptoMarketTabProps> = ({
   };
 
   // 로딩 상태일 때
-  if (isLoading) {
+  if (isLoading || cryptoData.length === 0) {
     return (
       <LoadingState 
         message="암호화폐 데이터를 불러오고 있는 중이에요"
@@ -631,23 +615,6 @@ const CryptoMarketTab: React.FC<CryptoMarketTabProps> = ({
       />
     );
   }
-
-  // 데이터가 없을 때
-  if (cryptoData.length === 0) {
-    return (
-      <div className="glass-card rounded-xl p-8 text-center">
-        <Coins size={48} className="mx-auto mb-4 text-foreground/30" />
-        <h3 className="text-lg font-medium mb-2">암호화폐 데이터를 불러오지 못 했습니다.</h3>
-        <p className="text-sm text-foreground/70 mb-4">
-          연결 상태: {connectionStatus}
-        </p>
-        <p className="text-xs text-foreground/50">
-          서버와 연결 중이에요, 잠시 후 다시 시도해주세요.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
       {/* 24시간 거래 안내 */}
@@ -828,28 +795,12 @@ const ETFMarketTab: React.FC<ETFMarketTabProps> = ({
   };
 
   // 로딩 상태일 때
-  if (isLoading) {
+  if (isLoading || etfData.length === 0) {
     return (
       <LoadingState 
         message="ETF 정보를 불러오는 중이에요"
         subMessage="실시간 데이터를 가져오고 있어요, 10초 정도 걸려요!"
       />
-    );
-  }
-
-  // 데이터가 없을 때
-  if (etfData.length === 0) {
-    return (
-      <div className="glass-card rounded-xl p-8 text-center">
-        <PieChart size={48} className="mx-auto mb-4 text-foreground/30" />
-        <h3 className="text-lg font-medium mb-2">ETF 데이터를 불러오지 못 했습니다.</h3>
-        <p className="text-sm text-foreground/70 mb-4">
-          연결 상태: {connectionStatus}
-        </p>
-        <p className="text-xs text-foreground/50">
-          서버와 연결 중이에요, 잠시 후 다시 시도해주세요.
-        </p>
-      </div>
     );
   }
 
