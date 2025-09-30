@@ -278,6 +278,62 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
             </div>
           </Card>
         )}
+        {/* ✨ 여기에 새로 추가! ✨ */}
+        <Card className="glass-card rounded-2xl p-4">
+          <h3 className="text-base font-bold mb-3 flex items-center">
+            <Info size={18} className="mr-2 text-orange-400" />
+            이 페이지에서 확인할 수 있어요
+          </h3>
+          
+          <div className="space-y-3">
+            <p className="text-sm text-foreground/80 leading-relaxed">
+              이 암호화폐의 모든 투자 정보를 한곳에서 확인할 수 있어요. 
+              가격 분석부터 한국과 해외 거래소 가격 차이까지, 투자 결정에 필요한 정보를 제공합니다.
+            </p>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div className="glass rounded-xl p-3">
+                <h4 className="font-semibold mb-2 text-orange-400 flex items-center text-sm">
+                  <BarChart3 size={14} className="mr-2" />
+                  확인할 수 있어요
+                </h4>
+                <ul className="text-xs text-foreground/70 space-y-1">
+                  <li>• <span className="font-medium">실시간 가격</span> - 24시간 쉬지 않고 업데이트</li>
+                  <li>• <span className="font-medium">김치프리미엄</span> - 한국 vs 해외 가격 차이</li>
+                  <li>• <span className="font-medium">시장 심리</span> - 펀딩비로 보는 투자자 심리</li>
+                  <li>• <span className="font-medium">개발 현황</span> - GitHub 활동과 커뮤니티</li>
+                </ul>
+              </div>
+              
+              <div className="glass rounded-xl p-3">
+                <h4 className="font-semibold mb-2 text-primary flex items-center text-sm">
+                  <Target size={14} className="mr-2" />
+                  이렇게 활용하세요
+                </h4>
+                <ul className="text-xs text-foreground/70 space-y-1">
+                  <li>• <span className="font-medium">투자 타이밍</span> - 김치프리미엄으로 매수/매도 시점 파악</li>
+                  <li>• <span className="font-medium">위험 관리</span> - 변동성과 유동성 확인</li>
+                  <li>• <span className="font-medium">장기 전망</span> - 개발 활동으로 프로젝트 건강도 체크</li>
+                  <li>• <span className="font-medium">거래소 선택</span> - 가장 유리한 거래소 찾기</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="glass rounded-xl p-3 border border-amber-500/30">
+              <div className="flex items-start space-x-3">
+                <div>
+                  <h4 className="font-semibold text-amber-400 mb-1 text-sm">💡 투자 전 꼭 확인하세요</h4>
+                  <p className="text-xs text-foreground/70 leading-relaxed">
+                    암호화폐는 24시간 거래되고 변동성이 매우 높아요. 
+                    <span className="font-medium text-amber-400"> 김치프리미엄이 크면</span> 한국 거래소가 비싸다는 뜻이니 
+                    해외 거래소와 비교해보세요. 
+                    <span className="font-medium text-amber-400"> 펀딩비가 높으면</span> 투자자들이 상승을 예상하고 있다는 신호예요!
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
       </div>
     );
   };
