@@ -17,7 +17,6 @@ import NewsDetailPage, { NewsItem as DetailNewsItem } from "./components/NewsDet
 import { SNSPage } from "./components/SNSPage";
 import { SNSDetailPage } from "./components/SNSDetailPage";
 import { snsApiService, type SNSPost } from "./services/SNSService";
-import { AIAnalysis } from "./components/AIAnalysis";
 import OptimizedEconomicDashboard from "./components/EconomicDashboard";
 import { LoginPage } from "./components/auth/LoginPage";
 import { SignupPage } from "./components/auth/SignupPage";
