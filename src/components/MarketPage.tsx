@@ -112,31 +112,153 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick, on
 
   return (
     <div className="space-y-6">
-      {/* 헤더 */}
-      <div className="glass-card rounded-2xl p-4">
-        <h2 className="text-xl font-bold mb-3 flex items-center">
-          실시간 SP500 & Crypto & ETF 데이터 분석
+      <div className="glass-card rounded-2xl p-6">
+        <h2 className="text-2xl font-bold mb-4 flex items-center">
+          {activeTab === 'stocks' ? (
+            <>
+              <BarChart3 size={24} className="mr-3 text-blue-400" />
+              📊 미국 대표 주식 시장
+            </>
+          ) : activeTab === 'crypto' ? (
+            <>
+              <Coins size={24} className="mr-3 text-orange-400" />
+              🪙 암호화폐 시장
+            </>
+          ) : (
+            <>
+              <PieChart size={24} className="mr-3 text-green-400" />
+              📈 ETF 시장
+            </>
+          )}
         </h2>
-        <div className="text-sm text-foreground/70 leading-relaxed">
-        {activeTab === 'stocks' ? (
-          <p>
-            S&P 500(Standard & Poor's 500)은 미국 증권거래소에 상장된 500개의 기업의 주가 성과를 추적하는 주가 지수입니다.<br />
-            S&P 500 기업들의 실시간 주가 데이터를 확인하고, 각 기업의 상세 정보와 재무 상태를 분석할 수 있습니다.<br />
-            관심 있는 주식을 클릭하여 정보를 확인해보세요.
-          </p>
-        ) : activeTab === 'crypto' ? (
-          <p>
-            암호화폐(Cryptocurrency)는 블록체인 기술을 기반으로 한 디지털 자산으로, 암호학적 보안 기술을 통해 거래의 안전성을 보장합니다.<br />
-            주요 암호화폐의 실시간 가격 데이터를 확인하고, 각 코인의 프로젝트 정보와 기술 분석을 확인할 수 있습니다.<br />
-            관심 있는 암호화폐를 클릭하여 정보를 확인해보세요.
-          </p>
-        ) : (
-          <p>
-            ETF(Exchange Traded Fund, 상장지수펀드)는 특정 지수 또는 자산군의 수익률을 추종하는 인덱스 펀드 상품 입니다.<br />
-            주요 ETF의 실시간 가격 데이터를 확인하고, 각 ETF의 섹터별 구성 비중과 주요 보유종목을 분석할 수 있습니다.<br />
-            관심 있는 ETF를 클릭하여 상세 페이지에서 펀드 정보, 보유종목 구성, 운용 수수료 등의 투자 정보를 확인해보세요.
-          </p>
-        )}
+        
+        <div className="space-y-4">
+          {activeTab === 'stocks' ? (
+            <>
+              <p className="text-base text-foreground/80 leading-relaxed">
+                S&P 500은 미국 증권거래소에 상장된 500개 주요 기업의 주가를 추적하는 대표 지수예요. 
+                애플, 마이크로소프트, 엔비디아 같은 대기업부터 다양한 산업의 기업들이 포함되어 있습니다.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="glass rounded-xl p-4">
+                  <h3 className="font-semibold mb-2 text-blue-400 flex items-center">
+                    <BarChart3 size={16} className="mr-2" />
+                    이런 걸 확인할 수 있어요
+                  </h3>
+                  <ul className="text-sm text-foreground/70 space-y-1">
+                    <li>• <span className="font-medium">실시간 주가</span> - 시장이 열려있는 동안 계속 업데이트돼요</li>
+                    <li>• <span className="font-medium">기업 정보</span> - 회사가 어떤 사업을 하는지 알 수 있어요</li>
+                    <li>• <span className="font-medium">재무 상태</span> - 회사가 건강한지 분석해드려요</li>
+                  </ul>
+                </div>
+                
+                <div className="glass rounded-xl p-4">
+                  <h3 className="font-semibold mb-2 text-primary flex items-center">
+                    <TrendingUp size={16} className="mr-2" />
+                    이렇게 활용하세요
+                  </h3>
+                  <ul className="text-sm text-foreground/70 space-y-1">
+                    <li>• <span className="font-medium">관심 종목 탐색</span> - 마음에 드는 기업을 찾아보세요</li>
+                    <li>• <span className="font-medium">가격 변동 확인</span> - 오늘 얼마나 올랐는지 내렸는지 확인해요</li>
+                    <li>• <span className="font-medium">상세 정보 보기</span> - 종목을 클릭하면 더 많은 정보를 볼 수 있어요</li>
+                  </ul>
+                </div>
+              </div>
+            </>
+          ) : activeTab === 'crypto' ? (
+            <>
+              <p className="text-base text-foreground/80 leading-relaxed">
+                암호화폐는 블록체인 기술을 기반으로 한 디지털 자산이에요. 
+                비트코인, 이더리움 같은 주요 코인부터 다양한 프로젝트의 코인들을 확인할 수 있습니다.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="glass rounded-xl p-4">
+                  <h3 className="font-semibold mb-2 text-orange-400 flex items-center">
+                    <Coins size={16} className="mr-2" />
+                    이런 걸 확인할 수 있어요
+                  </h3>
+                  <ul className="text-sm text-foreground/70 space-y-1">
+                    <li>• <span className="font-medium">실시간 시세</span> - 24시간 쉬지 않고 거래돼요</li>
+                    <li>• <span className="font-medium">프로젝트 정보</span> - 이 코인이 어떤 목적으로 만들어졌는지</li>
+                    <li>• <span className="font-medium">가격 변동</span> - 24시간 동안 얼마나 변했는지 확인해요</li>
+                  </ul>
+                </div>
+                
+                <div className="glass rounded-xl p-4">
+                  <h3 className="font-semibold mb-2 text-primary flex items-center">
+                    <Clock size={16} className="mr-2" />
+                    이렇게 활용하세요
+                  </h3>
+                  <ul className="text-sm text-foreground/70 space-y-1">
+                    <li>• <span className="font-medium">시세 비교</span> - 여러 코인의 가격을 한눈에 비교해요</li>
+                    <li>• <span className="font-medium">거래량 확인</span> - 많이 거래되는 코인을 찾아보세요</li>
+                    <li>• <span className="font-medium">상세 분석</span> - 코인을 클릭하면 기술 분석을 볼 수 있어요</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div className="glass rounded-xl p-4 border border-green-500/30">
+                <div className="flex items-start space-x-3">
+                  <div className="text-green-400 mt-0.5">⏰</div>
+                  <div>
+                    <h4 className="font-semibold text-green-400 mb-1">24시간 거래</h4>
+                    <p className="text-sm text-foreground/70">
+                      주식과 달리 암호화폐는 주말에도, 밤에도 계속 거래돼요. 
+                      전 세계 시장이 항상 열려있기 때문이에요!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-base text-foreground/80 leading-relaxed">
+                ETF(상장지수펀드)는 여러 종목에 한 번에 투자할 수 있는 펀드 상품이에요. 
+                개별 주식을 사는 것보다 위험을 분산할 수 있어서 초보 투자자에게 인기가 많습니다.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="glass rounded-xl p-4">
+                  <h3 className="font-semibold mb-2 text-green-400 flex items-center">
+                    <PieChart size={16} className="mr-2" />
+                    이런 걸 확인할 수 있어요
+                  </h3>
+                  <ul className="text-sm text-foreground/70 space-y-1">
+                    <li>• <span className="font-medium">실시간 가격</span> - ETF의 현재 가격을 확인해요</li>
+                    <li>• <span className="font-medium">보유 종목</span> - 어떤 회사 주식들로 구성되었는지</li>
+                    <li>• <span className="font-medium">섹터 구성</span> - 기술주, 금융주 등 어떤 업종에 투자하는지</li>
+                  </ul>
+                </div>
+                
+                <div className="glass rounded-xl p-4">
+                  <h3 className="font-semibold mb-2 text-primary flex items-center">
+                    <TrendingUp size={16} className="mr-2" />
+                    이렇게 활용하세요
+                  </h3>
+                  <ul className="text-sm text-foreground/70 space-y-1">
+                    <li>• <span className="font-medium">분산 투자</span> - 한 번에 여러 종목에 투자할 수 있어요</li>
+                    <li>• <span className="font-medium">테마 투자</span> - IT, 에너지 등 원하는 분야에 투자하세요</li>
+                    <li>• <span className="font-medium">포트폴리오 구성</span> - ETF를 클릭해서 구성을 분석해보세요</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div className="glass rounded-xl p-4 border border-amber-500/30">
+                <div className="flex items-start space-x-3">
+                  <div className="text-amber-400 mt-0.5">💡</div>
+                  <div>
+                    <h4 className="font-semibold text-amber-400 mb-1">투자 초보에게 좋은 이유</h4>
+                    <p className="text-sm text-foreground/70">
+                      개별 주식은 한 회사에만 투자하지만, ETF는 여러 회사에 나눠서 투자해요. 
+                      한 회사가 안 좋아도 다른 회사가 잘되면 손실을 줄일 수 있어요!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -305,8 +427,8 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({
   if (isLoading) {
     return (
       <LoadingState 
-        message="S&P 500 데이터 로딩 중"
-        subMessage="실시간 주식 데이터를 가져오고 있습니다. 잠시만 기다려주세요."
+        message="S&P 500 주식 정보를 불러오고 있는 중이에요"
+        subMessage="실시간 데이터를 가져오고 있어요, 10초 정도 걸려요!"
       />
     );
   }
@@ -316,12 +438,12 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({
     return (
       <div className="glass-card rounded-xl p-8 text-center">
         <BarChart3 size={48} className="mx-auto mb-4 text-foreground/30" />
-        <h3 className="text-lg font-medium mb-2">주식 데이터 없음</h3>
+        <h3 className="text-lg font-medium mb-2">주식 데이터를 불러오지 못 했습니다.</h3>
         <p className="text-sm text-foreground/70 mb-4">
           연결 상태: {connectionStatus}
         </p>
         <p className="text-xs text-foreground/50">
-          데이터 연결에 문제가 있을 수 있습니다. 잠시 후 다시 시도해주세요.
+          서버와 연결 중이에요, 잠시 후 다시 시도해주세요.
         </p>
       </div>
     );
@@ -336,7 +458,7 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({
           <Search size={20} className="text-foreground/60" />
           <input 
             type="text" 
-            placeholder="티커, 기업명 검색..."
+            placeholder="애플, AAPL 같은 회사명이나, 심볼을 입력하세요"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="flex-1 bg-transparent placeholder-foreground/50 outline-none"
@@ -430,11 +552,11 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({
               {isLoadingMore || paginationState.isLoading ? (
                 <>
                   <Loader2 className="animate-spin" size={16} />
-                  <span>로딩 중...</span>
+                  <span>불러오는 중...</span>
                 </>
               ) : (
                 <>
-                  <span>더보기 (+50개)</span>
+                  <span>+ 50개 더보기</span>
                 </>
               )}
             </button>
@@ -506,8 +628,8 @@ const CryptoMarketTab: React.FC<CryptoMarketTabProps> = ({
   if (isLoading) {
     return (
       <LoadingState 
-        message="암호화폐 데이터 로딩 중"
-        subMessage="실시간 암호화폐 데이터를 가져오고 있습니다. 잠시만 기다려주세요."
+        message="암호화폐 데이터를 불러오고 있는 중이에요"
+        subMessage="실시간 데이터를 가져오고 있어요, 10초 정도 걸려요!"
       />
     );
   }
@@ -517,12 +639,12 @@ const CryptoMarketTab: React.FC<CryptoMarketTabProps> = ({
     return (
       <div className="glass-card rounded-xl p-8 text-center">
         <Coins size={48} className="mx-auto mb-4 text-foreground/30" />
-        <h3 className="text-lg font-medium mb-2">암호화폐 데이터 없음</h3>
+        <h3 className="text-lg font-medium mb-2">암호화폐 데이터를 불러오지 못 했습니다.</h3>
         <p className="text-sm text-foreground/70 mb-4">
           연결 상태: {connectionStatus}
         </p>
         <p className="text-xs text-foreground/50">
-          데이터 연결에 문제가 있을 수 있습니다. 잠시 후 다시 시도해주세요.
+          서버와 연결 중이에요, 잠시 후 다시 시도해주세요.
         </p>
       </div>
     );
@@ -542,7 +664,7 @@ const CryptoMarketTab: React.FC<CryptoMarketTabProps> = ({
           <Search size={20} className="text-foreground/60" />
           <input 
             type="text" 
-            placeholder="코인명, 심볼 검색..."
+            placeholder="비트코인, BTC 같은 코인명이나, 심볼을 입력하세요"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="flex-1 bg-transparent placeholder-foreground/50 outline-none"
@@ -618,7 +740,7 @@ const CryptoMarketTab: React.FC<CryptoMarketTabProps> = ({
             onClick={handleLoadMore}
             className="flex items-center space-x-2 mx-auto px-6 py-3 bg-orange-500/20 text-orange-400 rounded-lg hover:bg-orange-500/30 transition-colors"
           >
-            <span>더보기</span>
+            <span>+ 50개 더보기</span>
           </button>
         </div>
       )}
@@ -711,8 +833,8 @@ const ETFMarketTab: React.FC<ETFMarketTabProps> = ({
   if (isLoading) {
     return (
       <LoadingState 
-        message="ETF 데이터 로딩 중"
-        subMessage="실시간 ETF 데이터를 가져오고 있습니다. 잠시만 기다려주세요."
+        message="ETF 정보를 불러오는 중이에요"
+        subMessage="실시간 데이터를 가져오고 있어요, 10초 정도 걸려요!"
       />
     );
   }
@@ -722,12 +844,12 @@ const ETFMarketTab: React.FC<ETFMarketTabProps> = ({
     return (
       <div className="glass-card rounded-xl p-8 text-center">
         <PieChart size={48} className="mx-auto mb-4 text-foreground/30" />
-        <h3 className="text-lg font-medium mb-2">ETF 데이터 없음</h3>
+        <h3 className="text-lg font-medium mb-2">ETF 데이터를 불러오지 못 했습니다.</h3>
         <p className="text-sm text-foreground/70 mb-4">
           연결 상태: {connectionStatus}
         </p>
         <p className="text-xs text-foreground/50">
-          데이터 연결에 문제가 있을 수 있습니다. 잠시 후 다시 시도해주세요.
+          서버와 연결 중이에요, 잠시 후 다시 시도해주세요.
         </p>
       </div>
     );
@@ -742,7 +864,7 @@ const ETFMarketTab: React.FC<ETFMarketTabProps> = ({
           <Search size={20} className="text-foreground/60" />
           <input 
             type="text" 
-            placeholder="ETF 심볼 검색..."
+            placeholder="QQQ, SPY 같은 ETF 심볼을 입력하세요"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="flex-1 bg-transparent placeholder-foreground/50 outline-none"
@@ -836,11 +958,11 @@ const ETFMarketTab: React.FC<ETFMarketTabProps> = ({
               {isLoadingMore || paginationState.isLoading ? (
                 <>
                   <Loader2 className="animate-spin" size={16} />
-                  <span>로딩 중...</span>
+                  <span>불러오는 중...</span>
                 </>
               ) : (
                 <>
-                  <span>더보기 (+50개)</span>
+                  <span>+ 50개 더보기</span>
                 </>
               )}
             </button>
