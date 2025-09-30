@@ -180,9 +180,9 @@ export function SNSPage({ onPostClick }: SNSPageProps) {
                 데이터로 제공해요
               </h4>
               <ul className="text-xs text-foreground/70 space-y-1">
-                <li>• <span className="font-medium">SNS 게시글</span> - X, Truth Social 통합</li>
-                <li>• <span className="font-medium">시장 영향도</span> - 가격 변동과 거래량</li>
-                <li>• <span className="font-medium">영향받은 자산</span> - 주식, ETF, 암호화폐</li>
+                <li>• <span className="font-medium">X, Truth Social 게시글</span></li>
+                <li>• <span className="font-medium">영향력 인물 게시글 추적</span></li>
+                <li>• <span className="font-medium">트렌드 포스트 파악</span></li>
               </ul>
             </div>
             
@@ -192,9 +192,9 @@ export function SNSPage({ onPostClick }: SNSPageProps) {
                 이렇게 활용하세요
               </h4>
               <ul className="text-xs text-foreground/70 space-y-1">
-                <li>• <span className="font-medium">트렌드 파악</span> - 인기 주제 확인</li>
-                <li>• <span className="font-medium">영향력 추적</span> - 특정 인물 모니터링</li>
-                <li>• <span className="font-medium">차트 분석</span> - 게시글 클릭 시 상세 차트</li>
+                <li>• <span className="font-medium">게시글 마다 시장 영향 확인</span></li>
+                <li>• <span className="font-medium">주식, ETF, 암호화폐 영향 확인</span></li>
+                <li>• <span className="font-medium">시장 영향 분석과 차트 제공</span></li>
               </ul>
             </div>
           </div>
@@ -203,9 +203,8 @@ export function SNSPage({ onPostClick }: SNSPageProps) {
             <div className="flex items-start space-x-3">
               <div className="text-amber-400 mt-0.5">💡</div>
               <div>
-                <h4 className="font-semibold text-amber-400 mb-1 text-sm">투자 전에 확인하세요</h4>
+                <h4 className="font-semibold text-amber-400 mb-1 text-sm">영향력 있는 계정의 게시글이 시장을 움직일 수 있어요.</h4>
                 <p className="text-xs text-foreground/70 leading-relaxed">
-                  영향력 있는 계정의 게시글이 시장을 움직일 수 있어요. 
                   <span className="font-medium text-amber-400"> 게시글을 클릭</span>하면 
                   가격 변동, 거래량 급증, 변동성 등을 실시간 차트로 확인할 수 있어요. 
                   특히 <span className="font-medium text-amber-400">볼린저 밴드 차트</span>로 
@@ -233,9 +232,9 @@ export function SNSPage({ onPostClick }: SNSPageProps) {
           <div className="flex space-x-2">
             {[
               { value: 'all', label: '전체' },
-              { value: 'x', label: 'X (구 트위터)' },
-              { value: 'truth_social_posts', label: 'Truth Social (트럼프, 백악관 등)' },
-              { value: 'truth_social_trends', label: 'Truth Social Trend (인기 포스트)' }
+              { value: 'x', label: 'X (Twitter)' },
+              { value: 'truth_social_posts', label: 'Truth Social' },
+              { value: 'truth_social_trends', label: 'Truth Social Trends' }
             ].map((platform) => (
               <button
                 key={platform.value}
