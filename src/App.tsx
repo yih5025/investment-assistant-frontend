@@ -13,7 +13,8 @@ import { MarketDetailPage } from "./components/SP500Detail";
 import { CryptoDetailPage } from "./components/CryptoDetailPage"; // 추가
 import { ETFDetailPage } from "./components/ETFDetailPage"; // ETF 상세 페이지 추가
 import { NewsPage } from "./components/NewsPage"; 
-import NewsDetailPage, { NewsItem as DetailNewsItem } from "./components/NewsDetailPage";
+import { NewsDetailPage } from "./components/NewsDetailPage";
+import { NewsItem as DetailNewsItem } from "./services/newsApi";
 import { SNSPage } from "./components/SNSPage";
 import { SNSDetailPage } from "./components/SNSDetailPage";
 import { snsApiService, type SNSPost } from "./services/SNSService";
