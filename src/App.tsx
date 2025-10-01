@@ -491,6 +491,14 @@ function AppContent() {
     }
   }
 
+  if (viewState === "cheatsheet") {
+    return (
+      <div className="min-h-screen relative z-10">
+        <CheatsheetPage onBack={handleBackToMain} />
+      </div>
+    );
+  }
+
   // SNS 상세 페이지
   if (viewState === "sns-detail" && selectedSNSPost) {
     return (
