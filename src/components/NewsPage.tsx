@@ -47,7 +47,8 @@ export default function NewsPage({ isLoggedIn, onLoginPrompt, onNewsClick }: New
     return date.toLocaleDateString("ko-KR", { month: "short", day: "numeric" });
   }, []);
 
-  const getReadTime = (content: string) => {
+  const getReadTime = (content: string | undefined) => {
+    if (!content) return "1분";
     const words = content.split(' ').length;
     const minutes = Math.ceil(words / 200);
     return `${minutes}분`;
@@ -101,9 +102,9 @@ export default function NewsPage({ isLoggedIn, onLoginPrompt, onNewsClick }: New
 
   const getSummary = (item: NewsItem) => {
     switch (item.type) {
-      case "market": return item.description;
-      case "financial": return item.summary;
-      case "sentiment": return item.summary;
+      case "market": return item.description || "";
+      case "financial": return item.summary || "";
+      case "sentiment": return item.summary || "";
     }
   };
 

@@ -277,19 +277,47 @@ export function useSNSFilter(initialFilter: Partial<SNSFilter> = {}) {
 // SNS 차트 데이터 처리 훅 (대폭 개선)
 // ============================================================================
 
+// src/hooks/useSNS.ts
+
 export function useSNSChartData(post: SNSPost | null, symbol: string) {
   const postTimestamp = post ? new Date(post.analysis.post_timestamp) : null;
   const ohlcvData = post?.analysis.market_data?.[symbol]?.price_timeline || [];
 
-  // 1. 볼린저 밴드 계산
-  const bollingerBandData = useMemo(() => {
-    if (ohlcvData.length === 0) return [];
-
-    const period = Math.min(20, ohlcvData.length); // 최대 20개 또는 전체 데이터
+  // 🔴 추가: 5분봉 집계 함수
+  const aggregate5MinCandles = useCallback((data: OHLCVData[]) => {
+    if (data.length === 0) return [];
     
-    return ohlcvData.map((point, index) => {
+    const interval = 5;
+    const aggregated: OHLCVData[] = [];
+    
+    for (let i = 0; i < data.length; i += interval) {
+      const chunk = data.slice(i, Math.min(i + interval, data.length));
+      if (chunk.length === 0) continue;
+      
+      aggregated.push({
+        timestamp: chunk[0].timestamp,
+        open: chunk[0].open,
+        high: Math.max(...chunk.map(d => d.high)),
+        low: Math.min(...chunk.map(d => d.low)),
+        close: chunk[chunk.length - 1].close,
+        volume: chunk.reduce((sum, d) => sum + d.volume, 0)
+      });
+    }
+    
+    return aggregated;
+  }, []);
+
+  // 🔴 수정: 5분봉 데이터 생성
+  const ohlcv5Min = useMemo(() => aggregate5MinCandles(ohlcvData), [ohlcvData, aggregate5MinCandles]);
+
+  // 1. 볼린저 밴드 계산 - 🔴 5분봉 사용
+  const bollingerBandData = useMemo(() => {
+    if (ohlcv5Min.length === 0) return [];
+
+    const period = Math.min(20, ohlcv5Min.length);
+    
+    return ohlcv5Min.map((point, index) => {
       if (index < period - 1) {
-        // 데이터가 부족한 초기 구간
         return {
           timestamp: point.timestamp,
           close: point.close,
@@ -297,18 +325,15 @@ export function useSNSChartData(post: SNSPost | null, symbol: string) {
           middle: null,
           lower: null,
           isPostTime: postTimestamp ? 
-            Math.abs(new Date(point.timestamp).getTime() - postTimestamp.getTime()) < 60000 : false
+            Math.abs(new Date(point.timestamp).getTime() - postTimestamp.getTime()) < 300000 : false // 5분 = 300초
         };
       }
 
-      // 이동평균 계산 (최근 period개)
-      const recentCloses = ohlcvData
+      const recentCloses = ohlcv5Min
         .slice(Math.max(0, index - period + 1), index + 1)
         .map(d => d.close);
       
       const sma = recentCloses.reduce((sum, val) => sum + val, 0) / recentCloses.length;
-      
-      // 표준편차 계산
       const squaredDiffs = recentCloses.map(val => Math.pow(val - sma, 2));
       const variance = squaredDiffs.reduce((sum, val) => sum + val, 0) / recentCloses.length;
       const stdDev = Math.sqrt(variance);
@@ -320,50 +345,44 @@ export function useSNSChartData(post: SNSPost | null, symbol: string) {
         middle: sma,
         lower: sma - (stdDev * 2),
         isPostTime: postTimestamp ? 
-          Math.abs(new Date(point.timestamp).getTime() - postTimestamp.getTime()) < 60000 : false
+          Math.abs(new Date(point.timestamp).getTime() - postTimestamp.getTime()) < 300000 : false
       };
     });
-  }, [ohlcvData, postTimestamp]);
+  }, [ohlcv5Min, postTimestamp]);
 
-  // 2. 듀얼 축 차트 데이터 (가격 + 거래량)
+  // 2. 듀얼 축 차트 데이터 - 🔴 5분봉 사용
   const dualAxisData = useMemo(() => {
-    if (ohlcvData.length === 0) return [];
+    if (ohlcv5Min.length === 0) return [];
 
-    return ohlcvData.map(point => ({
+    return ohlcv5Min.map(point => ({
       timestamp: point.timestamp,
       price: point.close,
       volume: point.volume,
       isPostTime: postTimestamp ? 
-        Math.abs(new Date(point.timestamp).getTime() - postTimestamp.getTime()) < 60000 : false
+        Math.abs(new Date(point.timestamp).getTime() - postTimestamp.getTime()) < 300000 : false
     }));
-  }, [ohlcvData, postTimestamp]);
+  }, [ohlcv5Min, postTimestamp]);
 
-  // 3. 캔들스틱 데이터 (전문 분석용)
+  // 3. 캔들스틱 데이터 - 🔴 5분봉 사용
   const candlestickData = useMemo(() => {
-    return ohlcvData.map(point => {
-      const isGreen = point.close >= point.open;
-      return {
-        timestamp: point.timestamp,
-        open: point.open,
-        high: point.high,
-        low: point.low,
-        close: point.close,
-        volume: point.volume,
-        // 캔들스틱 차트용 데이터
-        shadowData: [point.low, point.high], // 그림자 (위아래 선)
-        bodyData: isGreen ? [point.open, point.close] : [point.close, point.open], // 몸체
-        isGreen: isGreen,
-        isPostTime: postTimestamp ? 
-          Math.abs(new Date(point.timestamp).getTime() - postTimestamp.getTime()) < 60000 : false
-      };
-    });
-  }, [ohlcvData, postTimestamp]);
+    if (ohlcv5Min.length === 0) return [];
+    
+    return ohlcv5Min.map(point => ({
+      timestamp: point.timestamp,
+      open: point.open,
+      high: point.high,
+      low: point.low,
+      close: point.close,
+      volume: point.volume,
+      isPostTime: postTimestamp ? 
+        Math.abs(new Date(point.timestamp).getTime() - postTimestamp.getTime()) < 300000 : false
+    }));
+  }, [ohlcv5Min, postTimestamp]);
 
-  // 4. 가격 변화 요약 (일반 분석용)
+  // 4. 가격 변화 요약 - 1분봉 유지 (정확한 게시 시점 찾기 위해)
   const priceChangeSummary = useMemo(() => {
     if (!postTimestamp || ohlcvData.length === 0) return null;
 
-    // 게시 시점 찾기
     const postIndex = ohlcvData.findIndex(point => 
       Math.abs(new Date(point.timestamp).getTime() - postTimestamp.getTime()) < 60000
     );
@@ -371,15 +390,11 @@ export function useSNSChartData(post: SNSPost | null, symbol: string) {
     if (postIndex === -1) return null;
 
     const postPrice = ohlcvData[postIndex].close;
-    
-    // 게시 후 데이터
     const afterPost = ohlcvData.slice(postIndex);
     const maxPrice = Math.max(...afterPost.map(d => d.high));
     const minPrice = Math.min(...afterPost.map(d => d.low));
     const maxPricePoint = afterPost.find(d => d.high === maxPrice);
     const minPricePoint = afterPost.find(d => d.low === minPrice);
-    
-    // 현재가 (마지막 데이터)
     const currentPrice = ohlcvData[ohlcvData.length - 1].close;
 
     return {
@@ -395,7 +410,7 @@ export function useSNSChartData(post: SNSPost | null, symbol: string) {
     };
   }, [ohlcvData, postTimestamp]);
 
-  // 5. 거래량 변화 요약
+  // 5. 거래량 변화 요약 - 1분봉 유지
   const volumeChangeSummary = useMemo(() => {
     if (!postTimestamp || ohlcvData.length === 0) return null;
 
@@ -405,19 +420,16 @@ export function useSNSChartData(post: SNSPost | null, symbol: string) {
 
     if (postIndex === -1) return null;
 
-    // 게시 전 평균 (최대 60분)
     const beforePost = ohlcvData.slice(Math.max(0, postIndex - 60), postIndex);
     const avgVolumeBefore = beforePost.length > 0 
       ? beforePost.reduce((sum, d) => sum + d.volume, 0) / beforePost.length 
       : 0;
 
-    // 게시 후 평균 (최대 60분)
     const afterPost = ohlcvData.slice(postIndex, Math.min(ohlcvData.length, postIndex + 60));
     const avgVolumeAfter = afterPost.length > 0
       ? afterPost.reduce((sum, d) => sum + d.volume, 0) / afterPost.length
       : 0;
 
-    // 최대 거래량
     const maxVolume = Math.max(...afterPost.map(d => d.volume));
     const maxVolumePoint = afterPost.find(d => d.volume === maxVolume);
 
@@ -430,16 +442,14 @@ export function useSNSChartData(post: SNSPost | null, symbol: string) {
     };
   }, [ohlcvData, postTimestamp]);
 
-  // 6. 가격대별 거래 분포 (전문 분석용)
+  // 6. 가격대별 거래 분포 - 1분봉 유지 (더 정확한 분포)
   const priceDistribution = useMemo(() => {
     if (ohlcvData.length === 0) return [];
 
-    // 가격 범위 계산
     const allPrices = ohlcvData.flatMap(d => [d.high, d.low]);
     const minPrice = Math.min(...allPrices);
     const maxPrice = Math.max(...allPrices);
     
-    // 5개 구간으로 나누기
     const binCount = 5;
     const binSize = (maxPrice - minPrice) / binCount;
     
@@ -450,7 +460,6 @@ export function useSNSChartData(post: SNSPost | null, symbol: string) {
       label: `$${(minPrice + binSize * i).toFixed(2)}-${(minPrice + binSize * (i + 1)).toFixed(2)}`
     }));
 
-    // 각 구간에 거래량 집계
     ohlcvData.forEach(point => {
       const avgPrice = (point.high + point.low) / 2;
       const binIndex = Math.min(
@@ -463,15 +472,15 @@ export function useSNSChartData(post: SNSPost | null, symbol: string) {
     return bins;
   }, [ohlcvData]);
 
-  // 7. 시간대별 변동폭 (전문 분석용)
+  // 7. 시간대별 변동폭 - 1분봉 유지
   const volatilityData = useMemo(() => {
-    if (!postTimestamp || ohlcvData.length === 0) return { before: [], after: [] };
+    if (!postTimestamp || ohlcvData.length === 0) return { before: [], after: [], avgBefore: 0, avgAfter: 0 };
 
     const postIndex = ohlcvData.findIndex(point => 
       Math.abs(new Date(point.timestamp).getTime() - postTimestamp.getTime()) < 60000
     );
 
-    if (postIndex === -1) return { before: [], after: [] };
+    if (postIndex === -1) return { before: [], after: [], avgBefore: 0, avgAfter: 0 };
 
     const calculateVolatility = (data: OHLCVData[]) => {
       return data.map(point => ({
@@ -480,37 +489,32 @@ export function useSNSChartData(post: SNSPost | null, symbol: string) {
       }));
     };
 
+    const before = calculateVolatility(ohlcvData.slice(Math.max(0, postIndex - 60), postIndex));
+    const after = calculateVolatility(ohlcvData.slice(postIndex, Math.min(ohlcvData.length, postIndex + 60)));
+
+    const avgBefore = before.length > 0 
+      ? before.reduce((sum, d) => sum + d.volatility, 0) / before.length 
+      : 0;
+    const avgAfter = after.length > 0 
+      ? after.reduce((sum, d) => sum + d.volatility, 0) / after.length 
+      : 0;
+
     return {
-      before: calculateVolatility(ohlcvData.slice(Math.max(0, postIndex - 60), postIndex)),
-      after: calculateVolatility(ohlcvData.slice(postIndex, Math.min(ohlcvData.length, postIndex + 60))),
-      avgBefore: 0, // 계산
-      avgAfter: 0   // 계산
+      before,
+      after,
+      avgBefore,
+      avgAfter
     };
   }, [ohlcvData, postTimestamp]);
 
-  // 평균 계산 추가
-  if (volatilityData.before.length > 0) {
-    volatilityData.avgBefore = 
-      volatilityData.before.reduce((sum, d) => sum + d.volatility, 0) / volatilityData.before.length;
-  }
-  if (volatilityData.after.length > 0) {
-    volatilityData.avgAfter = 
-      volatilityData.after.reduce((sum, d) => sum + d.volatility, 0) / volatilityData.after.length;
-  }
-
   return {
-    // 일반 분석용
     bollingerBandData,
     dualAxisData,
     priceChangeSummary,
     volumeChangeSummary,
-    
-    // 전문 분석용
     candlestickData,
     priceDistribution,
     volatilityData,
-    
-    // 메타 정보
     hasData: ohlcvData.length > 0,
     totalDataPoints: ohlcvData.length,
     postTimestamp: postTimestamp?.toISOString() || null

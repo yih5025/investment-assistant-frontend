@@ -1,6 +1,6 @@
 // src/components/SNSDetailPage.tsx
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   ArrowLeft, 
   ExternalLink, 
@@ -523,13 +523,14 @@ function GeneralAnalysisCard({
                   tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
                   tickFormatter={(value) => {
                     const date = new Date(value);
+                    const day = date.getDate();
                     const hours = date.getHours();
                     const mins = date.getMinutes();
-                    return `${hours}:${String(mins).padStart(2, '0')}`;
+                    return `${day}일 ${hours}:${String(mins).padStart(2, '0')}`;
                   }}
                   angle={-35}
                   textAnchor="end"
-                  height={50}
+                  height={60}
                   interval="preserveStartEnd"
                 />
                 
@@ -654,11 +655,14 @@ function GeneralAnalysisCard({
                   tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
                   tickFormatter={(value) => {
                     const date = new Date(value);
-                    return `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+                    const day = date.getDate();
+                    const hours = date.getHours();
+                    const mins = date.getMinutes();
+                    return `${day}일 ${hours}:${String(mins).padStart(2, '0')}`;
                   }}
                   angle={-35}
                   textAnchor="end"
-                  height={50}
+                  height={60}
                   interval="preserveStartEnd"
                 />
                 
@@ -829,11 +833,7 @@ interface AdvancedAnalysisCardProps {
   formatPrice: (price: number, symbol: string) => string;
 }
 
-function AdvancedAnalysisCard({ 
-  post, 
-  symbol, 
-  formatPrice 
-}: AdvancedAnalysisCardProps) {
+function AdvancedAnalysisCard({ post, symbol, formatPrice }: AdvancedAnalysisCardProps) {
   const { 
     candlestickData,
     priceDistribution,
@@ -843,9 +843,82 @@ function AdvancedAnalysisCard({
     hasData 
   } = useSNSChartData(post, symbol);
 
-  const candlestickPostTimePoint = useMemo(() => {
-    return candlestickData.find(d => d.isPostTime);
-  }, [candlestickData]);
+  // 디버깅 로그 추가
+  useEffect(() => {
+    if (hasData && priceChangeSummary) {
+      const ohlcvData = post?.analysis.market_data?.[symbol]?.price_timeline || [];
+      
+      // ohlcvData가 비어있으면 로그를 건너뜀
+      if (ohlcvData.length === 0) {
+        console.warn(`⚠️ ${symbol}: 차트 데이터가 없습니다`);
+        return;
+      }
+      
+      console.group(`📊 ${symbol} 가격 변화 분석`);
+      
+      console.log('1. OHLCV 데이터 샘플:');
+      const sampleData = [];
+      if (ohlcvData[0]) sampleData.push({ label: '첫번째', ...ohlcvData[0] });
+      if (ohlcvData.length > 1) {
+        const midIndex = Math.floor(ohlcvData.length / 2);
+        if (ohlcvData[midIndex]) sampleData.push({ label: '중간', ...ohlcvData[midIndex] });
+      }
+      if (ohlcvData.length > 0 && ohlcvData[ohlcvData.length - 1]) {
+        sampleData.push({ label: '마지막', ...ohlcvData[ohlcvData.length - 1] });
+      }
+      if (sampleData.length > 0) {
+        console.table(sampleData);
+      }
+      
+      console.log('2. 게시 시점 정보:');
+      const postIndex = ohlcvData.findIndex(p => 
+        Math.abs(new Date(p.timestamp).getTime() - new Date(post.analysis.post_timestamp).getTime()) < 60000
+      );
+      console.log({
+        postTimestamp: post.analysis.post_timestamp,
+        postIndex: postIndex,
+        postData: postIndex >= 0 ? ohlcvData[postIndex] : 'NOT FOUND'
+      });
+      
+      console.log('3. 가격 변화 요약:');
+      console.table({
+        '게시가': priceChangeSummary.postPrice,
+        '최고가': priceChangeSummary.maxPrice,
+        '최저가': priceChangeSummary.minPrice,
+        '현재가': priceChangeSummary.currentPrice,
+        '최고가변화': priceChangeSummary.maxPriceChange.toFixed(2) + '%',
+        '최저가변화': priceChangeSummary.minPriceChange.toFixed(2) + '%',
+        '현재가변화': priceChangeSummary.currentPriceChange.toFixed(2) + '%'
+      });
+      
+      if (volatilityData) {
+        console.log('4. 변동폭 분석:');
+        console.log({
+          '게시전평균': volatilityData.avgBefore.toFixed(2) + '%',
+          '게시후평균': volatilityData.avgAfter.toFixed(2) + '%',
+          '게시전샘플': volatilityData.before.length,
+          '게시후샘플': volatilityData.after.length
+        });
+        
+        if (volatilityData.after.length > 0) {
+          console.log('게시 후 변동폭 처음 5개:');
+          console.table(volatilityData.after.slice(0, 5));
+        }
+      }
+      
+      if (volumeChangeSummary) {
+        console.log('5. 거래량 분석:');
+        console.table({
+          '게시전평균': volumeChangeSummary.avgVolumeBefore.toFixed(2),
+          '게시후평균': volumeChangeSummary.avgVolumeAfter.toFixed(2),
+          '최대거래량': volumeChangeSummary.maxVolume.toFixed(2),
+          '증가율': volumeChangeSummary.volumeIncreaseRatio.toFixed(2) + '배'
+        });
+      }
+      
+      console.groupEnd();
+    }
+  }, [hasData, symbol, priceChangeSummary, volatilityData, volumeChangeSummary, post]);
 
   if (!hasData) {
     return (
@@ -862,29 +935,37 @@ function AdvancedAnalysisCard({
     <div className="glass-card p-4 rounded-xl space-y-6">
       <h4 className="font-medium text-lg">{symbol} 전문 분석</h4>
 
-      {/* 캔들스틱 차트 */}
+      {/* 캔들스틱 차트 - 5분봉 */}
       <div>
-        <h5 className="text-sm font-medium mb-2">🕯️ 캔들스틱 차트</h5>
+        <div className="flex items-center justify-between mb-2">
+          <h5 className="text-sm font-medium">🕯️ 캔들스틱 차트</h5>
+          <span className="text-xs text-foreground/60">5분봉 집계</span>
+        </div>
         
         <div className="overflow-x-auto overflow-y-hidden -mx-4 px-4">
-          <div className="h-[480px] min-w-[800px]">
+          {/* 너비 대폭 증가 */}
+          <div className="h-[480px] min-w-[2400px]">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart 
                 data={candlestickData} 
-                margin={{ top: 10, right: 5, left: 5, bottom: 50 }}
+                margin={{ top: 10, right: 5, left: 5, bottom: 60 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                 
+                {/* X축 - 날짜 포함 */}
                 <XAxis 
                   dataKey="timestamp"
                   tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
                   tickFormatter={(value) => {
                     const date = new Date(value);
-                    return `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+                    const day = date.getDate();
+                    const hours = date.getHours();
+                    const mins = date.getMinutes();
+                    return `${day}일 ${hours}:${String(mins).padStart(2, '0')}`;
                   }}
                   angle={-35}
                   textAnchor="end"
-                  height={50}
+                  height={60}
                   interval="preserveStartEnd"
                 />
                 
@@ -914,7 +995,7 @@ function AdvancedAnalysisCard({
                       return (
                         <div className="text-[11px] space-y-1">
                           <p className="font-medium">
-                            {new Date(data.timestamp).toLocaleTimeString('ko-KR')}
+                            {new Date(data.timestamp).toLocaleString('ko-KR')}
                           </p>
                           {data.isPostTime && (
                             <p className="text-orange-400 font-bold">📍 게시시점</p>
@@ -931,26 +1012,14 @@ function AdvancedAnalysisCard({
                   }}
                 />
                 
-                {/* High-Low 선 */}
-                <Line 
-                  type="monotone"
-                  dataKey="high"
-                  stroke="transparent"
-                  dot={false}
-                />
-                <Line 
-                  type="monotone"
-                  dataKey="low"
-                  stroke="transparent"
-                  dot={false}
-                />
+                <Line type="monotone" dataKey="high" stroke="transparent" dot={false} />
+                <Line type="monotone" dataKey="low" stroke="transparent" dot={false} />
                 
-                {/* 캔들 몸통 */}
                 <Bar 
-                  dataKey={(data: any) => data.close >= data.open ? [data.open, data.close] : [data.close, data.open]}
-                  shape={(props: any) => {  // 🔴 타입 명시
+                  dataKey="close"
+                  shape={(props: any) => {
                     const { x, y, width, height, payload } = props;
-                    if (!payload) {
+                    if (!payload || payload.close === undefined || payload.open === undefined) {
                       return <rect x={0} y={0} width={0} height={0} fill="transparent" />;
                     }
                     

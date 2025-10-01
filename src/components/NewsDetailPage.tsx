@@ -53,7 +53,8 @@ export function NewsDetailPage({ newsItem, onBack }: NewsDetailPageProps) {
     return date.toLocaleDateString("ko-KR", { month: "short", day: "numeric" });
   };
 
-  const getReadTime = (content: string) => {
+  const getReadTime = (content: string | undefined) => {
+    if (!content) return "1분";
     const words = content.split(' ').length;
     const minutes = Math.ceil(words / 200);
     return `${minutes}분`;
@@ -90,9 +91,9 @@ export function NewsDetailPage({ newsItem, onBack }: NewsDetailPageProps) {
 
   const getDescription = () => {
     switch (newsItem.type) {
-      case "market": return newsItem.description;
-      case "financial": return newsItem.summary;
-      case "sentiment": return newsItem.summary;
+      case "market": return newsItem.description || "내용이 제공되지 않았습니다.";
+      case "financial": return newsItem.summary || "내용이 제공되지 않았습니다.";
+      case "sentiment": return newsItem.summary || "내용이 제공되지 않았습니다.";
     }
   };
 
