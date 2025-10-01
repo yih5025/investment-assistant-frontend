@@ -139,14 +139,17 @@ export function useEarningsCalendar() {
     updateError('calendar', null);
     
     try {
-      // 향후 3개월 데이터 조회
+      // 과거 3개월 + 향후 3개월 데이터 조회 (캘린더에 표시하기 위함)
+      const startDate = new Date();
+      startDate.setMonth(startDate.getMonth() - 12); // 과거 12개월
+      
       const endDate = new Date();
-      endDate.setMonth(endDate.getMonth() + 3);
+      endDate.setMonth(endDate.getMonth() + 12); // 향후 12개월
       
       const params = {
-        start_date: CalendarDateUtils.formatForApi(new Date()),
+        start_date: CalendarDateUtils.formatForApi(startDate),
         end_date: CalendarDateUtils.formatForApi(endDate),
-        limit: 1000 // 충분한 데이터 확보
+        limit: 2000 // 6개월치 데이터 확보
       };
       
       console.log('📅 Fetching calendar data with params:', params);
