@@ -1,22 +1,16 @@
 // components/HeroSection.tsx
 import { motion } from "motion/react";
-import { TrendingUp, Calendar, Newspaper, MessageSquare, BookOpen, ChevronRight } from "lucide-react";
+import { TrendingUp, Calendar, Newspaper, MessageSquare, BookOpen, ChevronRight, Wallet, PieChart } from "lucide-react";
+import { useHeroStats } from "../hooks/useHeroStats";
 
 interface HeroSectionProps {
-  stockCount?: number;
-  eventCount?: number;
-  newsCount?: number;
-  snsCount?: number;
   onCheatsheetClick: () => void;
 }
 
-export function HeroSection({
-  stockCount = 900,
-  eventCount = 24,
-  newsCount = 156,
-  snsCount = 48,
-  onCheatsheetClick
-}: HeroSectionProps) {
+export function HeroSection({ onCheatsheetClick }: HeroSectionProps) {
+  // 커스텀 훅으로 통계 데이터 관리
+  const { stats } = useHeroStats();
+  
   const currentTime = new Date();
   
   const formatDate = (date: Date) => {
@@ -60,45 +54,84 @@ export function HeroSection({
             </div>
           </div>
 
-          {/* Quick Stats - 3열 그리드 */}
-          <div className="grid grid-cols-3 gap-3 pt-4 border-t border-white/10">
+          {/* Quick Stats - 6열 그리드 (2행 3열) */}
+          <div className="grid grid-cols-3 gap-2.5 pt-4 border-t border-white/10">
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 }}
-              className="glass-subtle rounded-xl p-3"
+              className="glass-subtle rounded-xl p-2.5"
             >
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <TrendingUp size={14} className="text-green-400" />
-                <div className="text-xs text-foreground/60">실시간 종목</div>
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <TrendingUp size={12} className="text-green-400" />
+                <div className="text-xs text-foreground/60">주식</div>
               </div>
-              <div className="text-center font-bold text-lg">{stockCount.toLocaleString()}</div>
+              <div className="text-center font-bold text-base">{stats.stockCount.toLocaleString()}</div>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.15 }}
+              className="glass-subtle rounded-xl p-2.5"
+            >
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <PieChart size={12} className="text-blue-400" />
+                <div className="text-xs text-foreground/60">ETF</div>
+              </div>
+              <div className="text-center font-bold text-base">{stats.etfCount.toLocaleString()}</div>
             </motion.div>
 
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="glass-subtle rounded-xl p-3"
+              className="glass-subtle rounded-xl p-2.5"
             >
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <Calendar size={14} className="text-blue-400" />
-                <div className="text-xs text-foreground/60">주요 이벤트</div>
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <Wallet size={12} className="text-amber-400" />
+                <div className="text-xs text-foreground/60">암호화폐</div>
               </div>
-              <div className="text-center font-bold text-lg">{eventCount}</div>
+              <div className="text-center font-bold text-base">{stats.cryptoCount.toLocaleString()}</div>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.25 }}
+              className="glass-subtle rounded-xl p-2.5"
+            >
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <Calendar size={12} className="text-purple-400" />
+                <div className="text-xs text-foreground/60">기업 일정</div>
+              </div>
+              <div className="text-center font-bold text-base">{stats.eventCount.toLocaleString()}</div>
             </motion.div>
 
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3 }}
-              className="glass-subtle rounded-xl p-3"
+              className="glass-subtle rounded-xl p-2.5"
             >
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <Newspaper size={14} className="text-yellow-400" />
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <MessageSquare size={12} className="text-cyan-400" />
+                <div className="text-xs text-foreground/60">새 SNS</div>
+              </div>
+              <div className="text-center font-bold text-base">{stats.snsCount.toLocaleString()}</div>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.35 }}
+              className="glass-subtle rounded-xl p-2.5"
+            >
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <Newspaper size={12} className="text-yellow-400" />
                 <div className="text-xs text-foreground/60">새 뉴스</div>
               </div>
-              <div className="text-center font-bold text-lg">{newsCount}</div>
+              <div className="text-center font-bold text-base">{stats.newsCount.toLocaleString()}</div>
             </motion.div>
           </div>
         </div>
