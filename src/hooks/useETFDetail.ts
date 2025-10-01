@@ -72,7 +72,7 @@ interface ETFDetailState {
 
 interface UseETFDetailReturn extends ETFDetailState {
   fetchETFDetail: (symbol: string, timeframe?: string) => Promise<void>;
-  fetchChartData: (timeframe: '1D' | '1W' | '1M') => Promise<void>;
+  fetchChartData: (timeframe: '1D' | '1W' | '1M', symbolOverride?: string) => Promise<void>;
   clearError: () => void;
   refreshData: () => Promise<void>;
 }
@@ -166,7 +166,7 @@ export function useETFDetail(initialSymbol?: string): UseETFDetailReturn {
       
       // 상세 정보 로드 완료 후 별도로 차트 데이터 로드
       if (timeframe) {
-        await fetchChartData(timeframe as '1D' | '1W' | '1M');
+        await fetchChartData(timeframe as '1D' | '1W' | '1M', symbol);
       }
       
     } catch (error) {
@@ -182,20 +182,22 @@ export function useETFDetail(initialSymbol?: string): UseETFDetailReturn {
   }, []);
 
   // 차트 데이터만 별도 조회 - 백엔드 /api/v1/etf/symbol/{symbol}/chart 엔드포인트 호출
-  const fetchChartData = useCallback(async (timeframe: '1D' | '1W' | '1M') => {
-    if (!currentSymbol) {
+  const fetchChartData = useCallback(async (timeframe: '1D' | '1W' | '1M', symbolOverride?: string) => {
+    const symbolToUse = symbolOverride || currentSymbol;
+    
+    if (!symbolToUse) {
       console.warn('현재 ETF 심볼이 없습니다');
       return;
     }
 
-    console.log(`ETF 차트 데이터 조회: ${currentSymbol} (${timeframe})`);
+    console.log(`ETF 차트 데이터 조회: ${symbolToUse} (${timeframe})`);
     
     setState(prev => ({ ...prev, chartLoading: true }));
     setCurrentTimeframe(timeframe);
 
     try {
       // 백엔드 엔드포인트: GET /api/v1/etf/symbol/{symbol}/chart?timeframe={timeframe}
-      const chartResponse = await fetch(`https://api.investment-assistant.site/api/v1/etf/symbol/${currentSymbol.toUpperCase()}/chart?timeframe=${timeframe}`);
+      const chartResponse = await fetch(`https://api.investment-assistant.site/api/v1/etf/symbol/${symbolToUse.toUpperCase()}/chart?timeframe=${timeframe}`);
       
       if (!chartResponse.ok) {
         console.warn(`Chart API 오류! status: ${chartResponse.status}`);
@@ -223,7 +225,7 @@ export function useETFDetail(initialSymbol?: string): UseETFDetailReturn {
         chartLoading: false
       }));
 
-      console.log(`ETF 차트 데이터 업데이트 완료: ${currentSymbol} (${timeframe})`, chartResult.chart_data?.length || 0, '개 포인트');
+      console.log(`ETF 차트 데이터 업데이트 완료: ${symbolToUse} (${timeframe})`, chartResult.chart_data?.length || 0, '개 포인트');
       
     } catch (error) {
       console.error(`ETF 차트 데이터 조회 실패:`, error);

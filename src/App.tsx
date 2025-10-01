@@ -18,6 +18,8 @@ import { NewsItem as DetailNewsItem } from "./services/newsApi";
 import { SNSPage } from "./components/SNSPage";
 import { SNSDetailPage } from "./components/SNSDetailPage";
 import { snsApiService, type SNSPost } from "./services/SNSService";
+import { HeroSection } from "./components/HeroSection";
+import { CheatsheetPage } from "./components/CheatsheetPage";
 import OptimizedEconomicDashboard from "./components/EconomicDashboard";
 import { LoginPage } from "./components/auth/LoginPage";
 import { SignupPage } from "./components/auth/SignupPage";
@@ -81,7 +83,7 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
 // ============================================================================
 
 type AuthState = "guest" | "login" | "signup" | "authenticated";
-type ViewState = "welcome" | "main" | "auth" | "profile" | "sns-detail" | "stock-news" | "news-detail" | "stock-detail" | "crypto-detail" | "etf-detail";
+type ViewState = "welcome" | "main" | "auth" | "profile" | "sns-detail" | "stock-news" | "news-detail" | "stock-detail" | "crypto-detail" | "etf-detail" | "cheatsheet";
 
 
 interface StockNewsItem {
@@ -710,6 +712,12 @@ function AppContent() {
         return (
           <div className="space-y-4 relative z-10">
             {renderHeader()}
+            <HeroSection
+              onCheatsheetClick={() => {
+                pushToHistory("cheatsheet", "home");
+                setViewState("cheatsheet");
+              }}
+            />
             <EnhancedTopGainersBanner />
             <EarningsCalendar />
           </div>

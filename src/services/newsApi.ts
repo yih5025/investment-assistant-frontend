@@ -282,10 +282,20 @@ class NewsApiClient {
     const response = await this.makeRequest<any>('/market-news', params, 30000);
     const items = response.items || [];
     
-    return items.map((item: any) => ({
-      ...item,
-      type: "market" as const
-    }));
+    // 뉴스 내용이 있는 것만 필터링 (content 또는 description이 있어야 함)
+    const filtered = items
+      .filter((item: any) => {
+        const hasContent = item.content && item.content.trim().length > 0;
+        const hasDescription = item.description && item.description.trim().length > 0;
+        return hasContent || hasDescription;
+      })
+      .map((item: any) => ({
+        ...item,
+        type: "market" as const
+      }));
+    
+    console.log(`📰 Market News: ${items.length}개 → ${filtered.length}개 (내용 있는 뉴스만)`);
+    return filtered;
   }
 
   async fetchFinancialNews(
@@ -311,10 +321,18 @@ class NewsApiClient {
     const response = await this.makeRequest<any>('/financial-news', params, 30000);
     const items = response.items || [];
     
-    return items.map((item: any) => ({
-      ...item,
-      type: "financial" as const
-    }));
+    // 뉴스 내용이 있는 것만 필터링 (summary가 있어야 함)
+    const filtered = items
+      .filter((item: any) => {
+        return item.summary && item.summary.trim().length > 0;
+      })
+      .map((item: any) => ({
+        ...item,
+        type: "financial" as const
+      }));
+    
+    console.log(`💼 Financial News: ${items.length}개 → ${filtered.length}개 (내용 있는 뉴스만)`);
+    return filtered;
   }
 
   async fetchSentimentNews(
@@ -333,10 +351,18 @@ class NewsApiClient {
     const response = await this.makeRequest<any>('/market-news-sentiment', params, 30000);
     const news = response.news || [];
     
-    return news.map((item: any) => ({
-      ...item,
-      type: "sentiment" as const
-    }));
+    // 뉴스 내용이 있는 것만 필터링 (summary가 있어야 함)
+    const filtered = news
+      .filter((item: any) => {
+        return item.summary && item.summary.trim().length > 0;
+      })
+      .map((item: any) => ({
+        ...item,
+        type: "sentiment" as const
+      }));
+    
+    console.log(`📊 Sentiment News: ${news.length}개 → ${filtered.length}개 (내용 있는 뉴스만)`);
+    return filtered;
   }
 
   // =========================================================================
@@ -362,7 +388,7 @@ class NewsApiClient {
         ]);
 
         results = [...marketNews, ...financialNews, ...sentimentNews];
-        console.log(`✅ 병렬 로딩 완료: Market(${marketNews.length}) + Financial(${financialNews.length}) + Sentiment(${sentimentNews.length})`);
+        console.log(`✅ 병렬 로딩 완료 (내용 있는 뉴스만): Market(${marketNews.length}) + Financial(${financialNews.length}) + Sentiment(${sentimentNews.length})`);
       } else {
         // 특정 API만 호출
         console.log(`📡 ${filters.selectedApi} API 호출 중...`);
@@ -377,7 +403,7 @@ class NewsApiClient {
             results = await this.fetchSentimentNews(pagination);
             break;
         }
-        console.log(`✅ ${filters.selectedApi} 로딩 완료: ${results.length}개`);
+        console.log(`✅ ${filters.selectedApi} 로딩 완료 (내용 있는 뉴스만): ${results.length}개`);
       }
 
       // 통계 계산
