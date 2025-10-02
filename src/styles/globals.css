@@ -299,92 +299,76 @@
   }
 }
 
-/* 더욱 투명하고 반짝이는 Liquid Glass 효과 */
-.glass {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(2px) saturate(180%);
-  -webkit-backdrop-filter: blur(2px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
-  position: relative;
+/* ========== LIQUID GLASS 효과 ========== */
+:root {
+  --lg-bg-color: rgba(255, 255, 255, 0.25);
+  --lg-highlight: rgba(255, 255, 255, 0.75);
+  --lg-text: #ffffff;
+  --lg-hover-glow: rgba(255, 255, 255, 0.4);
 }
 
-.glass::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.1) 100%);
-  border-radius: inherit;
-  pointer-events: none;
-  opacity: 0.5;
-}
-
-.glass-card {
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(2px) saturate(150%);
-  -webkit-backdrop-filter: blur(2px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 
-    0 4px 24px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
-  position: relative;
-}
-
-.glass-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 50%, rgba(255, 255, 255, 0.08) 100%);
-  border-radius: inherit;
-  pointer-events: none;
-  opacity: 0.3;
-}
-
-.glass-strong {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(2px) saturate(120%);
-  -webkit-backdrop-filter: blur(2px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 
-    0 12px 40px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
-    0 0 0 1px rgba(255, 255, 255, 0.1);
-  position: relative;
-}
-
-.glass-strong::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.15) 100%);
-  border-radius: inherit;
-  pointer-events: none;
-  opacity: 0.4;
-}
-
+/* ========== GLASS CONTAINER BASE ========== */
+.glass,
+.glass-card,
+.glass-strong,
 .glass-subtle {
-  background: rgba(255, 255, 255, 0.01);
-  backdrop-filter: blur(16px) saturate(120%);
-  -webkit-backdrop-filter: blur(16px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 
-    0 2px 16px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   position: relative;
+  display: flex;
+  font-weight: 600;
+  color: var(--lg-text);
+  background: transparent;
+  border-radius: 2rem;
+  overflow: hidden;
+  box-shadow: 0 6px 6px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
+}
+
+/* ========== GLASS FILTER LAYER ========== */
+.glass::before,
+.glass-card::before,
+.glass-strong::before,
+.glass-subtle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  backdrop-filter: blur(0px);
+  filter: url(#lg-dist);
+  isolation: isolate;
+}
+
+/* ========== GLASS OVERLAY LAYER ========== */
+.glass::after,
+.glass-card::after,
+.glass-strong::after,
+.glass-subtle::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--lg-bg-color);
+}
+
+/* ========== GLASS SPECULAR LAYER ========== */
+/* Note: 이 레이어는 각 컴포넌트 내부에 별도 div로 추가 필요 */
+.glass-specular {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  overflow: hidden;
+  box-shadow: inset 1px 1px 0 var(--lg-highlight),
+    inset 0 0 5px var(--lg-highlight);
+  pointer-events: none;
+}
+
+/* ========== GLASS CONTENT LAYER ========== */
+.glass > *:not(.glass-specular),
+.glass-card > *:not(.glass-specular),
+.glass-strong > *:not(.glass-specular),
+.glass-subtle > *:not(.glass-specular) {
+  position: relative;
+  z-index: 3;
 }
 
 /* 공항 arrivals board 스타일 Flip 애니메이션 */
