@@ -21,9 +21,9 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
   // 로딩 단계별 메시지 (최적화된 버전)
   const loadingSteps = [
     "암호화폐 실시간 연결 중...",
-    "TopGainers 데이터 로딩 중...",
-    "SP500 백그라운드 로딩 중...",
-    "ETF 데이터 준비 중...",
+    "SNS 데이터 로딩 중...",
+    "S&P500 데이터 로딩 중...",
+    "ETF 데이터 로딩 중...",
     "서비스 준비 완료!"
   ];
 
@@ -111,7 +111,7 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
           <h1 className="text-5xl font-bold mb-3 bg-gradient-to-r from-primary via-blue-300 to-primary bg-clip-text text-transparent drop-shadow-md">
             W.E.I
           </h1>
-          <p className="text-xl text-foreground/90 font-medium tracking-wide">Wise & Easy Investment</p>
+          <p className="text-xl text-foreground/90 font-medium tracking-wide">Wise & Easy Investing</p>
         </div>
 
         {/* 로딩 애니메이션 */}
@@ -161,7 +161,7 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
         {/* 하단 힌트 텍스트 */}
         <div className="absolute bottom-8 left-0 right-0 text-center px-6">
           <p className="text-sm text-foreground/60 glass-subtle rounded-full py-2 px-4 inline-block">
-            데이터 기반 현명한 투자의 시작
+            우리 같이 현명한 투자를 시작해요
           </p>
         </div>
       </div>
@@ -187,9 +187,9 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
         </div>
         <div>
           <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-primary via-blue-300 to-primary bg-clip-text text-transparent drop-shadow-sm">
-            W.E.I
+            W.E Investing
           </h1>
-          <p className="text-foreground/80 text-lg font-medium">Wise & Easy Investment</p>
+          <p className="text-foreground/80 text-lg font-medium">Your Investment Cheatsheet</p>
         </div>
       </div>
 
@@ -198,7 +198,7 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-blue-600/5"></div>
         <Sparkles className="w-16 h-16 mx-auto text-primary drop-shadow-md relative z-10" />
         <h2 className="text-2xl font-bold leading-tight relative z-10">
-          어려운 투자를,<br />
+          투자를,<br />
           데이터를 기반으로<br />
           <span className="text-primary drop-shadow-sm">쉽고 현명하게</span> 투자하세요
         </h2>
@@ -232,15 +232,15 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
           {[
             {
               icon: <BarChart3 size={20} className="text-blue-400" />,
-              text: "S&P500 기업들의 재무제표 분석으로 재무제표 공부"
+              text: "S&P500 기업들의 재무제표 데이터로 재무제표 분석"
             },
             {
               icon: <DollarSign size={20} className="text-yellow-400" />,
-              text: "암호화폐 공급량, 김치 프리미엄 분석 등으로 디테일하게 알아보는 암호화폐 공부"
+              text: "암호화폐 공급량, 전세계 거래소 비교로 디테일하게 알아보는 암호화폐 분석"
             },
             {
               icon: <TrendingUp size={20} className="text-green-400" />,
-              text: "다양한 경제 지표들의 시장에 의미하는 바와 서로 간의 상관관계 공부"
+              text: "다양한 경제 지표들의 데이터로 서로 간의 상관관계 분석"
             }
           ].map((item, index) => (
             <div key={index} className="flex items-start space-x-4 glass-subtle rounded-2xl p-4 hover:glass-card transition-all duration-300">
@@ -276,7 +276,7 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
             },
             {
               icon: <Newspaper size={20} className="text-orange-400" />,
-              text: "S&P 500 기업 분석, 암호화폐 프로젝트에 대한 분석"
+              text: "S&P 500 기업, ETF 분석"
             },
             {
               icon: <MessageSquare size={20} className="text-purple-400" />,
@@ -317,7 +317,7 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
       {/* 하단 메시지 */}
       <div className="text-center pt-6 pb-8">
         <p className="text-sm text-foreground/60 glass-subtle rounded-full py-2 px-6 inline-block">
-          로그인 없이도 대부분의 기능을 이용할 수 있습니다
+          로그인이 필요 없습니다.
         </p>
       </div>
     </div>

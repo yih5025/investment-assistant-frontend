@@ -127,13 +127,6 @@ export function useEarningsCalendar() {
    * 전체 캘린더 데이터 조회
    */
   const fetchCalendarData = useCallback(async (forceRefresh: boolean = false) => {
-    // 캐시 확인
-    const now = Date.now();
-    if (!forceRefresh && calendarData.length > 0 && (now - lastFetchTime) < CACHE_DURATION) {
-      console.log('📅 Using cached calendar data');
-      return;
-    }
-    
     updateLoading('calendar', true);
     updateLoading('overall', true);
     updateError('calendar', null);
@@ -156,7 +149,7 @@ export function useEarningsCalendar() {
       const response: EarningsCalendarResponse = await earningsCalendarService.getEarningsCalendar(params);
       
       setCalendarData(response.items);
-      setLastFetchTime(now);
+      setLastFetchTime(Date.now());
       
       console.log(`✅ Calendar data loaded: ${response.items.length} events`);
       
@@ -168,7 +161,7 @@ export function useEarningsCalendar() {
       updateLoading('calendar', false);
       updateLoading('overall', false);
     }
-  }, [calendarData.length, lastFetchTime, updateLoading, updateError]);
+  }, [updateLoading, updateError]); // calendarData.length, lastFetchTime 제거
   
   /**
    * 주간 실적 뉴스 조회 (새로운 API)
@@ -310,11 +303,12 @@ export function useEarningsCalendar() {
     ]);
   }, [fetchCalendarData, fetchWeeklyData, fetchWeeklyNewsData]);
   
-  // 컴포넌트 마운트시 초기 데이터 로드
+  // 컴포넌트 마운트시 초기 데이터 로드 (한 번만 실행)
   useEffect(() => {
     fetchCalendarData();
     fetchWeeklyNewsData(); // 주간 뉴스도 초기 로드
-  }, [fetchCalendarData, fetchWeeklyNewsData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 빈 배열로 설정하여 마운트시 한 번만 실행
   
   // 유틸리티 계산값들
   const hasAnyData = calendarData.length > 0 || weeklyData.length > 0;

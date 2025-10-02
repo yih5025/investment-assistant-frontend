@@ -1,5 +1,5 @@
-// src/components/EarningsCalendar.tsx
-// 실적 발표 + IPO 통합 캘린더 컴포넌트
+// EarningsCalendar.tsx
+// 백엔드 API와 연동된 실적 발표 캘린더 컴포넌트
 
 import { useState } from "react";
 import { 
@@ -12,13 +12,11 @@ import {
   ExternalLink,
   RefreshCw,
   AlertCircle,
-  Loader2,
-  Rocket
+  Loader2
 } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useEarningsCalendar } from "../hooks/useEarningsCalendar";
-import { useIPOCalendar } from "../hooks/useIpoCalendar";
 import { CalendarDateUtils } from "../services/earningsCalendarService";
 import { 
   CalendarEventDisplay, 
@@ -27,7 +25,6 @@ import {
   CalendarLoadingState,
   CalendarErrorState 
 } from "../types/calendar";
-import { IPOEventDisplay } from "../types/ipoCalendar";
 
 export function EarningsCalendar() {
   // 캘린더 상태
@@ -35,7 +32,7 @@ export function EarningsCalendar() {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEventDisplay | null>(null);
   const [showNewsDetail, setShowNewsDetail] = useState(false);
   
-  // 실적 발표 커스텀 훅
+  // 커스텀 훅으로 데이터 관리
   const {
     calendarData,
     weeklyNewsData,
@@ -54,18 +51,6 @@ export function EarningsCalendar() {
     hasAnyError,
     isInitialLoading
   } = useEarningsCalendar();
-  
-  // IPO 커스텀 훅
-  const {
-    ipoData,
-    loading: ipoLoading,
-    error: ipoError,
-    getIPOsForDate,
-    getThisWeekIPOs,
-    getThisMonthIPOs,
-    refreshAll: refreshIPO,
-    clearError: clearIPOError
-  } = useIPOCalendar();
 
   // 현재 달 정보
   const year = currentDate.getFullYear();
@@ -74,41 +59,6 @@ export function EarningsCalendar() {
   
   // 달력에 표시할 날짜들
   const calendarDays = CalendarDateUtils.getCalendarDays(year, month);
-
-  /**
-   * 특정 날짜의 모든 이벤트 조회 (실적 + IPO)
-   */
-  const getAllEventsForDate = (date: Date): (CalendarEventDisplay | IPOEventDisplay)[] => {
-    const earningsEvents = getEventsForDate(date);
-    const ipoEvents = getIPOsForDate(date);
-    return [...earningsEvents, ...ipoEvents];
-  };
-
-  /**
-   * 이번 주 모든 이벤트 조회 (실적 + IPO)
-   */
-  const getAllThisWeekEvents = (): (CalendarEventDisplay | IPOEventDisplay)[] => {
-    const earningsEvents = getThisWeekEvents();
-    const ipoEvents = getThisWeekIPOs();
-    return [...earningsEvents, ...ipoEvents].sort((a, b) => {
-      const dateA = 'report_date' in a ? a.report_date : a.ipo_date;
-      const dateB = 'report_date' in b ? b.report_date : b.ipo_date;
-      return new Date(dateA).getTime() - new Date(dateB).getTime();
-    });
-  };
-
-  /**
-   * 이번 달 모든 이벤트 조회 (실적 + IPO)
-   */
-  const getAllThisMonthEvents = (): (CalendarEventDisplay | IPOEventDisplay)[] => {
-    const earningsEvents = getThisMonthEvents();
-    const ipoEvents = getThisMonthIPOs();
-    return [...earningsEvents, ...ipoEvents].sort((a, b) => {
-      const dateA = 'report_date' in a ? a.report_date : a.ipo_date;
-      const dateB = 'report_date' in b ? b.report_date : b.ipo_date;
-      return new Date(dateA).getTime() - new Date(dateB).getTime();
-    });
-  };
 
   /**
    * 월 변경 핸들러
@@ -132,19 +82,7 @@ export function EarningsCalendar() {
   /**
    * 이벤트 클릭 처리
    */
-  const handleEventClick = async (event: CalendarEventDisplay | IPOEventDisplay) => {
-    if ('ipo_date' in event) {
-      // IPO 이벤트 - 간단한 alert 표시
-      const priceInfo = event.price_range_low && event.price_range_high 
-        ? `\n공모가: $${event.price_range_low} - $${event.price_range_high}`
-        : '';
-      const exchangeInfo = event.exchange ? `\n거래소: ${event.exchange}` : '';
-      
-      alert(`${event.company_name} (${event.symbol})\nIPO 예정일: ${event.ipo_date}${priceInfo}${exchangeInfo}`);
-      return;
-    }
-    
-    // 실적 발표 이벤트
+  const handleEventClick = async (event: CalendarEventDisplay) => {
     setSelectedEvent(event);
     
     if (event.total_news_count > 0) {
@@ -153,20 +91,6 @@ export function EarningsCalendar() {
     
     setShowNewsDetail(true);
   };
-
-  /**
-   * 이벤트 배지 색상 (실적: 빨강, IPO: 초록)
-   */
-  const getEventBadgeColor = (event: CalendarEventDisplay | IPOEventDisplay) => {
-    if ('ipo_date' in event) {
-      return "bg-green-100 text-green-800 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800/50";
-    }
-    return "bg-red-100 text-red-800 border border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800/50";
-  };
-
-  /**
-   * 실적 발표 중요도별 색상
-   */
   const getImportanceColor = (importance: string) => {
     switch (importance) {
       case "high": 
@@ -180,15 +104,8 @@ export function EarningsCalendar() {
     }
   };
 
-  /**
-   * 이벤트 아이콘
-   */
-  const getEventIcon = (event: CalendarEventDisplay | IPOEventDisplay) => {
-    if ('ipo_date' in event) {
-      return <Rocket size={12} />;
-    }
-    
-    switch (event.event_type) {
+  const getEventIcon = (type: string) => {
+    switch (type) {
       case "earnings_report": return <TrendingUp size={12} />;
       case "guidance": return <Building2 size={12} />;
       case "conference": return <Calendar size={12} />;
@@ -250,6 +167,7 @@ export function EarningsCalendar() {
     
     return (
       <div className="glass-card rounded-xl p-4">
+        {/* 뒤로가기 헤더 */}
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={() => {
@@ -268,6 +186,7 @@ export function EarningsCalendar() {
           </div>
         </div>
 
+        {/* 이벤트 정보 */}
         <div className="glass-subtle rounded-lg p-4 mb-4">
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-lg font-bold">{selectedEvent.company_name}</h2>
@@ -286,6 +205,7 @@ export function EarningsCalendar() {
           )}
         </div>
 
+        {/* 뉴스 로딩 상태 */}
         {loading.news && (
           <div className="flex items-center justify-center py-8">
             <LoadingSpinner size={24} />
@@ -293,6 +213,7 @@ export function EarningsCalendar() {
           </div>
         )}
 
+        {/* 뉴스 에러 상태 */}
         {errors.news && (
           <ErrorDisplay 
             error={errors.news} 
@@ -300,6 +221,7 @@ export function EarningsCalendar() {
           />
         )}
 
+        {/* 관련 뉴스 리스트 */}
         {newsData && !loading.news && (
           <div className="space-y-3">
             {newsData.forecast_news.length > 0 ? (
@@ -348,13 +270,15 @@ export function EarningsCalendar() {
   // 메인 캘린더 화면 렌더링
   return (
     <div className="glass-card rounded-xl p-4">
+      {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
           <Calendar size={20} className="text-primary" />
-          <h3 className="font-medium">기업 일정 캘린더</h3>
+          <h3 className="font-medium">실적 발표 캘린더</h3>
         </div>
         
         <div className="flex items-center space-x-2">
+          {/* 월 네비게이션 */}
           <button 
             onClick={handlePreviousMonth}
             className="p-1 glass-subtle rounded hover:glass transition-all"
@@ -373,17 +297,7 @@ export function EarningsCalendar() {
         </div>
       </div>
 
-      <div className="flex items-center justify-center space-x-6 mb-4 py-2 glass-subtle rounded-lg">
-        <div className="flex items-center space-x-2">
-          <div className="w-3 h-3 rounded-full bg-red-500"></div>
-          <span className="text-xs text-foreground/70">실적 발표</span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <div className="w-3 h-3 rounded-full bg-green-500"></div>
-          <span className="text-xs text-foreground/70">IPO</span>
-        </div>
-      </div>
-
+      {/* 전체 에러 표시 */}
       {hasAnyError && (
         <div className="mb-4">
           {errors.calendar && (
@@ -395,15 +309,7 @@ export function EarningsCalendar() {
         </div>
       )}
 
-      {ipoError && (
-        <div className="mb-4">
-          <ErrorDisplay 
-            error={ipoError} 
-            onRetry={() => refreshIPO()} 
-          />
-        </div>
-      )}
-
+      {/* 초기 로딩 상태 */}
       {isInitialLoading && (
         <div className="flex items-center justify-center py-12">
           <LoadingSpinner size={32} />
@@ -411,6 +317,7 @@ export function EarningsCalendar() {
         </div>
       )}
 
+      {/* 데이터가 있을 때만 탭 표시 */}
       {hasAnyData && !isInitialLoading && (
         <Tabs defaultValue="calendar" className="w-full">
           <TabsList className="grid w-full grid-cols-3 glass-card">
@@ -419,7 +326,10 @@ export function EarningsCalendar() {
             <TabsTrigger value="thismonth">이번달</TabsTrigger>
           </TabsList>
 
+          
+          {/* 캘린더 탭 */}
           <TabsContent value="calendar" className="mt-4">
+            {/* 요일 헤더 */}
             <div className="grid grid-cols-7 gap-1 mb-2">
               {['일', '월', '화', '수', '목', '금', '토'].map((day, index) => (
                 <div key={index} className="text-center text-xs font-medium text-foreground/70 py-2">
@@ -428,11 +338,12 @@ export function EarningsCalendar() {
               ))}
             </div>
 
+            {/* 달력 그리드 - 높이 증가 및 날짜 상단 배치 */}
             <div className="calendar-grid-enhanced mb-4">
               {calendarDays.map((date, index) => {
                 const isCurrentMonth = date.getMonth() === month;
                 const isToday = date.toDateString() === today.toDateString();
-                const events = getAllEventsForDate(date);
+                const events = getEventsForDate(date);
                 
                 return (
                   <div
@@ -445,22 +356,20 @@ export function EarningsCalendar() {
                       events.length > 0 ? 'has-event' : ''
                     }`}
                   >
+                    {/* 날짜 표시 - 상단 좌측에 배치 */}
                     <span className="calendar-date-number text-xs font-medium">
                       {date.getDate()}
                     </span>
                     
+                    {/* 이벤트 표시 - 날짜 아래에 배치 */}
                     {events.length > 0 && (
                       <div className="calendar-events-container">
                         {events.slice(0, 3).map((event, eventIndex) => (
                           <div
                             key={eventIndex}
                             onClick={() => handleEventClick(event)}
-                            className={`event-badge ${getEventBadgeColor(event)}`}
-                            title={
-                              'ipo_date' in event
-                                ? `${event.symbol} - ${event.company_name}\nIPO: $${event.price_range_low}-${event.price_range_high}`
-                                : `${event.symbol} - ${event.company_name}\n뉴스: ${event.total_news_count || 0}개`
-                            }
+                            className={`event-badge ${getImportanceColor(event.importance)}`}
+                            title={`${event.symbol} - ${event.company_name}\n뉴스: ${event.total_news_count || 0}개`}
                           >
                             {event.symbol}
                           </div>
@@ -470,7 +379,7 @@ export function EarningsCalendar() {
                           <div 
                             className="event-badge-more"
                             onClick={() => handleEventClick(events[0])}
-                            title={`총 ${events.length}개 일정`}
+                            title={`총 ${events.length}개 실적 발표`}
                           >
                             +{events.length - 3}
                           </div>
@@ -483,9 +392,10 @@ export function EarningsCalendar() {
             </div>
           </TabsContent>
           
+          {/* 이번주 탭 */}
           <TabsContent value="thisweek" className="mt-4">
             <div className="space-y-3">
-              {getAllThisWeekEvents().map((event, index) => (
+              {getThisWeekEvents().map((event, index) => (
                 <div
                   key={index}
                   className="glass-subtle p-3 rounded-lg cursor-pointer hover:glass transition-all group"
@@ -493,8 +403,8 @@ export function EarningsCalendar() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className={`p-2 rounded ${getEventBadgeColor(event)} flex-shrink-0`}>
-                        {getEventIcon(event)}
+                      <div className={`p-2 rounded ${getImportanceColor(event.importance)} flex-shrink-0`}>
+                        {getEventIcon(event.event_type)}
                       </div>
                       
                       <div>
@@ -503,21 +413,12 @@ export function EarningsCalendar() {
                         </div>
                         <div className="text-xs text-foreground/60">
                           {event.display_time}
-                          {'estimate' in event && event.estimate && (
+                          {event.estimate && (
                             <span className="ml-2">예상 EPS: ${event.estimate}</span>
-                          )}
-                          {'price_range_low' in event && event.price_range_low && (
-                            <span className="ml-2">
-                              공모가: ${event.price_range_low}-${event.price_range_high}
-                            </span>
                           )}
                         </div>
                         <div className="text-xs text-foreground/50">
-                          {'gics_sector' in event ? (
-                            <>{event.gics_sector} • 뉴스 {event.total_news_count}개</>
-                          ) : (
-                            <>{event.exchange} • IPO</>
-                          )}
+                          {event.gics_sector} • 뉴스 {event.total_news_count}개
                         </div>
                       </div>
                     </div>
@@ -527,18 +428,19 @@ export function EarningsCalendar() {
                 </div>
               ))}
               
-              {getAllThisWeekEvents().length === 0 && (
+              {getThisWeekEvents().length === 0 && (
                 <div className="glass-subtle p-8 rounded-lg text-center">
                   <Calendar size={48} className="mx-auto mb-4 text-foreground/30" />
-                  <p className="text-foreground/70">이번 주 일정이 없습니다</p>
+                  <p className="text-foreground/70">이번 주 실적 발표가 없습니다</p>
                 </div>
               )}
             </div>
           </TabsContent>
           
+          {/* 이번달 탭 */}
           <TabsContent value="thismonth" className="mt-4">
             <div className="space-y-3">
-              {getAllThisMonthEvents().map((event, index) => (
+              {getThisMonthEvents().map((event, index) => (
                 <div
                   key={index}
                   className="glass-subtle p-3 rounded-lg cursor-pointer hover:glass transition-all group"
@@ -546,8 +448,8 @@ export function EarningsCalendar() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className={`p-2 rounded ${getEventBadgeColor(event)} flex-shrink-0`}>
-                        {getEventIcon(event)}
+                      <div className={`p-2 rounded ${getImportanceColor(event.importance)} flex-shrink-0`}>
+                        {getEventIcon(event.event_type)}
                       </div>
                       
                       <div>
@@ -556,21 +458,12 @@ export function EarningsCalendar() {
                         </div>
                         <div className="text-xs text-foreground/60">
                           {event.display_time}
-                          {'estimate' in event && event.estimate && (
+                          {event.estimate && (
                             <span className="ml-2">예상 EPS: ${event.estimate}</span>
-                          )}
-                          {'price_range_low' in event && event.price_range_low && (
-                            <span className="ml-2">
-                              공모가: ${event.price_range_low}-${event.price_range_high}
-                            </span>
                           )}
                         </div>
                         <div className="text-xs text-foreground/50">
-                          {'gics_sector' in event ? (
-                            <>{event.gics_sector} • 뉴스 {event.total_news_count}개</>
-                          ) : (
-                            <>{event.exchange} • IPO</>
-                          )}
+                          {event.gics_sector} • 뉴스 {event.total_news_count}개
                         </div>
                       </div>
                     </div>
@@ -580,10 +473,10 @@ export function EarningsCalendar() {
                 </div>
               ))}
               
-              {getAllThisMonthEvents().length === 0 && (
+              {getThisMonthEvents().length === 0 && (
                 <div className="glass-subtle p-8 rounded-lg text-center">
                   <Calendar size={48} className="mx-auto mb-4 text-foreground/30" />
-                  <p className="text-foreground/70">이번 달 일정이 없습니다</p>
+                  <p className="text-foreground/70">이번 달 실적 발표가 없습니다</p>
                 </div>
               )}
             </div>
@@ -591,10 +484,11 @@ export function EarningsCalendar() {
         </Tabs>
       )}
 
+      {/* 데이터 없음 상태 */}
       {!hasAnyData && !isInitialLoading && !hasAnyError && (
         <div className="glass-subtle p-8 rounded-lg text-center">
           <Calendar size={48} className="mx-auto mb-4 text-foreground/30" />
-          <p className="text-foreground/70 mb-2">일정 데이터가 없습니다</p>
+          <p className="text-foreground/70 mb-2">실적 데이터가 없습니다</p>
           <button
             onClick={refreshAll}
             className="text-sm text-primary hover:text-primary/80 underline"
@@ -604,6 +498,7 @@ export function EarningsCalendar() {
         </div>
       )}
 
+      {/* 뉴스 섹션 */}
       {!isInitialLoading && (
         <EarningsNewsSection 
           selectedEvent={selectedEvent}
@@ -624,6 +519,9 @@ export function EarningsCalendar() {
   );
 }
 
+/**
+ * 뉴스 섹션 컴포넌트 (분리하여 가독성 향상)
+ */
 interface EarningsNewsSectionProps {
   selectedEvent: CalendarEventDisplay | null;
   selectedEventNews: EarningsNewsResponse | null;
@@ -648,9 +546,11 @@ function EarningsNewsSection({
   formatTimestamp
 }: EarningsNewsSectionProps) {
   
+  // 특정 기업 선택된 경우
   if (selectedEvent && selectedEventNews) {
     return (
       <div className="mt-6 pt-6 border-t border-foreground/10">
+        {/* 선택된 기업 뉴스 헤더 */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
             <TrendingUp size={20} className="text-primary" />
@@ -666,6 +566,7 @@ function EarningsNewsSection({
           </button>
         </div>
 
+        {/* 선택된 기업의 뉴스 리스트 */}
         <div className="space-y-3">
           {selectedEventNews.forecast_news.map((news, index) => (
             <article
@@ -702,8 +603,10 @@ function EarningsNewsSection({
     );
   }
 
+  // 기본 상태: 이번 주 주요 실적 뉴스
   return (
     <div className="mt-6 pt-6 border-t border-foreground/10">
+      {/* 주간 뉴스 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
           <TrendingUp size={20} className="text-primary" />
@@ -716,6 +619,7 @@ function EarningsNewsSection({
         </div>
       </div>
 
+      {/* 로딩 상태 */}
       {loading.weekly && !weeklyNewsData && (
         <div className="flex items-center justify-center py-8">
           <Loader2 size={24} className="animate-spin text-primary" />
@@ -723,6 +627,7 @@ function EarningsNewsSection({
         </div>
       )}
 
+      {/* 에러 상태 */}
       {errors.weekly && (
         <div className="glass-subtle p-4 rounded-lg border border-red-500/20 mb-4">
           <div className="flex items-center justify-between">
@@ -739,11 +644,11 @@ function EarningsNewsSection({
           </div>
         </div>
       )}
-
       {weeklyNewsData && !loading.weekly && (
         <div className="space-y-4">
           {weeklyNewsData.earnings_with_news.map((earning, earningIndex) => (
             <div key={earningIndex} className="border-l-2 border-primary/20 pl-4">
+              {/* 기업 헤더 - 한 줄로 간결하게 */}
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-2">
                   <Badge variant="outline" className="text-xs font-mono">
@@ -762,6 +667,7 @@ function EarningsNewsSection({
                 </span>
               </div>
 
+              {/* 뉴스 리스트 - 간결한 카드 */}
               <div className="space-y-2">
                 {earning.forecast_news.slice(0, 3).map((news, newsIndex) => (
                   <div
@@ -792,6 +698,7 @@ function EarningsNewsSection({
                   </div>
                 ))}
                 
+                {/* 더 보기 버튼 - 간결하게 */}
                 {earning.news_count > 3 && (
                   <button
                     onClick={() => {
@@ -831,6 +738,7 @@ function EarningsNewsSection({
         </div>
       )}
 
+      {/* 뉴스 없음 상태 */}
       {weeklyNewsData && weeklyNewsData.earnings_with_news.length === 0 && !loading.weekly && (
         <div className="glass-subtle p-8 rounded-lg text-center">
           <TrendingUp size={48} className="mx-auto mb-4 text-foreground/30" />

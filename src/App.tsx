@@ -74,7 +74,7 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   };
   (window as any).clearQueryCache = () => {
     queryClient.clear();
-    console.log('🗑️ React Query 캐시 클리어됨');
+    //console.log('🗑️ React Query 캐시 클리어됨');
   };
 }
 
@@ -215,7 +215,7 @@ function AppContent() {
     
     // 서비스가 아직 초기화되지 않은 경우에만 초기화
     if (!webSocketManager.getStatus().initialized) {
-      console.log('🔧 WebSocket 서비스 초기화 중...');
+      //console.log('🔧 WebSocket 서비스 초기화 중...');
       webSocketManager.initialize();
     } else {
       console.log('✅ WebSocket 서비스 이미 초기화됨 - 기존 연결 활용');
@@ -223,19 +223,19 @@ function AppContent() {
 
     // 연결 상태 모니터링 (선택사항)
     const unsubscribeConnection = webSocketManager.subscribe('connection_change', ({ type, status, mode }) => {
-      console.log(`🔄 ${type} 연결 상태: ${status} (${mode} 모드)`);
+      // console.log(`🔄 ${type} 연결 상태: ${status} (${mode} 모드)`);
     });
 
     // 앱 완전 종료 시에만 서비스 정리
     const handleBeforeUnload = () => {
-      console.log('🛑 브라우저/앱 종료 - WebSocket 서비스 정리');
+      //console.log('🛑 브라우저/앱 종료 - WebSocket 서비스 정리');
       webSocketManager.shutdown();
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
-      console.log('📦 App 컴포넌트 정리 - WebSocket 연결은 유지');
+      //console.log('📦 App 컴포넌트 정리 - WebSocket 연결은 유지');
       unsubscribeConnection();
       window.removeEventListener('beforeunload', handleBeforeUnload);
       // 여기서 webSocketService.shutdown() 호출하지 않음!
@@ -250,10 +250,10 @@ function AppContent() {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        console.log('📱 앱 백그라운드 이동 - 연결 유지 (최적화됨)');
+        // console.log('📱 앱 백그라운드 이동 - 연결 유지 (최적화됨)');
         // 연결을 끊지 않고 유지
       } else {
-        console.log('📱 앱 포그라운드 복귀');
+        // console.log('📱 앱 포그라운드 복귀');
         
         // 필요한 경우에만 재연결 (끊어진 연결이 있는지 확인)
         const statuses = webSocketManager.getAllConnectionStatuses();
@@ -269,7 +269,7 @@ function AppContent() {
         });
         
         if (needsReconnection) {
-          console.log('🔄 필요한 연결만 복구');
+          //console.log('🔄 필요한 연결만 복구');
           webSocketManager.reconnectAll();
         }
       }
@@ -680,7 +680,7 @@ function AppContent() {
             W.E.I
           </h1>
           <p className="text-xs text-foreground/70">
-            {isLoggedIn ? `${user.name}님, 안녕하세요` : "Wise & Easy Investment"}
+            {isLoggedIn ? `${user.name}님, 안녕하세요` : "Wise & Easy Investing"}
           </p>
         </div>
         <div className="flex items-center space-x-2">

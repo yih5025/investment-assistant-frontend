@@ -44,13 +44,6 @@ export function useIPOCalendar() {
    * 전체 IPO 데이터 조회
    */
   const fetchIPOData = useCallback(async (forceRefresh: boolean = false) => {
-    // 캐시 확인
-    const now = Date.now();
-    if (!forceRefresh && ipoData.length > 0 && (now - lastFetchTime) < CACHE_DURATION) {
-      console.log('📅 Using cached IPO data');
-      return;
-    }
-    
     setLoading(true);
     setError(null);
     
@@ -70,7 +63,7 @@ export function useIPOCalendar() {
       const response = await ipoCalendarService.getIPOCalendar(params);
       
       setIPOData(response.items);
-      setLastFetchTime(now);
+      setLastFetchTime(Date.now());
       
       console.log(`✅ IPO data loaded: ${response.items.length} events`);
       
@@ -81,7 +74,7 @@ export function useIPOCalendar() {
     } finally {
       setLoading(false);
     }
-  }, [ipoData.length, lastFetchTime]);
+  }, []); // dependency 제거하여 함수가 재생성되지 않도록 함
 
   /**
    * 통계 정보 조회
@@ -166,11 +159,12 @@ export function useIPOCalendar() {
     ]);
   }, [fetchIPOData, fetchStatistics]);
 
-  // 컴포넌트 마운트시 초기 데이터 로드
+  // 컴포넌트 마운트시 초기 데이터 로드 (한 번만 실행)
   useEffect(() => {
     fetchIPOData();
     fetchStatistics();
-  }, [fetchIPOData, fetchStatistics]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 빈 배열로 설정하여 마운트시 한 번만 실행
 
   return {
     // 데이터
