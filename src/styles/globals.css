@@ -2,37 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+@custom-variant dark (&:is(.dark *));
+
 :root {
   --font-size: 14px;
   --foreground: #ffffff;
-  --background: #0f172a;
-  --card: rgba(255, 255, 255, 0.08);
+  --card: rgba(255, 255, 255, 0.1);
   --card-foreground: #ffffff;
-  --popover: rgba(255, 255, 255, 0.12);
+  --popover: rgba(255, 255, 255, 0.15);
   --popover-foreground: #ffffff;
   --primary: #60a5fa;
   --primary-foreground: #ffffff;
-  --primary-light: #93c5fd;
-  --primary-glow: rgba(96, 165, 250, 0.5);
   --secondary: rgba(96, 165, 250, 0.2);
   --secondary-foreground: #ffffff;
-  --muted: rgba(255, 255, 255, 0.08);
+  --muted: rgba(255, 255, 255, 0.1);
   --muted-foreground: rgba(255, 255, 255, 0.7);
   --accent: rgba(96, 165, 250, 0.3);
   --accent-foreground: #ffffff;
-  --accent-light: rgba(96, 165, 250, 0.2);
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --destructive-light: rgba(239, 68, 68, 0.2);
-  --success: #10b981;
-  --success-foreground: #ffffff;
-  --success-light: rgba(16, 185, 129, 0.2);
-  --warning: #f59e0b;
-  --warning-foreground: #ffffff;
-  --warning-light: rgba(245, 158, 11, 0.2);
-  --border: rgba(255, 255, 255, 0.15);
-  --input: rgba(255, 255, 255, 0.08);
-  --input-background: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.2);
+  --input: rgba(255, 255, 255, 0.1);
+  --input-background: rgba(255, 255, 255, 0.1);
   --switch-background: rgba(255, 255, 255, 0.3);
   --font-weight-medium: 500;
   --font-weight-normal: 400;
@@ -43,46 +34,68 @@
   --chart-4: #34d399;
   --chart-5: #fbbf24;
   --radius: 1rem;
-  --bull-green: #10b981;
-  --bear-red: #ef4444;
-  --neutral-gray: #6b7280;
-  --sidebar-background: rgba(255, 255, 255, 0.08);
+  --sidebar: rgba(255, 255, 255, 0.1);
   --sidebar-foreground: #ffffff;
   --sidebar-primary: #60a5fa;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: rgba(96, 165, 250, 0.2);
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.15);
+  --sidebar-border: rgba(255, 255, 255, 0.2);
   --sidebar-ring: rgba(96, 165, 250, 0.5);
+}
+
+.dark {
+  --foreground: #ffffff;
+  --card: rgba(255, 255, 255, 0.03);
+  --card-foreground: #ffffff;
+  --popover: rgba(255, 255, 255, 0.08);
+  --popover-foreground: #ffffff;
+  --primary: #93c5fd;
+  --primary-foreground: #1e3a8a;
+  --secondary: rgba(147, 197, 253, 0.2);
+  --secondary-foreground: #ffffff;
+  --muted: rgba(255, 255, 255, 0.03);
+  --muted-foreground: rgba(255, 255, 255, 0.6);
+  --accent: rgba(147, 197, 253, 0.3);
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.03);
+  --ring: rgba(147, 197, 253, 0.5);
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --chart-1: #93c5fd;
+  --chart-2: #67e8f9;
+  --chart-3: #c4b5fd;
+  --chart-4: #6ee7b7;
+  --chart-5: #fde047;
+  --sidebar: rgba(255, 255, 255, 0.03);
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #93c5fd;
+  --sidebar-primary-foreground: #1e3a8a;
+  --sidebar-accent: rgba(147, 197, 253, 0.2);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: rgba(147, 197, 253, 0.5);
 }
 
 @theme inline {
   --color-foreground: var(--foreground);
-  --color-background: var(--background);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  --color-primary-light: var(--primary-light);
-  --color-primary-glow: var(--primary-glow);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-  --color-accent-light: var(--accent-light);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  --color-destructive-light: var(--destructive-light);
-  --color-success: var(--success);
-  --color-success-foreground: var(--success-foreground);
-  --color-success-light: var(--success-light);
-  --color-warning: var(--warning);
-  --color-warning-foreground: var(--warning-foreground);
-  --color-warning-light: var(--warning-light);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-input-background: var(--input-background);
@@ -93,14 +106,11 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --color-bull: var(--bull-green);
-  --color-bear: var(--bear-red);
-  --color-neutral: var(--neutral-gray);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: var(--sidebar-background);
+  --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
@@ -117,23 +127,92 @@
 
   html, body {
     color: var(--foreground);
-    background-color: var(--background);
     min-height: 100vh;
     min-height: 100dvh;
     position: relative;
     overflow-x: hidden;
   }
 
-/* ========================================
-   배경 테마 시스템
-   브라우저 콘솔에서 테마 전환:
-   document.body.setAttribute('data-theme', 'gradient');
-   document.body.setAttribute('data-theme', 'particles');
-   document.body.setAttribute('data-theme', 'blur');
-   document.body.setAttribute('data-theme', 'aurora');
-   ======================================== */
+  /* 별이 빛나는 밤 배경 - 반 고흐 모티브 */
+  body {
+    background: 
+      /* 기본 깊은 밤하늘 */
+      radial-gradient(ellipse at 30% 20%, #1e3a8a 0%, #0f172a 40%),
+      radial-gradient(ellipse at 70% 80%, #1e40af 0%, #0c1420 50%),
+      radial-gradient(ellipse at 50% 50%, #312e81 0%, #020617 60%),
+      /* 소용돌이 효과 */
+      conic-gradient(from 45deg at 20% 30%, 
+        rgba(59, 130, 246, 0.3) 0deg,
+        rgba(147, 51, 234, 0.2) 60deg,
+        rgba(30, 58, 138, 0.4) 120deg,
+        rgba(59, 130, 246, 0.3) 180deg,
+        rgba(49, 46, 129, 0.3) 240deg,
+        rgba(30, 64, 175, 0.4) 300deg,
+        rgba(59, 130, 246, 0.3) 360deg
+      ),
+      /* 추가 소용돌이 */
+      conic-gradient(from 135deg at 80% 70%, 
+        rgba(30, 64, 175, 0.3) 0deg,
+        rgba(59, 130, 246, 0.2) 90deg,
+        rgba(147, 51, 234, 0.3) 180deg,
+        rgba(30, 58, 138, 0.2) 270deg,
+        rgba(30, 64, 175, 0.3) 360deg
+      ),
+      /* 베이스 그라데이션 */
+      linear-gradient(135deg, #0f172a 0%, #1e3a8a 25%, #312e81 50%, #1e40af 75%, #0c1420 100%);
+    
+    background-size: 
+      150% 150%,
+      120% 120%, 
+      200% 200%,
+      80% 80%,
+      60% 60%,
+      100% 100%;
+    
+    background-position: 
+      0% 0%, 
+      100% 100%, 
+      50% 50%,
+      20% 30%,
+      80% 70%,
+      center;
+    
+    background-attachment: fixed;
+    animation: starryNightFlow 20s ease-in-out infinite alternate;
+  }
 
-  /* 공통 배경 레이어 */
+  /* 소용돌이 배경 애니메이션 */
+  @keyframes starryNightFlow {
+    0% {
+      background-position: 
+        0% 0%, 
+        100% 100%, 
+        50% 50%,
+        20% 30%,
+        80% 70%,
+        center;
+    }
+    50% {
+      background-position: 
+        10% 10%, 
+        90% 90%, 
+        60% 40%,
+        25% 35%,
+        75% 65%,
+        center;
+    }
+    100% {
+      background-position: 
+        5% 5%, 
+        95% 95%, 
+        45% 55%,
+        15% 25%,
+        85% 75%,
+        center;
+    }
+  }
+
+  /* 별빛 효과 레이어 */
   body::before {
     content: '';
     position: fixed;
@@ -141,422 +220,174 @@
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: -2;
-    transition: opacity 0.8s ease, background 0.8s ease;
-  }
-
-  /* ========================================
-     테마 1: Animated Gradient Mesh
-     움직이는 다층 그라데이션
-     ======================================== */
-  body[data-theme="gradient"]::before {
     background: 
-      radial-gradient(ellipse at 20% 30%, rgba(59, 130, 246, 0.25) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 70%, rgba(147, 51, 234, 0.2) 0%, transparent 50%),
-      radial-gradient(ellipse at 50% 50%, rgba(16, 185, 129, 0.15) 0%, transparent 50%),
-      linear-gradient(135deg, #0a0e1a 0%, #1a1f35 50%, #0f1428 100%);
-    animation: gradientShift 15s ease infinite alternate;
-  }
-
-  @keyframes gradientShift {
-    0% {
-      filter: hue-rotate(0deg) brightness(1);
-    }
-    50% {
-      filter: hue-rotate(30deg) brightness(1.1);
-    }
-    100% {
-      filter: hue-rotate(0deg) brightness(1);
-    }
-  }
-
-  /* ========================================
-     테마 2: Particle Network
-     연결된 점들 효과 (CSS 방식)
-     ======================================== */
-  body[data-theme="particles"]::before {
-    background: 
-      radial-gradient(circle at 15% 25%, rgba(96, 165, 250, 0.08) 0%, transparent 3%),
-      radial-gradient(circle at 85% 15%, rgba(96, 165, 250, 0.08) 0%, transparent 3%),
-      radial-gradient(circle at 70% 40%, rgba(96, 165, 250, 0.06) 0%, transparent 3%),
-      radial-gradient(circle at 25% 70%, rgba(96, 165, 250, 0.08) 0%, transparent 3%),
-      radial-gradient(circle at 90% 85%, rgba(147, 51, 234, 0.07) 0%, transparent 3%),
-      radial-gradient(circle at 45% 90%, rgba(147, 51, 234, 0.06) 0%, transparent 3%),
-      radial-gradient(circle at 60% 20%, rgba(16, 185, 129, 0.06) 0%, transparent 3%),
-      radial-gradient(circle at 30% 50%, rgba(16, 185, 129, 0.07) 0%, transparent 3%),
-      linear-gradient(135deg, #0a0e1a 0%, #1a1f35 50%, #0f1428 100%);
-    background-size: 100% 100%;
-    animation: particleFloat 20s ease-in-out infinite;
-  }
-
-  body[data-theme="particles"]::after {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: -1;
-    background: 
-      linear-gradient(90deg, transparent 48%, rgba(96, 165, 250, 0.03) 50%, transparent 52%) 15% 25% / 200px 1px,
-      linear-gradient(90deg, transparent 48%, rgba(96, 165, 250, 0.03) 50%, transparent 52%) 85% 15% / 200px 1px,
-      linear-gradient(90deg, transparent 48%, rgba(96, 165, 250, 0.03) 50%, transparent 52%) 70% 40% / 180px 1px,
-      linear-gradient(90deg, transparent 48%, rgba(147, 51, 234, 0.03) 50%, transparent 52%) 25% 70% / 160px 1px;
-    background-repeat: no-repeat;
+      /* 큰 별들 */
+      radial-gradient(circle at 15% 25%, rgba(255, 215, 0, 0.8) 0px, transparent 2px),
+      radial-gradient(circle at 85% 15%, rgba(255, 223, 0, 0.9) 0px, transparent 1.5px),
+      radial-gradient(circle at 70% 40%, rgba(255, 215, 0, 0.7) 0px, transparent 2.5px),
+      radial-gradient(circle at 25% 70%, rgba(255, 255, 224, 0.8) 0px, transparent 2px),
+      radial-gradient(circle at 90% 80%, rgba(255, 215, 0, 0.9) 0px, transparent 1.8px),
+      /* 작은 별들 */
+      radial-gradient(circle at 10% 60%, rgba(255, 255, 255, 0.6) 0px, transparent 1px),
+      radial-gradient(circle at 95% 30%, rgba(255, 255, 255, 0.5) 0px, transparent 0.8px),
+      radial-gradient(circle at 40% 85%, rgba(255, 255, 255, 0.7) 0px, transparent 1.2px),
+      radial-gradient(circle at 60% 20%, rgba(255, 255, 255, 0.4) 0px, transparent 1px),
+      radial-gradient(circle at 30% 45%, rgba(255, 255, 255, 0.6) 0px, transparent 0.9px),
+      /* 미세한 별먼지 */
+      radial-gradient(circle at 50% 10%, rgba(255, 255, 255, 0.2) 0px, transparent 0.5px),
+      radial-gradient(circle at 80% 90%, rgba(255, 255, 255, 0.3) 0px, transparent 0.6px),
+      radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.2) 0px, transparent 0.4px);
+    
     pointer-events: none;
-    animation: particleConnect 15s ease-in-out infinite alternate;
-  }
-
-  @keyframes particleFloat {
-    0%, 100% {
-      background-position: 0% 0%, 100% 0%, 70% 40%, 25% 70%, 90% 85%, 45% 90%, 60% 20%, 30% 50%, 0% 0%;
-    }
-    25% {
-      background-position: 5% 5%, 95% 5%, 75% 35%, 20% 75%, 95% 80%, 40% 95%, 65% 25%, 35% 45%, 0% 0%;
-    }
-    50% {
-      background-position: 10% 10%, 90% 10%, 80% 30%, 15% 80%, 100% 75%, 35% 100%, 70% 30%, 40% 40%, 0% 0%;
-    }
-    75% {
-      background-position: 5% 15%, 95% 5%, 75% 35%, 20% 75%, 95% 80%, 40% 95%, 65% 25%, 35% 45%, 0% 0%;
-    }
-  }
-
-  @keyframes particleConnect {
-    0%, 100% {
-      opacity: 0.3;
-    }
-    50% {
-      opacity: 0.6;
-    }
-  }
-
-  /* ========================================
-     테마 3: Layered Blur Shapes (추천)
-     여러 겹의 블러된 도형들
-     Glass 효과와 가장 잘 어울림
-     ======================================== */
-  body[data-theme="blur"]::before {
-    background: 
-      linear-gradient(135deg, #0a0e1a 0%, #1a1f35 50%, #0f1428 100%);
-  }
-
-  body[data-theme="blur"]::after {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
     z-index: -1;
-    pointer-events: none;
-    background: 
-      radial-gradient(ellipse 800px 600px at 20% 30%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
-      radial-gradient(ellipse 600px 800px at 80% 60%, rgba(147, 51, 234, 0.12) 0%, transparent 50%),
-      radial-gradient(ellipse 700px 500px at 50% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
-      radial-gradient(ellipse 500px 700px at 70% 20%, rgba(96, 165, 250, 0.08) 0%, transparent 50%);
-    filter: blur(80px);
-    animation: blurShift 20s ease-in-out infinite alternate;
-  }
-
-  @keyframes blurShift {
-    0% {
-      transform: translate(0, 0) scale(1);
-      opacity: 1;
-    }
-    25% {
-      transform: translate(-5%, 5%) scale(1.05);
-      opacity: 0.9;
-    }
-    50% {
-      transform: translate(5%, -3%) scale(0.95);
-      opacity: 1;
-    }
-    75% {
-      transform: translate(-3%, -5%) scale(1.03);
-      opacity: 0.95;
-    }
-    100% {
-      transform: translate(0, 0) scale(1);
-      opacity: 1;
-    }
-  }
-
-  /* ========================================
-     테마 4: Aurora Borealis
-     오로라 같은 빛 효과
-     ======================================== */
-  body[data-theme="aurora"]::before {
-    background: 
-      linear-gradient(135deg, #0a0e1a 0%, #1a1f35 50%, #0f1428 100%);
-  }
-
-  body[data-theme="aurora"]::after {
-    content: '';
-    position: fixed;
-    top: -50%;
-    left: -50%;
-    right: -50%;
-    bottom: -50%;
-    z-index: -1;
-    pointer-events: none;
-    background: 
-      linear-gradient(125deg, 
-        transparent 0%,
-        transparent 30%,
-        rgba(59, 130, 246, 0.15) 35%,
-        rgba(96, 165, 250, 0.2) 40%,
-        rgba(147, 51, 234, 0.18) 45%,
-        rgba(168, 85, 247, 0.15) 50%,
-        rgba(16, 185, 129, 0.12) 55%,
-        rgba(59, 130, 246, 0.1) 60%,
-        transparent 65%,
-        transparent 100%
-      );
-    filter: blur(60px);
-    animation: auroraWave 15s ease-in-out infinite;
-    transform-origin: center center;
-  }
-
-  @keyframes auroraWave {
-    0% {
-      transform: rotate(0deg) translateY(0%) scale(1);
-      opacity: 0.6;
-    }
-    25% {
-      transform: rotate(5deg) translateY(-5%) scale(1.1);
-      opacity: 0.8;
-    }
-    50% {
-      transform: rotate(-3deg) translateY(-10%) scale(1.05);
-      opacity: 0.7;
-    }
-    75% {
-      transform: rotate(3deg) translateY(-5%) scale(1.08);
-      opacity: 0.75;
-    }
-    100% {
-      transform: rotate(0deg) translateY(0%) scale(1);
-      opacity: 0.6;
-    }
-  }
-
-  /* 별빛 효과 (모든 테마 공통) */
-  body[data-theme]::before {
-    background-image: 
-      radial-gradient(circle at 15% 25%, rgba(255, 255, 255, 0.4) 0px, transparent 1px),
-      radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.5) 0px, transparent 1px),
-      radial-gradient(circle at 70% 40%, rgba(255, 255, 255, 0.3) 0px, transparent 1px),
-      radial-gradient(circle at 25% 70%, rgba(255, 255, 255, 0.4) 0px, transparent 1px),
-      radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.35) 0px, transparent 1px),
-      radial-gradient(circle at 45% 90%, rgba(255, 255, 255, 0.3) 0px, transparent 1px);
-    background-repeat: no-repeat;
     animation: starsTwinkle 4s ease-in-out infinite alternate;
   }
 
+  /* 별 반짝임 애니메이션 */
   @keyframes starsTwinkle {
-    0%, 100% { 
-      filter: brightness(0.8) opacity(0.6); 
+    0% {
+      opacity: 0.7;
+      transform: scale(1);
     }
-    50% { 
-      filter: brightness(1.2) opacity(1); 
+    50% {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+    100% {
+      opacity: 0.8;
+      transform: scale(0.98);
+    }
+  }
+
+  /* 달빛 효과 */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 15%;
+    right: 20%;
+    width: 60px;
+    height: 60px;
+    background: 
+      radial-gradient(circle at 30% 30%, 
+        rgba(255, 255, 224, 0.9) 0%, 
+        rgba(255, 255, 224, 0.7) 30%, 
+        rgba(255, 255, 224, 0.3) 60%, 
+        transparent 100%
+      );
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: -1;
+    animation: moonGlow 6s ease-in-out infinite alternate;
+  }
+
+  /* 달 빛남 애니메이션 */
+  @keyframes moonGlow {
+    0% {
+      opacity: 0.6;
+      box-shadow: 
+        0 0 20px rgba(255, 255, 224, 0.3),
+        0 0 40px rgba(255, 255, 224, 0.2),
+        0 0 60px rgba(255, 255, 224, 0.1);
+    }
+    100% {
+      opacity: 0.9;
+      box-shadow: 
+        0 0 30px rgba(255, 255, 224, 0.4),
+        0 0 60px rgba(255, 255, 224, 0.3),
+        0 0 90px rgba(255, 255, 224, 0.2);
     }
   }
 }
 
-/* Glass 레이어 시스템 (기존 유지) */
-.glass-subtle {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(8px) saturate(150%);
-  -webkit-backdrop-filter: blur(8px) saturate(150%);
-  border: 1px solid;
-  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  min-height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(255, 255, 255, 1);
-  background: #162f6e;
-}
-
-.event-badge:active {
-  transform: scale(0.95);
-  z-index: 10;
-}
-
-.event-badge-more {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 2px 2px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  line-height: 1.2;
-  color: rgba(255, 255, 255, 1);
-  background: #162f6e;
-  border: 1px solid rgba(255, 255, 255, 1);
-  border-radius: 4px;
-  min-height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.event-badge-more:active {
-  background: rgba(255, 255, 255, 0.25);
-  color: rgba(255, 255, 255, 1);
-  transform: scale(0.95);
-}
-
-@media (max-width: 768px) {
-  .calendar-day-enhanced {
-    height: 140px;
-    min-height: 140px;
-    padding: 8px;
-  }
-  
-  .calendar-date-number {
-    top: 8px;
-    left: 10px;
-    font-size: 16px;
-    font-weight: 700;
-  }
-  
-  .calendar-events-container {
-    margin-top: 32px;
-    gap: 5px;
-  }
-  
-  .event-badge {
-    font-size: 12px;
-    padding: 5px 5px;
-    min-height: 28px;
-  }
-  
-  .event-badge-more {
-    font-size: 14px;
-    padding: 5px 5px;
-    min-height: 28px;
-  }
-}
-
-@media (max-width: 640px) {
-  .calendar-day-enhanced {
-    height: 130px;
-    min-height: 130px;
-    padding: 2px;
-  }
-  
-  .calendar-date-number {
-    font-size: 14px;
-    top: 6px;
-    left: 8px;
-  }
-  
-  .calendar-events-container {
-    margin-top: 20px;
-    gap: 2px;
-  }
-  
-  .event-badge {
-    font-size: 11px;
-    padding: 5px 5px;
-    min-height: 22px;
-  }
-  
-  .event-badge-more {
-    font-size: 12px;
-    padding: 2px 2px;
-    min-height: 22px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .calendar-day-enhanced {
-    height: 110px;
-    min-height: 110px;
-  }
-  
-  .calendar-date-number {
-    font-size: 13px;
-  }
-  
-  .event-badge {
-    font-size: 10px;
-    padding: 5px 7px;
-    min-height: 22px;
-  }
-  
-  .event-badge-more {
-    font-size: 9px;
-    padding: 5px 7px;
-    min-height: 22px;
-  }
-}
-
-.calendar-day-enhanced:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-
-.event-badge:focus-visible,
-.event-badge-more:focus-visible {
-  outline: 1px solid var(--primary);
-  outline-offset: 1px;
-}
-
+/* 더욱 투명하고 반짝이는 Liquid Glass 효과 */
 .glass {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(2px) saturate(180%);
+  -webkit-backdrop-filter: blur(2px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.2),
+    0 8px 32px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    0 0 0 1px rgba(255, 255, 255, 0.06);
-}
-
-.glass-card {
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(16px) saturate(150%);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    0 0 0 1px rgba(255, 255, 255, 0.08);
-}
-
-.glass-strong {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px) saturate(120%);
-  -webkit-backdrop-filter: blur(20px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 
-    0 12px 40px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.12);
-}
-
-.glass, .glass-subtle, .glass-card, .glass-strong {
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
   position: relative;
 }
 
-.glass::before, .glass-subtle::before, .glass-card::before, .glass-strong::before {
+.glass::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, transparent 50%, rgba(255, 255, 255, 0.08) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.1) 100%);
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(2px) saturate(150%);
+  -webkit-backdrop-filter: blur(2px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    0 4px 24px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  position: relative;
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 50%, rgba(255, 255, 255, 0.08) 100%);
   border-radius: inherit;
   pointer-events: none;
   opacity: 0.3;
 }
 
-/* 나머지 기존 스타일들 (flip, conveyor, calendar 등) */
+.glass-strong {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(2px) saturate(120%);
+  -webkit-backdrop-filter: blur(2px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.glass-strong::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.15) 100%);
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+.glass-subtle {
+  background: rgba(255, 255, 255, 0.01);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 
+    0 2px 16px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+/* 공항 arrivals board 스타일 Flip 애니메이션 */
 .flip-container {
   perspective: 1000px;
   height: 100%;
@@ -580,6 +411,7 @@
   backface-visibility: hidden;
 }
 
+/* 컨베이어 벨트 애니메이션 */
 @keyframes conveyor {
   0% {
     transform: translateX(0);
@@ -605,6 +437,7 @@
   animation-play-state: paused;
 }
 
+/* 캘린더 그리드 스타일 */
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -646,6 +479,7 @@
   border-radius: 50%;
 }
 
+/* 스크롤바 스타일링 */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -664,6 +498,9 @@
   background: rgba(255, 255, 255, 0.4);
 }
 
+/**
+ * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
+ */
 @layer base {
   :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
     h1 {
@@ -723,6 +560,11 @@ html {
   font-size: var(--font-size);
 }
 
+/* ============================================================================
+   룰렛 슬롯 머신 애니메이션 (기존 globals.css 하단에 추가)
+   ============================================================================ */
+
+/* 룰렛 컨테이너 */
 .slot-machine {
   position: relative;
   overflow: hidden;
@@ -735,6 +577,7 @@ html {
   touch-action: none;
 }
 
+/* 룰렛 스크롤 영역 */
 .slot-reel-interactive {
   display: flex;
   flex-direction: column;
@@ -747,15 +590,18 @@ html {
   -webkit-backface-visibility: hidden;
 }
 
+/* 수직 스크롤 애니메이션 */
 @keyframes slot-scroll {
   0% {
     transform: translateY(0);
   }
   100% {
+    /* 1/3만큼 이동 (데이터를 3배로 복제했으므로) */
     transform: translateY(-33.333%);
   }
 }
 
+/* GPU 가속 최적화 */
 .slot-reel-interactive > div {
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
@@ -763,15 +609,18 @@ html {
   -webkit-backface-visibility: hidden;
 }
 
+/* 호버 효과 (기존 glass 테마와 일치) */
 .slot-machine .cursor-pointer:hover {
   background-color: rgba(255, 255, 255, 0.08);
   transition: background-color 0.2s ease;
 }
 
+/* 일시정지 상태 */
 .slot-reel-interactive[style*="paused"] {
   animation-play-state: paused !important;
 }
 
+/* 반응형 최적화 */
 @media (max-width: 768px) {
   .slot-machine {
     font-size: 0.875rem;
@@ -782,11 +631,13 @@ html {
   }
 }
 
+/* 성능 최적화 - 폰트 렌더링 */
 .slot-machine * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* 스크롤바 숨김 */
 .slot-machine::-webkit-scrollbar {
   display: none;
 }
@@ -796,12 +647,16 @@ html {
   scrollbar-width: none;
 }
 
+/* 터치 디바이스 최적화 */
 @media (hover: none) and (pointer: coarse) {
   .slot-machine {
     -webkit-overflow-scrolling: touch;
   }
 }
 
+/* Enhanced Calendar Styles - globals.css에 추가할 스타일 */
+
+/* 개선된 캘린더 그리드 - 높이 증가 */
 .calendar-grid-enhanced {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -811,8 +666,9 @@ html {
   padding: 0px;
 }
 
+/* 개선된 캘린더 날짜 칸 - 모바일 터치 최적화된 높이 */
 .calendar-day-enhanced {
-  height: 70px;
+  height: 70px; /* 모바일 터치를 위해 대폭 증가 */
   min-height: 70px;
   display: flex;
   flex-direction: column;
@@ -833,30 +689,33 @@ html {
   background: rgba(59, 130, 246, 0.1);
 }
 
+/* 날짜 숫자 스타일 - 상단 좌측에 배치, 텍스트 크기 증가 */
 .calendar-date-number {
   position: absolute;
   top: 4px;
   left: 8px;
   font-weight: 600;
-  font-size: 12px;
+  font-size: 12px; /* 기존 12px에서 증가 */
   line-height: 1;
   z-index: 2;
 }
 
+/* 이벤트 컨테이너 - 날짜 숫자 아래에 배치 */
 .calendar-events-container {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-top: 28px;
+  gap: 4px; /* 간격 증가 */
+  margin-top: 28px; /* 날짜 숫자 공간 더 확보 */
   flex: 1;
   overflow: hidden;
   padding: 2px;
 }
 
+/* 이벤트 배지 스타일 - 모바일 터치 최적화 */
 .event-badge {
-  font-size: 10px;
+  font-size: 10px; /* 8px에서 11px로 대폭 증가 */
   font-weight: 600;
-  padding: 4px 6px;
+  padding: 4px 6px; /* 패딩 대폭 증가 */
   border-radius: 4px;
   text-align: center;
   cursor: pointer;
@@ -865,5 +724,144 @@ html {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  border: 1px
+  border: 1px solid;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  min-height: 20px; /* 최소 터치 영역 확보 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 1);
+  background: #162f6e;
+}
+
+.event-badge:active {
+  transform: scale(0.95);
+  z-index: 10;
+}
+
+/* 더 보기 배지 스타일 - 모바일 터치 최적화 */
+.event-badge-more {
+  font-size: 12px; /* 7px에서 10px로 증가 */
+  font-weight: 600;
+  padding: 2px 2px; /* 패딩 대폭 증가 */
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1.2;
+  color: rgba(255, 255, 255, 1);
+  background: #162f6e;
+  border: 1px solid rgba(255, 255, 255, 1);
+  border-radius: 4px;
+  min-height: 24px; /* 최소 터치 영역 확보 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.event-badge-more:active {
+  background: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 1);
+  transform: scale(0.95);
+}
+
+/* 반응형 조정 - 모바일 우선 */
+@media (max-width: 768px) {
+  .calendar-day-enhanced {
+    height: 140px; /* 모바일에서 더 크게 */
+    min-height: 140px;
+    padding: 8px;
+  }
+  
+  .calendar-date-number {
+    top: 8px;
+    left: 10px;
+    font-size: 16px; /* 모바일에서 더 크게 */
+    font-weight: 700;
+  }
+  
+  .calendar-events-container {
+    margin-top: 32px;
+    gap: 5px; /* 간격 더 증가 */
+  }
+  
+  .event-badge {
+    font-size: 12px; /* 모바일에서 더 크게 */
+    padding: 5px 5px;
+    min-height: 28px; /* 터치 영역 더 증가 */
+
+  }
+  
+  .event-badge-more {
+    font-size: 14px;
+    padding: 5px 5px;
+    min-height: 28px;
+  }
+}
+
+@media (max-width: 640px) {
+  .calendar-day-enhanced {
+    height: 130px;
+    min-height: 130px;
+    padding: 2px;
+  }
+  
+  .calendar-date-number {
+    font-size: 14px;
+    top: 6px;
+    left: 8px;
+  }
+  
+  .calendar-events-container {
+    margin-top: 20px;
+    gap: 2px;
+  }
+  
+  .event-badge {
+    font-size: 11px;
+    padding: 5px 5px;
+    min-height: 22px;
+  }
+  
+  .event-badge-more {
+    font-size: 12px;
+    padding: 2px 2px;
+    min-height: 22px;
+  }
+}
+
+/* 데스크톱에서는 조금 작게 */
+@media (min-width: 1024px) {
+  .calendar-day-enhanced {
+    height: 110px;
+    min-height: 110px;
+  }
+  
+  .calendar-date-number {
+    font-size: 13px;
+  }
+  
+  .event-badge {
+    font-size: 10px;
+    padding: 5px 7px;
+    min-height: 22px;
+  }
+  
+  .event-badge-more {
+    font-size: 9px;
+    padding: 5px 7px;
+    min-height: 22px;
+  }
+}
+
+
+/* 접근성 개선 */
+.calendar-day-enhanced:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.event-badge:focus-visible,
+.event-badge-more:focus-visible {
+  outline: 1px solid var(--primary);
+  outline-offset: 1px;
 }
