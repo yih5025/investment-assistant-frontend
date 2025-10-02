@@ -299,7 +299,7 @@
   }
 }
 
-/* ========== LIQUID GLASS 효과 ========== */
+/* ========== LIQUID GLASS 효과 변수 ========== */
 :root {
   --lg-bg-color: rgba(255, 255, 255, 0.25);
   --lg-highlight: rgba(255, 255, 255, 0.75);
@@ -307,23 +307,22 @@
   --lg-hover-glow: rgba(255, 255, 255, 0.4);
 }
 
-/* ========== GLASS CONTAINER BASE ========== */
+/* ========== LIQUID GLASS BASE ========== */
 .glass,
 .glass-card,
 .glass-strong,
 .glass-subtle {
   position: relative;
   display: flex;
-  font-weight: 600;
-  color: var(--lg-text);
   background: transparent;
-  border-radius: 2rem;
+  border-radius: 1rem;
   overflow: hidden;
   box-shadow: 0 6px 6px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.1);
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
+  isolation: isolate;
 }
 
-/* ========== GLASS FILTER LAYER ========== */
+/* ========== GLASS LAYERS (filter, overlay, specular) ========== */
 .glass::before,
 .glass-card::before,
 .glass-strong::before,
@@ -333,11 +332,9 @@
   inset: 0;
   z-index: 0;
   backdrop-filter: blur(0px);
-  filter: url(#lg-dist);
   isolation: isolate;
 }
 
-/* ========== GLASS OVERLAY LAYER ========== */
 .glass::after,
 .glass-card::after,
 .glass-strong::after,
@@ -347,28 +344,64 @@
   inset: 0;
   z-index: 1;
   background: var(--lg-bg-color);
-}
-
-/* ========== GLASS SPECULAR LAYER ========== */
-/* Note: 이 레이어는 각 컴포넌트 내부에 별도 div로 추가 필요 */
-.glass-specular {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  border-radius: inherit;
-  overflow: hidden;
-  box-shadow: inset 1px 1px 0 var(--lg-highlight),
-    inset 0 0 5px var(--lg-highlight);
   pointer-events: none;
 }
 
-/* ========== GLASS CONTENT LAYER ========== */
-.glass > *:not(.glass-specular),
-.glass-card > *:not(.glass-specular),
-.glass-strong > *:not(.glass-specular),
-.glass-subtle > *:not(.glass-specular) {
+/* Glass Specular Highlight Layer */
+.glass > *,
+.glass-card > *,
+.glass-strong > *,
+.glass-subtle > * {
   position: relative;
   z-index: 3;
+}
+
+/* Specular highlight 효과 */
+.glass,
+.glass-card,
+.glass-strong,
+.glass-subtle {
+  box-shadow: 
+    0 6px 6px rgba(0, 0, 0, 0.2), 
+    0 0 20px rgba(0, 0, 0, 0.1),
+    inset 1px 1px 0 var(--lg-highlight),
+    inset 0 0 5px var(--lg-highlight);
+}
+
+/* ========== GLASS 기본 (가장 투명) ========== */
+.glass::after {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ========== GLASS-CARD (중간 투명도) ========== */
+.glass-card::after {
+  background: rgba(255, 255, 255, 0.20);
+}
+
+/* ========== GLASS-STRONG (강한 효과) ========== */
+.glass-strong::after {
+  background: rgba(255, 255, 255, 0.30);
+}
+
+.glass-strong {
+  box-shadow: 
+    0 8px 8px rgba(0, 0, 0, 0.25), 
+    0 0 25px rgba(0, 0, 0, 0.15),
+    inset 1px 1px 0 var(--lg-highlight),
+    inset 0 0 8px var(--lg-highlight);
+}
+
+/* ========== GLASS-SUBTLE (가장 미묘한 효과) ========== */
+.glass-subtle::after {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+.glass-subtle {
+  box-shadow: 
+    0 4px 4px rgba(0, 0, 0, 0.15), 
+    0 0 15px rgba(0, 0, 0, 0.08),
+    inset 1px 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 0 3px rgba(255, 255, 255, 0.5);
 }
 
 /* 공항 arrivals board 스타일 Flip 애니메이션 */
