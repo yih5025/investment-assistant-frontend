@@ -1,7 +1,7 @@
 // hooks/useEarningsCalendar.ts
 // IPO와 Earnings를 통합한 캘린더 훅
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { earningsCalendarService, CalendarDateUtils } from '../services/earningsCalendarService';
 import { ipoCalendarService } from '../services/ipoCalendarService';
 import {
@@ -60,6 +60,9 @@ const getThisMonthRange = (): { start: string; end: string } => {
  * 실적 캘린더 + IPO 통합 훅
  */
 export function useEarningsCalendar() {
+  // ============ 초기화 추적 (React Strict Mode 대응) ============
+  const hasInitialized = useRef(false);
+  
   // ============ 데이터 상태 ============
   const [calendarData, setCalendarData] = useState<EarningsEvent[]>([]);
   const [ipoData, setIPOData] = useState<IPOEvent[]>([]);
@@ -189,13 +192,9 @@ export function useEarningsCalendar() {
       
       const response = await ipoCalendarService.getIPOCalendar();
       
-      console.log('🔍 IPO API Response:', response);
-      console.log('🔍 IPO items:', response.items);
-      
       setIPOData(response.items);
       
       console.log(`✅ IPO data loaded: ${response.items.length} events`);
-      console.log('🔍 IPO State after set:', response.items);
       
     } catch (error) {
       console.error('❌ IPO data fetch failed:', error);
@@ -259,10 +258,6 @@ export function useEarningsCalendar() {
   const getEventsForDate = useCallback((date: Date): UnifiedCalendarEvent[] => {
     const dateString = formatDateForApi(date);
     
-    console.log('🔍 getEventsForDate called for:', dateString);
-    console.log('🔍 Total IPO data count:', ipoData.length);
-    console.log('🔍 IPO data:', ipoData);
-    
     // Earnings 이벤트
     const earningsEvents = calendarData
       .filter(event => event.report_date === dateString)
@@ -270,13 +265,8 @@ export function useEarningsCalendar() {
     
     // IPO 이벤트
     const ipoEvents = ipoData
-      .filter(ipo => {
-        console.log(`🔍 Comparing IPO date: ${ipo.ipo_date} with ${dateString}`);
-        return ipo.ipo_date === dateString;
-      })
+      .filter(ipo => ipo.ipo_date === dateString)
       .map(transformIPOForDisplay);
-    
-    console.log(`🔍 Found ${earningsEvents.length} earnings + ${ipoEvents.length} IPO events for ${dateString}`);
     
     // 통합하여 반환
     return [...earningsEvents, ...ipoEvents];
@@ -358,19 +348,20 @@ export function useEarningsCalendar() {
   
   // ============ 초기 데이터 로드 ============
   useEffect(() => {
+    // React Strict Mode에서 두 번 실행되는 것을 방지
+    if (hasInitialized.current) {
+      console.log('⏭️  초기화 스킵 (이미 실행됨)');
+      return;
+    }
+    
+    console.log('🚀 초기 데이터 로드 시작');
+    hasInitialized.current = true;
+    
     fetchCalendarData();
     fetchIPOData();
     fetchWeeklyNewsData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  
-  // ============ IPO 데이터 상태 모니터링 (디버그용) ============
-  useEffect(() => {
-    console.log('🔍 IPO Data State Changed:', {
-      count: ipoData.length,
-      data: ipoData
-    });
-  }, [ipoData]);
   
   // 유틸리티 계산값들
   const hasAnyData = calendarData.length > 0 || ipoData.length > 0 || weeklyData.length > 0;

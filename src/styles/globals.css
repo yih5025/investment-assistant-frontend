@@ -140,7 +140,7 @@
       radial-gradient(ellipse at 30% 20%, #1e3a8a 0%, #0f172a 40%),
       radial-gradient(ellipse at 70% 80%, #1e40af 0%, #0c1420 50%),
       radial-gradient(ellipse at 50% 50%, #312e81 0%, #020617 60%),
-      /* 소용돌이 효과 */
+      /* 소용돌이 효과
       conic-gradient(from 45deg at 20% 30%, 
         rgba(59, 130, 246, 0.3) 0deg,
         rgba(147, 51, 234, 0.2) 60deg,
@@ -150,14 +150,14 @@
         rgba(30, 64, 175, 0.4) 300deg,
         rgba(59, 130, 246, 0.3) 360deg
       ),
-      /* 추가 소용돌이 */
+      /* 추가 소용돌이 
       conic-gradient(from 135deg at 80% 70%, 
         rgba(30, 64, 175, 0.3) 0deg,
         rgba(59, 130, 246, 0.2) 90deg,
         rgba(147, 51, 234, 0.3) 180deg,
         rgba(30, 58, 138, 0.2) 270deg,
         rgba(30, 64, 175, 0.3) 360deg
-      ),
+      ), */
       /* 베이스 그라데이션 */
       linear-gradient(135deg, #0f172a 0%, #1e3a8a 25%, #312e81 50%, #1e40af 75%, #0c1420 100%);
     
@@ -181,7 +181,7 @@
     animation: starryNightFlow 20s ease-in-out infinite alternate;
   }
 
-  /* 소용돌이 배경 애니메이션 */
+  /* 소용돌이 배경 애니메이션
   @keyframes starryNightFlow {
     0% {
       background-position: 
@@ -210,7 +210,7 @@
         85% 75%,
         center;
     }
-  }
+  } */
 
   /* 별빛 효과 레이어 */
   body::before {
@@ -259,7 +259,7 @@
     }
   }
 
-  /* 달빛 효과 */
+  /* 달빛 효과
   body::after {
     content: '';
     position: fixed;
@@ -278,9 +278,9 @@
     pointer-events: none;
     z-index: -1;
     animation: moonGlow 6s ease-in-out infinite alternate;
-  }
+  } */
 
-  /* 달 빛남 애니메이션 */
+  /* 달 빛남 애니메이션
   @keyframes moonGlow {
     0% {
       opacity: 0.6;
@@ -296,7 +296,7 @@
         0 0 60px rgba(255, 255, 224, 0.3),
         0 0 90px rgba(255, 255, 224, 0.2);
     }
-  }
+  } */
 }
 
 /* 더욱 투명하고 반짝이는 Liquid Glass 효과 */
