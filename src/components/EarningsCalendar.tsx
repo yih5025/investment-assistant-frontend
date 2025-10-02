@@ -1,5 +1,5 @@
 // EarningsCalendar.tsx
-// 백엔드 API와 연동된 실적 발표 캘린더 컴포넌트
+// 백엔드 API와 연동된 실적 발표 + IPO 통합 캘린더 컴포넌트
 
 import { useState } from "react";
 import { 
@@ -10,31 +10,42 @@ import {
   ChevronRight, 
   ArrowLeft, 
   ExternalLink,
-  RefreshCw,
+  Loader2,
   AlertCircle,
-  Loader2
+  Rocket
 } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useEarningsCalendar } from "../hooks/useEarningsCalendar";
 import { CalendarDateUtils } from "../services/earningsCalendarService";
 import { 
-  CalendarEventDisplay, 
+  UnifiedCalendarEvent,
+  CalendarEventDisplay,
+  IPOEventDisplay,
   EarningsNewsResponse, 
   WeeklyEarningsNewsResponse,
   CalendarLoadingState,
-  CalendarErrorState 
+  CalendarErrorState,
+  isEarningsEvent,
+  isIPOEvent
 } from "../types/calendar";
 
+// ============================================================================
+// 메인 컴포넌트
+// ============================================================================
+
 export function EarningsCalendar() {
-  // 캘린더 상태
+  // ============ 상태 관리 ============
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEventDisplay | null>(null);
-  const [showNewsDetail, setShowNewsDetail] = useState(false);
+  
+  // 3단계 네비게이션 상태
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<UnifiedCalendarEvent | null>(null);
   
   // 커스텀 훅으로 데이터 관리
   const {
     calendarData,
+    ipoData,
     weeklyNewsData,
     selectedEventNews,
     loading,
@@ -60,6 +71,10 @@ export function EarningsCalendar() {
   // 달력에 표시할 날짜들
   const calendarDays = CalendarDateUtils.getCalendarDays(year, month);
 
+  // ============================================================================
+  // 이벤트 핸들러
+  // ============================================================================
+
   /**
    * 월 변경 핸들러
    */
@@ -80,32 +95,72 @@ export function EarningsCalendar() {
   };
 
   /**
-   * 이벤트 클릭 처리
+   * 날짜 클릭 → 날짜별 이벤트 리스트 페이지로 이동
    */
-  const handleEventClick = async (event: CalendarEventDisplay) => {
-    setSelectedEvent(event);
-    
-    if (event.total_news_count > 0) {
-      await fetchEventNews(event.id);
-    }
-    
-    setShowNewsDetail(true);
-  };
-  const getImportanceColor = (importance: string) => {
-    switch (importance) {
-      case "high": 
-        return "bg-red-100 text-red-800 border border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800/50";
-      case "medium": 
-        return "bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800/50";
-      case "low": 
-        return "bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800/50 dark:text-slate-300 dark:border-slate-700/50";
-      default: 
-        return "bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800/50";
+  const handleDateClick = (date: Date) => {
+    const events = getEventsForDate(date);
+    if (events.length > 0) {
+      setSelectedDate(date);
+      setSelectedEvent(null); // 이벤트 선택 초기화
     }
   };
 
-  const getEventIcon = (type: string) => {
-    switch (type) {
+  /**
+   * 이벤트 클릭 → 뉴스 페이지로 이동 (Earnings만)
+   */
+  const handleEventClick = async (event: UnifiedCalendarEvent) => {
+    setSelectedEvent(event);
+    
+    // Earnings 이벤트만 뉴스 조회
+    if (isEarningsEvent(event) && event.total_news_count > 0) {
+      await fetchEventNews(event.id);
+    }
+  };
+
+  /**
+   * SP500Detail 페이지로 이동 (App.tsx의 handleStockClick 호출)
+   */
+  const navigateToStockDetail = (symbol: string) => {
+    const event = new CustomEvent('navigateToStockDetail', { detail: { symbol } });
+    window.dispatchEvent(event);
+  };
+
+  // ============================================================================
+  // 유틸리티 함수
+  // ============================================================================
+
+  /**
+   * 이벤트 타입별 색상
+   */
+  const getEventColor = (event: UnifiedCalendarEvent) => {
+    if (isIPOEvent(event)) {
+      // IPO는 초록색
+      return "bg-success/20 text-success border border-success/30";
+    }
+    
+    // Earnings는 중요도별 파란색
+    const importance = event.importance;
+    switch (importance) {
+      case "high": 
+        return "bg-primary/30 text-primary-light border border-primary/50";
+      case "medium": 
+        return "bg-primary/20 text-primary border border-primary/30";
+      case "low": 
+        return "bg-primary/10 text-primary/80 border border-primary/20";
+      default: 
+        return "bg-blue-100 text-blue-800 border border-blue-200";
+    }
+  };
+
+  /**
+   * 이벤트 아이콘
+   */
+  const getEventIcon = (event: UnifiedCalendarEvent) => {
+    if (isIPOEvent(event)) {
+      return <Rocket size={12} />;
+    }
+    
+    switch (event.event_type) {
       case "earnings_report": return <TrendingUp size={12} />;
       case "guidance": return <Building2 size={12} />;
       case "conference": return <Calendar size={12} />;
@@ -161,8 +216,55 @@ export function EarningsCalendar() {
     <Loader2 size={size} className="animate-spin text-primary" />
   );
 
-  // 뉴스 상세 페이지 렌더링
-  if (showNewsDetail && selectedEvent) {
+  // ============================================================================
+  // 렌더링: 3단계 네비게이션
+  // ============================================================================
+
+  // ============ Level 3: 기업 뉴스 상세 페이지 ============
+  if (selectedEvent && selectedDate) {
+    // IPO는 뉴스가 없으므로 정보만 표시
+    if (isIPOEvent(selectedEvent)) {
+      return (
+        <div className="glass-card rounded-xl p-4">
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() => {
+                setSelectedEvent(null);
+                // 날짜 리스트로 돌아가기
+              }}
+              className="flex items-center space-x-2 px-3 py-1.5 glass-subtle rounded-lg hover:glass transition-all"
+            >
+              <ArrowLeft size={16} />
+              <span className="text-sm">기업 리스트로 돌아가기</span>
+            </button>
+          </div>
+
+          <div className="glass-subtle rounded-lg p-6 text-center">
+            <Rocket size={48} className="mx-auto mb-4 text-success" />
+            <h2 className="text-lg font-bold mb-2">{selectedEvent.company_name}</h2>
+            <p className="text-sm text-foreground/70 mb-4">
+              {selectedEvent.symbol} • {selectedEvent.exchange}
+            </p>
+            
+            {selectedEvent.price_range_low && selectedEvent.price_range_high && (
+              <div className="glass-card p-3 rounded-lg mb-4">
+                <p className="text-xs text-foreground/60 mb-1">예상 IPO 가격</p>
+                <p className="text-lg font-bold text-success">
+                  ${selectedEvent.price_range_low} - ${selectedEvent.price_range_high}
+                </p>
+              </div>
+            )}
+            
+            <p className="text-sm text-foreground/60 mt-6">
+              IPO 기업은 상세 페이지 및 뉴스가 제공되지 않습니다.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    // Earnings 이벤트 뉴스 페이지
+    const earningsEvent = selectedEvent as CalendarEventDisplay;
     const newsData = selectedEventNews;
     
     return (
@@ -171,38 +273,49 @@ export function EarningsCalendar() {
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={() => {
-              setShowNewsDetail(false);
-              clearSelectedNews();
               setSelectedEvent(null);
+              clearSelectedNews();
             }}
             className="flex items-center space-x-2 px-3 py-1.5 glass-subtle rounded-lg hover:glass transition-all"
           >
             <ArrowLeft size={16} />
-            <span className="text-sm">이벤트로 돌아가기</span>
+            <span className="text-sm">기업 리스트로 돌아가기</span>
           </button>
           
           <div className="text-sm text-foreground/70">
-            {selectedEvent.total_news_count}개 뉴스
+            {earningsEvent.total_news_count}개 뉴스
           </div>
         </div>
 
-        {/* 이벤트 정보 */}
+        {/* 기업 정보 + 상세보기 버튼 */}
         <div className="glass-subtle rounded-lg p-4 mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-bold">{selectedEvent.company_name}</h2>
-            <Badge className={getImportanceColor(selectedEvent.importance)}>
-              {selectedEvent.event_type === 'earnings_report' ? '실적발표' : 
-               selectedEvent.event_type === 'guidance' ? '가이던스' : '컨퍼런스'}
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h2 className="text-lg font-bold">{earningsEvent.company_name}</h2>
+              <div className="text-sm text-foreground/70 mt-1">
+                {earningsEvent.display_time} • {earningsEvent.symbol}
+              </div>
+              {earningsEvent.estimate && (
+                <div className="text-sm text-foreground/60 mt-1">
+                  예상 EPS: ${earningsEvent.estimate}
+                </div>
+              )}
+            </div>
+            <Badge className={getEventColor(earningsEvent)}>
+              {earningsEvent.event_type === 'earnings_report' ? '실적발표' : 
+               earningsEvent.event_type === 'guidance' ? '가이던스' : '컨퍼런스'}
             </Badge>
           </div>
-          <div className="text-sm text-foreground/70">
-            {selectedEvent.display_time} • {selectedEvent.symbol}
-          </div>
-          {selectedEvent.estimate && (
-            <div className="text-sm text-foreground/60 mt-1">
-              예상 EPS: ${selectedEvent.estimate}
-            </div>
-          )}
+          
+          {/* 기업 상세 페이지로 이동 버튼 */}
+          <button
+            onClick={() => navigateToStockDetail(earningsEvent.symbol)}
+            className="w-full py-2.5 px-4 glass-strong rounded-lg hover:bg-primary/20 transition-all flex items-center justify-center space-x-2"
+          >
+            <Building2 size={16} />
+            <span className="text-sm font-medium">기업 상세 페이지 보기</span>
+            <ExternalLink size={14} />
+          </button>
         </div>
 
         {/* 뉴스 로딩 상태 */}
@@ -217,13 +330,14 @@ export function EarningsCalendar() {
         {errors.news && (
           <ErrorDisplay 
             error={errors.news} 
-            onRetry={() => fetchEventNews(selectedEvent.id)} 
+            onRetry={() => fetchEventNews(earningsEvent.id)} 
           />
         )}
 
         {/* 관련 뉴스 리스트 */}
         {newsData && !loading.news && (
           <div className="space-y-3">
+            <h3 className="font-medium text-sm text-foreground/70 mb-3">관련 뉴스</h3>
             {newsData.forecast_news.length > 0 ? (
               newsData.forecast_news.map((news, index) => (
                 <article
@@ -267,7 +381,114 @@ export function EarningsCalendar() {
     );
   }
 
-  // 메인 캘린더 화면 렌더링
+  // ============ Level 2: 날짜별 이벤트 리스트 페이지 ============
+  if (selectedDate) {
+    const eventsForDate = getEventsForDate(selectedDate);
+    const dateString = selectedDate.toLocaleDateString('ko-KR', { 
+      year: 'numeric',
+      month: 'long', 
+      day: 'numeric',
+      weekday: 'long'
+    });
+
+    return (
+      <div className="glass-card rounded-xl p-4">
+        {/* 뒤로가기 헤더 */}
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={() => {
+              setSelectedDate(null);
+              setSelectedEvent(null);
+            }}
+            className="flex items-center space-x-2 px-3 py-1.5 glass-subtle rounded-lg hover:glass transition-all"
+          >
+            <ArrowLeft size={16} />
+            <span className="text-sm">캘린더로 돌아가기</span>
+          </button>
+          
+          <div className="text-sm text-foreground/70">
+            {eventsForDate.length}개 일정
+          </div>
+        </div>
+
+        {/* 날짜 정보 */}
+        <div className="glass-subtle rounded-lg p-4 mb-4 text-center">
+          <h2 className="text-lg font-bold">{dateString}</h2>
+        </div>
+
+        {/* 안내 문구 */}
+        <div className="glass-subtle p-3 rounded-lg mb-4 text-center">
+          <p className="text-xs text-foreground/60">
+            IPO 기업은 상세 페이지 및 뉴스가 제공되지 않습니다
+          </p>
+        </div>
+
+        {/* 이벤트 리스트 */}
+        <div className="space-y-3">
+          {eventsForDate.map((event, index) => {
+            const isIPO = isIPOEvent(event);
+            
+            return (
+              <div
+                key={index}
+                className="glass-subtle p-4 rounded-lg cursor-pointer hover:glass transition-all group"
+                onClick={() => handleEventClick(event)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3 flex-1">
+                    <div className={`p-2 rounded ${getEventColor(event)} flex-shrink-0`}>
+                      {getEventIcon(event)}
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <div className="font-medium text-sm group-hover:text-primary transition-colors">
+                          {event.symbol} - {event.company_name}
+                        </div>
+                        {isIPO && (
+                          <Badge className="bg-success/20 text-success text-xs">IPO</Badge>
+                        )}
+                      </div>
+                      
+                      <div className="text-xs text-foreground/60">
+                        {isIPO ? (
+                          <>
+                            {event.exchange}
+                            {event.price_range_low && event.price_range_high && (
+                              <span className="ml-2">
+                                ${event.price_range_low} - ${event.price_range_high}
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            {event.display_time}
+                            {event.estimate && (
+                              <span className="ml-2">예상 EPS: ${event.estimate}</span>
+                            )}
+                          </>
+                        )}
+                      </div>
+                      
+                      {!isIPO && (
+                        <div className="text-xs text-foreground/50 mt-1">
+                          {event.gics_sector} • 뉴스 {event.total_news_count}개
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <ChevronRight size={16} className="text-foreground/40 group-hover:text-primary transition-colors flex-shrink-0" />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // ============ Level 1: 메인 캘린더 화면 ============
   return (
     <div className="glass-card rounded-xl p-4">
       {/* 헤더 */}
@@ -326,7 +547,6 @@ export function EarningsCalendar() {
             <TabsTrigger value="thismonth">이번달</TabsTrigger>
           </TabsList>
 
-          
           {/* 캘린더 탭 */}
           <TabsContent value="calendar" className="mt-4">
             {/* 요일 헤더 */}
@@ -338,7 +558,7 @@ export function EarningsCalendar() {
               ))}
             </div>
 
-            {/* 달력 그리드 - 높이 증가 및 날짜 상단 배치 */}
+            {/* 달력 그리드 */}
             <div className="calendar-grid-enhanced mb-4">
               {calendarDays.map((date, index) => {
                 const isCurrentMonth = date.getMonth() === month;
@@ -355,21 +575,26 @@ export function EarningsCalendar() {
                     } ${
                       events.length > 0 ? 'has-event' : ''
                     }`}
+                    onClick={() => events.length > 0 && handleDateClick(date)}
                   >
-                    {/* 날짜 표시 - 상단 좌측에 배치 */}
+                    {/* 날짜 표시 */}
                     <span className="calendar-date-number text-xs font-medium">
                       {date.getDate()}
                     </span>
                     
-                    {/* 이벤트 표시 - 날짜 아래에 배치 */}
+                    {/* 이벤트 표시 */}
                     {events.length > 0 && (
                       <div className="calendar-events-container">
                         {events.slice(0, 3).map((event, eventIndex) => (
                           <div
                             key={eventIndex}
-                            onClick={() => handleEventClick(event)}
-                            className={`event-badge ${getImportanceColor(event.importance)}`}
-                            title={`${event.symbol} - ${event.company_name}\n뉴스: ${event.total_news_count || 0}개`}
+                            className={`event-badge ${getEventColor(event)}`}
+                            title={`${event.symbol} - ${event.company_name}${
+                              isIPOEvent(event) ? ' (IPO)' : `\n뉴스: ${event.total_news_count || 0}개`
+                            }`}
+                            style={{
+                              backgroundColor: isIPOEvent(event) ? '#10b981' : undefined
+                            }}
                           >
                             {event.symbol}
                           </div>
@@ -378,8 +603,7 @@ export function EarningsCalendar() {
                         {events.length > 3 && (
                           <div 
                             className="event-badge-more"
-                            onClick={() => handleEventClick(events[0])}
-                            title={`총 ${events.length}개 실적 발표`}
+                            title={`총 ${events.length}개 일정`}
                           >
                             +{events.length - 3}
                           </div>
@@ -395,43 +619,56 @@ export function EarningsCalendar() {
           {/* 이번주 탭 */}
           <TabsContent value="thisweek" className="mt-4">
             <div className="space-y-3">
-              {getThisWeekEvents().map((event, index) => (
-                <div
-                  key={index}
-                  className="glass-subtle p-3 rounded-lg cursor-pointer hover:glass transition-all group"
-                  onClick={() => handleEventClick(event)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className={`p-2 rounded ${getImportanceColor(event.importance)} flex-shrink-0`}>
-                        {getEventIcon(event.event_type)}
-                      </div>
-                      
-                      <div>
-                        <div className="font-medium text-sm group-hover:text-primary transition-colors">
-                          {event.symbol} - {event.company_name}
+              {getThisWeekEvents().map((event, index) => {
+                const isIPO = isIPOEvent(event);
+                
+                return (
+                  <div
+                    key={index}
+                    className="glass-subtle p-3 rounded-lg cursor-pointer hover:glass transition-all group"
+                    onClick={() => handleEventClick(event)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-2 rounded ${getEventColor(event)} flex-shrink-0`}>
+                          {getEventIcon(event)}
                         </div>
-                        <div className="text-xs text-foreground/60">
-                          {event.display_time}
-                          {event.estimate && (
-                            <span className="ml-2">예상 EPS: ${event.estimate}</span>
+                        
+                        <div>
+                          <div className="flex items-center space-x-2 mb-1">
+                            <div className="font-medium text-sm group-hover:text-primary transition-colors">
+                              {event.symbol} - {event.company_name}
+                            </div>
+                            {isIPO && (
+                              <Badge className="bg-success/20 text-success text-xs">IPO</Badge>
+                            )}
+                          </div>
+                          
+                          <div className="text-xs text-foreground/60">
+                            {event.display_time}
+                            {!isIPO && event.estimate && (
+                              <span className="ml-2">예상 EPS: ${event.estimate}</span>
+                            )}
+                          </div>
+                          
+                          {!isIPO && (
+                            <div className="text-xs text-foreground/50">
+                              {event.gics_sector} • 뉴스 {event.total_news_count}개
+                            </div>
                           )}
                         </div>
-                        <div className="text-xs text-foreground/50">
-                          {event.gics_sector} • 뉴스 {event.total_news_count}개
-                        </div>
                       </div>
+                      
+                      <ChevronRight size={16} className="text-foreground/40 group-hover:text-primary transition-colors" />
                     </div>
-                    
-                    <ChevronRight size={16} className="text-foreground/40 group-hover:text-primary transition-colors" />
                   </div>
-                </div>
-              ))}
+                );
+              })}
               
               {getThisWeekEvents().length === 0 && (
                 <div className="glass-subtle p-8 rounded-lg text-center">
                   <Calendar size={48} className="mx-auto mb-4 text-foreground/30" />
-                  <p className="text-foreground/70">이번 주 실적 발표가 없습니다</p>
+                  <p className="text-foreground/70">이번 주 일정이 없습니다</p>
                 </div>
               )}
             </div>
@@ -440,43 +677,56 @@ export function EarningsCalendar() {
           {/* 이번달 탭 */}
           <TabsContent value="thismonth" className="mt-4">
             <div className="space-y-3">
-              {getThisMonthEvents().map((event, index) => (
-                <div
-                  key={index}
-                  className="glass-subtle p-3 rounded-lg cursor-pointer hover:glass transition-all group"
-                  onClick={() => handleEventClick(event)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className={`p-2 rounded ${getImportanceColor(event.importance)} flex-shrink-0`}>
-                        {getEventIcon(event.event_type)}
-                      </div>
-                      
-                      <div>
-                        <div className="font-medium text-sm group-hover:text-primary transition-colors">
-                          {event.symbol} - {event.company_name}
+              {getThisMonthEvents().map((event, index) => {
+                const isIPO = isIPOEvent(event);
+                
+                return (
+                  <div
+                    key={index}
+                    className="glass-subtle p-3 rounded-lg cursor-pointer hover:glass transition-all group"
+                    onClick={() => handleEventClick(event)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-2 rounded ${getEventColor(event)} flex-shrink-0`}>
+                          {getEventIcon(event)}
                         </div>
-                        <div className="text-xs text-foreground/60">
-                          {event.display_time}
-                          {event.estimate && (
-                            <span className="ml-2">예상 EPS: ${event.estimate}</span>
+                        
+                        <div>
+                          <div className="flex items-center space-x-2 mb-1">
+                            <div className="font-medium text-sm group-hover:text-primary transition-colors">
+                              {event.symbol} - {event.company_name}
+                            </div>
+                            {isIPO && (
+                              <Badge className="bg-success/20 text-success text-xs">IPO</Badge>
+                            )}
+                          </div>
+                          
+                          <div className="text-xs text-foreground/60">
+                            {event.display_time}
+                            {!isIPO && event.estimate && (
+                              <span className="ml-2">예상 EPS: ${event.estimate}</span>
+                            )}
+                          </div>
+                          
+                          {!isIPO && (
+                            <div className="text-xs text-foreground/50">
+                              {event.gics_sector} • 뉴스 {event.total_news_count}개
+                            </div>
                           )}
                         </div>
-                        <div className="text-xs text-foreground/50">
-                          {event.gics_sector} • 뉴스 {event.total_news_count}개
-                        </div>
                       </div>
+                      
+                      <ChevronRight size={16} className="text-foreground/40 group-hover:text-primary transition-colors" />
                     </div>
-                    
-                    <ChevronRight size={16} className="text-foreground/40 group-hover:text-primary transition-colors" />
                   </div>
-                </div>
-              ))}
+                );
+              })}
               
               {getThisMonthEvents().length === 0 && (
                 <div className="glass-subtle p-8 rounded-lg text-center">
                   <Calendar size={48} className="mx-auto mb-4 text-foreground/30" />
-                  <p className="text-foreground/70">이번 달 실적 발표가 없습니다</p>
+                  <p className="text-foreground/70">이번 달 일정이 없습니다</p>
                 </div>
               )}
             </div>
@@ -488,7 +738,7 @@ export function EarningsCalendar() {
       {!hasAnyData && !isInitialLoading && !hasAnyError && (
         <div className="glass-subtle p-8 rounded-lg text-center">
           <Calendar size={48} className="mx-auto mb-4 text-foreground/30" />
-          <p className="text-foreground/70 mb-2">실적 데이터가 없습니다</p>
+          <p className="text-foreground/70 mb-2">일정 데이터가 없습니다</p>
           <button
             onClick={refreshAll}
             className="text-sm text-primary hover:text-primary/80 underline"
@@ -498,112 +748,43 @@ export function EarningsCalendar() {
         </div>
       )}
 
-      {/* 뉴스 섹션 */}
-      {!isInitialLoading && (
+      {/* 주간 뉴스 섹션 */}
+      {!isInitialLoading && weeklyNewsData && (
         <EarningsNewsSection 
-          selectedEvent={selectedEvent}
-          selectedEventNews={selectedEventNews}
           weeklyNewsData={weeklyNewsData}
           loading={loading}
           errors={errors}
-          onEventSelect={handleEventClick}
-          onClearSelection={() => {
-            setSelectedEvent(null);
-            clearSelectedNews();
-          }}
           onRefreshNews={fetchWeeklyNewsData}
           formatTimestamp={formatTimestamp}
+          onEventClick={handleEventClick}
         />
       )}
     </div>
   );
 }
 
-/**
- * 뉴스 섹션 컴포넌트 (분리하여 가독성 향상)
- */
+// ============================================================================
+// 주간 뉴스 섹션 (하단 피드)
+// ============================================================================
+
 interface EarningsNewsSectionProps {
-  selectedEvent: CalendarEventDisplay | null;
-  selectedEventNews: EarningsNewsResponse | null;
-  weeklyNewsData: WeeklyEarningsNewsResponse | null;
+  weeklyNewsData: WeeklyEarningsNewsResponse;
   loading: CalendarLoadingState;
   errors: CalendarErrorState;
-  onEventSelect: (event: CalendarEventDisplay) => void;
-  onClearSelection: () => void;
   onRefreshNews: () => void;
   formatTimestamp: (timestamp: string) => string;
+  onEventClick: (event: UnifiedCalendarEvent) => void;
 }
 
 function EarningsNewsSection({
-  selectedEvent,
-  selectedEventNews,
   weeklyNewsData,
   loading,
   errors,
-  onEventSelect,
-  onClearSelection,
   onRefreshNews,
-  formatTimestamp
+  formatTimestamp,
+  onEventClick
 }: EarningsNewsSectionProps) {
   
-  // 특정 기업 선택된 경우
-  if (selectedEvent && selectedEventNews) {
-    return (
-      <div className="mt-6 pt-6 border-t border-foreground/10">
-        {/* 선택된 기업 뉴스 헤더 */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <TrendingUp size={20} className="text-primary" />
-            <h4 className="font-medium">
-              {selectedEvent.symbol} - {selectedEvent.company_name} 실적 관련 뉴스
-            </h4>
-          </div>
-          <button
-            onClick={onClearSelection}
-            className="text-sm text-foreground/60 hover:text-foreground underline"
-          >
-            전체 뉴스 보기
-          </button>
-        </div>
-
-        {/* 선택된 기업의 뉴스 리스트 */}
-        <div className="space-y-3">
-          {selectedEventNews.forecast_news.map((news, index) => (
-            <article
-              key={index}
-              className="glass-subtle p-4 rounded-lg cursor-pointer hover:glass transition-all group"
-              onClick={() => window.open(news.url, '_blank')}
-            >
-              <div className="flex gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-foreground/90">{news.source}</span>
-                    <span className="text-xs text-foreground/50">
-                      {formatTimestamp(news.published_at)}
-                    </span>
-                  </div>
-                  
-                  <h3 className="font-medium mb-2 line-clamp-2 group-hover:text-primary transition-colors leading-tight">
-                    {news.title}
-                  </h3>
-                  
-                  <p className="text-sm text-foreground/70 line-clamp-2 mb-3 leading-snug">
-                    {news.summary}
-                  </p>
-                  
-                  <div className="flex items-center justify-between">
-                    <ExternalLink size={14} className="text-foreground/40 group-hover:text-primary transition-colors" />
-                  </div>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  // 기본 상태: 이번 주 주요 실적 뉴스
   return (
     <div className="mt-6 pt-6 border-t border-foreground/10">
       {/* 주간 뉴스 헤더 */}
@@ -611,11 +792,9 @@ function EarningsNewsSection({
         <div className="flex items-center space-x-3">
           <TrendingUp size={20} className="text-primary" />
           <h4 className="font-medium">이번 주 실적 뉴스</h4>
-          {weeklyNewsData && (
-            <span className="text-sm text-foreground/60">
-              ({weeklyNewsData.week_start} ~ {weeklyNewsData.week_end})
-            </span>
-          )}
+          <span className="text-sm text-foreground/60">
+            ({weeklyNewsData.week_start} ~ {weeklyNewsData.week_end})
+          </span>
         </div>
       </div>
 
@@ -644,11 +823,13 @@ function EarningsNewsSection({
           </div>
         </div>
       )}
+
+      {/* 뉴스 리스트 */}
       {weeklyNewsData && !loading.weekly && (
         <div className="space-y-4">
           {weeklyNewsData.earnings_with_news.map((earning, earningIndex) => (
             <div key={earningIndex} className="border-l-2 border-primary/20 pl-4">
-              {/* 기업 헤더 - 한 줄로 간결하게 */}
+              {/* 기업 헤더 */}
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-2">
                   <Badge variant="outline" className="text-xs font-mono">
@@ -667,7 +848,7 @@ function EarningsNewsSection({
                 </span>
               </div>
 
-              {/* 뉴스 리스트 - 간결한 카드 */}
+              {/* 뉴스 리스트 */}
               <div className="space-y-2">
                 {earning.forecast_news.slice(0, 3).map((news, newsIndex) => (
                   <div
@@ -698,10 +879,11 @@ function EarningsNewsSection({
                   </div>
                 ))}
                 
-                {/* 더 보기 버튼 - 간결하게 */}
+                {/* 더 보기 버튼 */}
                 {earning.news_count > 3 && (
                   <button
                     onClick={() => {
+                      // 해당 기업의 이벤트 객체 생성하여 클릭
                       const mockEvent: CalendarEventDisplay = {
                         id: earning.calendar_info.id,
                         symbol: earning.calendar_info.symbol,
@@ -725,7 +907,7 @@ function EarningsNewsSection({
                         display_time: new Date(earning.calendar_info.report_date).toLocaleDateString('ko-KR'),
                         has_news: earning.news_count > 0
                       };
-                      onEventSelect(mockEvent);
+                      onEventClick(mockEvent);
                     }}
                     className="w-full text-center py-2 text-xs text-primary hover:text-primary/80 hover:bg-primary/5 rounded transition-all"
                   >

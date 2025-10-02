@@ -2,7 +2,6 @@
 // IPO Calendar API 서비스
 
 import {
-    IPOEvent,
     IPOCalendarResponse,
     IPOMonthlyResponse,
     IPOStatistics

@@ -299,15 +299,20 @@ function AppContent() {
       pushToHistory("main", "markets");
       setActiveTab("markets");
     };
+    const handleNavigateToStockDetail = (event: any) => {
+      const { symbol } = event.detail;
+      handleStockClick(symbol);
+    };
 
     window.addEventListener('navigateToSNS', handleNavigateToSNS);
     window.addEventListener('navigateToNews', handleNavigateToNews);
     window.addEventListener('navigateToMarkets', handleNavigateToMarkets);
-    
+    window.addEventListener('navigateToStockDetail', handleNavigateToStockDetail);
     return () => {
       window.removeEventListener('navigateToSNS', handleNavigateToSNS);
       window.removeEventListener('navigateToNews', handleNavigateToNews);
       window.removeEventListener('navigateToMarkets', handleNavigateToMarkets);
+      window.removeEventListener('navigateToStockDetail', handleNavigateToStockDetail);
     };
   }, []);
 

@@ -3,11 +3,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { ipoCalendarService } from '../services/ipoCalendarService';
-import {
-  IPOEvent,
-  IPOEventDisplay,
-  IPOStatistics
-} from '../types/ipoCalendar';
+import { IPOEvent, IPOEventDisplay } from '../types/calendar';
+import { IPOStatistics } from '../types/ipoCalendar';
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5분
 
@@ -36,7 +33,8 @@ export function useIPOCalendar() {
         month: 'long', 
         day: 'numeric' 
       }),
-      event_type: 'ipo' as const
+      event_type: 'ipo' as const,
+      importance: 'medium' as const // IPO는 기본적으로 중간 중요도
     };
   }, []);
 
