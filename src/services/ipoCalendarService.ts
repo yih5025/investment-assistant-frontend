@@ -30,7 +30,7 @@ import {
       if (params?.exchange) queryParams.append('exchange', params.exchange);
       if (params?.limit) queryParams.append('limit', params.limit.toString());
   
-      const url = `${this.baseURL}/ipo-calendar/?${queryParams.toString()}`;
+      const url = `${this.baseURL}/ipo-calendar/}`;
       
       console.log('🚀 IPO Calendar API 호출:', url);
       
