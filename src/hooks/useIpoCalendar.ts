@@ -46,19 +46,9 @@ export function useIPOCalendar() {
     setError(null);
     
     try {
-      // 향후 3개월 데이터 조회
-      const endDate = new Date();
-      endDate.setMonth(endDate.getMonth() + 3);
+      console.log('📅 Fetching IPO data');
       
-      const params = {
-        start_date: new Date().toISOString().split('T')[0],
-        end_date: endDate.toISOString().split('T')[0],
-        limit: 1000
-      };
-      
-      console.log('📅 Fetching IPO data with params:', params);
-      
-      const response = await ipoCalendarService.getIPOCalendar(params);
+      const response = await ipoCalendarService.getIPOCalendar();
       
       setIPOData(response.items);
       setLastFetchTime(Date.now());

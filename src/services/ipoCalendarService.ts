@@ -17,20 +17,8 @@ import {
     /**
      * 전체 IPO 캘린더 조회
      */
-    async getIPOCalendar(params?: {
-      start_date?: string;
-      end_date?: string;
-      exchange?: string;
-      limit?: number;
-    }): Promise<IPOCalendarResponse> {
-      const queryParams = new URLSearchParams();
-      
-      if (params?.start_date) queryParams.append('start_date', params.start_date);
-      if (params?.end_date) queryParams.append('end_date', params.end_date);
-      if (params?.exchange) queryParams.append('exchange', params.exchange);
-      if (params?.limit) queryParams.append('limit', params.limit.toString());
-  
-      const url = `${this.baseURL}/ipo-calendar/}`;
+    async getIPOCalendar(): Promise<IPOCalendarResponse> {
+      const url = `${this.baseURL}/ipo-calendar/`;
       
       console.log('🚀 IPO Calendar API 호출:', url);
       

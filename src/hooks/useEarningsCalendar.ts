@@ -185,18 +185,9 @@ export function useEarningsCalendar() {
    */
   const fetchIPOData = useCallback(async () => {
     try {
-      const endDate = new Date();
-      endDate.setMonth(endDate.getMonth() + 3);
+      console.log('📅 Fetching IPO data');
       
-      const params = {
-        start_date: new Date().toISOString().split('T')[0],
-        end_date: endDate.toISOString().split('T')[0],
-        limit: 1000
-      };
-      
-      console.log('📅 Fetching IPO data:', params);
-      
-      const response = await ipoCalendarService.getIPOCalendar(params);
+      const response = await ipoCalendarService.getIPOCalendar();
       
       setIPOData(response.items);
       
