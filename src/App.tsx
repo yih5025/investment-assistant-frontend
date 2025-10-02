@@ -677,10 +677,10 @@ function AppContent() {
       <div className="flex items-center justify-between mb-3">
         <div>
           <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-            W.E.I
+            W.E Investing
           </h1>
           <p className="text-xs text-foreground/70">
-            {isLoggedIn ? `${user.name}님, 안녕하세요` : "Wise & Easy Investing"}
+            Wise & Easy Investing - Your Investment Cheatsheet
           </p>
         </div>
         <div className="flex items-center space-x-2">

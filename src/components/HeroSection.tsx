@@ -1,4 +1,5 @@
 // components/HeroSection.tsx
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { TrendingUp, Calendar, Newspaper, MessageSquare, BookOpen, ChevronRight, Wallet, PieChart } from "lucide-react";
 interface HeroSectionProps {
@@ -6,9 +7,16 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ onCheatsheetClick }: HeroSectionProps) {
-  // 커스텀 훅으로 통계 데이터 관리
+  // 실시간 시간 업데이트
+  const [currentTime, setCurrentTime] = useState(new Date());
   
-  const currentTime = new Date();
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 30000); // 30초마다 업데이트
+    
+    return () => clearInterval(timer); // 클린업
+  }, []);
   
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('ko-KR', { 
@@ -20,7 +28,12 @@ export function HeroSection({ onCheatsheetClick }: HeroSectionProps) {
   };
 
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      timeZone: 'America/New_York',
+      hour12: true
+    });
   };
 
   return (
@@ -47,7 +60,7 @@ export function HeroSection({ onCheatsheetClick }: HeroSectionProps) {
             
             <div className="text-right">
               <div className="text-3xl font-bold text-primary">{formatTime(currentTime)}</div>
-              <div className="text-xs text-foreground/60 mt-1">실시간 업데이트</div>
+              <div className="text-xs text-foreground/60 mt-1">미국 동부 시간</div>
             </div>
           </div>
         </div>

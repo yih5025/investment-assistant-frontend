@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { TrendingUp, MessageSquare, Newspaper, BarChart3, DollarSign, Target, Brain, Sparkles, ChevronRight, Play, SkipForward, X } from "lucide-react";
+import { TrendingUp, MessageSquare, Newspaper, BarChart3, DollarSign, Target, Brain, Sparkles, ChevronRight, Play, SkipForward, X, BookOpenCheck } from "lucide-react";
 import { webSocketManager } from '../services/WebSocketManager';
 
 interface WelcomePageProps {
@@ -109,9 +109,9 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
             <TrendingUp size={48} className="text-primary relative z-10 drop-shadow-lg" />
           </div>
           <h1 className="text-5xl font-bold mb-3 bg-gradient-to-r from-primary via-blue-300 to-primary bg-clip-text text-transparent drop-shadow-md">
-            W.E.I
+            W.E Investing
           </h1>
-          <p className="text-xl text-foreground/90 font-medium tracking-wide">Wise & Easy Investment</p>
+          <p className="text-xl text-foreground/90 font-medium tracking-wide">Wise & Easy Investing - Your Investment Cheatsheet</p>
         </div>
 
         {/* 로딩 애니메이션 */}
@@ -161,7 +161,7 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
         {/* 하단 힌트 텍스트 */}
         <div className="absolute bottom-8 left-0 right-0 text-center px-6">
           <p className="text-sm text-foreground/60 glass-subtle rounded-full py-2 px-4 inline-block">
-            데이터 기반 현명한 투자의 시작
+            데이터 기반, 현명한 투자 컨닝페이퍼
           </p>
         </div>
       </div>
@@ -187,36 +187,21 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
         </div>
         <div>
           <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-primary via-blue-300 to-primary bg-clip-text text-transparent drop-shadow-sm">
-            W.E.I
+            W.E Investing
           </h1>
-          <p className="text-foreground/80 text-lg font-medium">Wise & Easy Investment</p>
+          <p className="text-foreground/80 text-lg font-medium">Wise & Easy Investing - Your Investment Cheatsheet</p>
         </div>
       </div>
 
       {/* 메인 메시지 */}
       <div className="glass-strong rounded-3xl p-8 text-center space-y-6 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-blue-600/5"></div>
-        <Sparkles className="w-16 h-16 mx-auto text-primary drop-shadow-md relative z-10" />
+        <BookOpenCheck className="w-16 h-16 mx-auto text-primary drop-shadow-md relative z-10" />
         <h2 className="text-2xl font-bold leading-tight relative z-10">
-          어려운 투자를,<br />
-          데이터를 기반으로<br />
-          <span className="text-primary drop-shadow-sm">쉽고 현명하게</span> 투자하세요
+          투자가 어렵다면,<br />
+          실시간 시장 데이터를 기반으로<br />
+          <span className="text-primary drop-shadow-sm">쉽고 현명하게</span> 배우면서 투자하세요
         </h2>
-      </div>
-
-      {/* SNS 영향력 섹션 */}
-      <div className="glass-card rounded-3xl p-6 space-y-5 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5"></div>
-        <div className="flex items-center space-x-4 relative z-10">
-          <div className="w-12 h-12 rounded-xl glass-subtle flex items-center justify-center">
-            <MessageSquare className="text-primary" size={28} />
-          </div>
-          <h3 className="font-bold text-lg">SNS가 투자에 미치는 영향이 궁금하신가요?</h3>
-        </div>
-        <div className="space-y-4 text-foreground/80 leading-relaxed pl-16 relative z-10">
-          <p className="font-medium">일론 머스크의 트윗 하나로 테슬라 주가가 움직이고,</p>
-          <p className="font-medium">트럼프의 Truth Social 게시글로 관련 코인이 요동칩니다.</p>
-        </div>
       </div>
 
       {/* 학습 내용 */}
@@ -226,21 +211,21 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
           <div className="w-12 h-12 rounded-xl glass-subtle flex items-center justify-center">
             <Brain className="text-primary" size={28} />
           </div>
-          <h3 className="font-bold text-lg">무엇을 배울 수 있나요?</h3>
+          <h3 className="font-bold text-lg">W.E Investing에서 무엇을 얻을 수 있나요?</h3>
         </div>
         <div className="space-y-4 relative z-10">
           {[
             {
               icon: <BarChart3 size={20} className="text-blue-400" />,
-              text: "S&P500 기업들의 재무제표 분석으로 재무제표 공부"
+              text: "S&P500 기업들의 데이터로 재무제표를 분석하고 투자할 수 있어요"
             },
             {
               icon: <DollarSign size={20} className="text-yellow-400" />,
-              text: "암호화폐 공급량, 김치 프리미엄 분석 등으로 디테일하게 알아보는 암호화폐 공부"
+              text: "ETF와 암호화폐에 대해 생태계와 시장에 대해 쉽게 알 수 있어요"
             },
             {
               icon: <TrendingUp size={20} className="text-green-400" />,
-              text: "다양한 경제 지표들의 시장에 의미하는 바와 서로 간의 상관관계 공부"
+              text: "다양한 경제 지표들의 시장에 의미하는 바와 상관관계를 한 눈에 볼 수 있어요"
             }
           ].map((item, index) => (
             <div key={index} className="flex items-start space-x-4 glass-subtle rounded-2xl p-4 hover:glass-card transition-all duration-300">
@@ -262,29 +247,29 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
           <div className="w-12 h-12 rounded-xl glass-subtle flex items-center justify-center">
             <Target className="text-primary" size={28} />
           </div>
-          <h3 className="font-bold text-lg">어떤 서비스를 제공하나요?</h3>
+          <h3 className="font-bold text-lg">W.E Investing는 어떤 서비스를 제공하나요?</h3>
         </div>
         <div className="space-y-4 relative z-10">
           {[
             {
               icon: <BarChart3 size={20} className="text-blue-400" />,
-              text: "S&P 500 기업의 실적 발표 캘린더와 IPO 캘린더로 미리 준비하는 투자 전략"
+              text: "S&P 500 기업들의 실적 발표와 IPO 캘린더로 미리 투자를 준비할 수 있어요"
             },
             {
               icon: <TrendingUp size={20} className="text-green-400" />,
-              text: "실시간 S&P 500, 암호화폐, ETF 데이터로 시장 동향 파악"
+              text: "S&P 500 기업들의 분석과 투자 인사이트를 제공해요"
             },
             {
               icon: <Newspaper size={20} className="text-orange-400" />,
-              text: "S&P 500 기업 분석, 암호화폐 프로젝트에 대한 분석"
+              text: "암호화폐의 전 세계 거래소 가격 비교를 통한 김치프리미엄을 분석해요"
             },
             {
               icon: <MessageSquare size={20} className="text-purple-400" />,
-              text: "SNS 글이 시장에 미치는 영향 분석"
+              text: "ETF 업종과 보유 종목을 한눈에 볼 수 있어요"
             },
             {
               icon: <DollarSign size={20} className="text-yellow-400" />,
-              text: "암호화폐 김치 프리미엄 계산"
+              text: "시장에 영향을 줄 수 있는 인물들의 SNS 계정 게시글이 시장에 미치는 영향을 분석해요"
             }
           ].map((item, index) => (
             <div key={index} className="flex items-start space-x-4 glass-subtle rounded-2xl p-4 hover:glass-card transition-all duration-300">
@@ -308,7 +293,7 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
           <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-blue-600/10 group-hover:from-primary/20 group-hover:to-blue-600/20 transition-all duration-300"></div>
           <div className="flex items-center justify-center space-x-4 relative z-10">
             <Play size={24} className="text-primary group-hover:scale-110 transition-transform" />
-            <span className="font-bold text-lg">투자 여정 시작하기</span>
+            <span className="font-bold text-lg">W.E Investing과 함께 투자 여정 시작하기</span>
             <ChevronRight size={24} className="text-primary group-hover:translate-x-2 transition-transform" />
           </div>
         </button>
@@ -317,7 +302,7 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
       {/* 하단 메시지 */}
       <div className="text-center pt-6 pb-8">
         <p className="text-sm text-foreground/60 glass-subtle rounded-full py-2 px-6 inline-block">
-          로그인 없이도 대부분의 기능을 이용할 수 있습니다
+          로그인 없이도 대부분의 기능을 이용할 수 있어요
         </p>
       </div>
     </div>
