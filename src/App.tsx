@@ -6,7 +6,6 @@ import { ReactQueryDevtools } from 'react-query/devtools';
 import { webSocketManager } from './services/WebSocketManager';
 
 import { BottomNavigation } from "./components/BottomNavigation";
-import EnhancedTopGainersBanner from "./components/TopGainersBanner";
 import { EarningsCalendar } from "./components/EarningsCalendar";
 import MarketPage from "./components/MarketPage";
 import { MarketDetailPage } from "./components/SP500Detail";
@@ -258,14 +257,8 @@ function AppContent() {
         // 필요한 경우에만 재연결 (끊어진 연결이 있는지 확인)
         const statuses = webSocketManager.getAllConnectionStatuses();
         const needsReconnection = Object.entries(statuses).some(([type, info]) => {
-          // crypto는 WebSocket이 끊어진 경우, 나머지는 API 폴링이 멈춘 경우
-          if (type === 'crypto' && info.mode === 'websocket' && info.status === 'disconnected') {
-            return true;
-          }
-          if (type !== 'crypto' && info.mode === 'api' && info.status !== 'api_mode') {
-            return true;
-          }
-          return false;
+          // 모든 서비스가 WebSocket Push 방식이므로 disconnected 상태인 경우 재연결
+          return info.mode === 'websocket' && info.status === 'disconnected';
         });
         
         if (needsReconnection) {
@@ -731,7 +724,6 @@ function AppContent() {
                 setViewState("cheatsheet");
               }}
             />
-            <EnhancedTopGainersBanner />
             <EarningsCalendar />
           </div>
         );

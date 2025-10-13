@@ -1,9 +1,8 @@
 // services/WebSocketManager.ts
-// 모든 서비스를 관리하는 통합 매니저
+// 모든 서비스를 관리하는 통합 매니저 (WebSocket Push 전용)
 
 import { CryptoService } from './CryptoService';
 import { SP500Service } from './SP500Service';
-import { TopGainersService } from './TopGainersService';
 import { ETFService } from './ETFService';
 import { MarketTimeManager } from '../utils/marketTime';
 import { 
@@ -16,8 +15,6 @@ import {
   ServiceEvents,
   CryptoData,
   SP500Data,
-  TopGainersData,
-  TopGainersCategoryStats,
   ETFData
 } from './types';
 
@@ -32,15 +29,12 @@ export type {
   ServiceEvents,
   CryptoData,
   SP500Data,
-  TopGainersData,
-  TopGainersCategoryStats,
   ETFData
 } from './types';
 
 export class WebSocketManager {
   private cryptoService: CryptoService;
   private sp500Service: SP500Service;
-  private topGainersService: TopGainersService;
   private etfService: ETFService;
   private marketTimeManager = new MarketTimeManager();
   
@@ -57,32 +51,18 @@ export class WebSocketManager {
   constructor(customConfig?: Partial<ServiceConfig>) {
     const optimizedConfig = {
       ...customConfig,
-      apiPollingInterval: 60000, // 1분
-      marketClosedPollingInterval: 600000, // 10분
-      weekendPollingInterval: 1800000, // 30분
-      cacheMaxAge: 180000, // 3분
-      priorityPollingOffsets: {
-        sp500: 0,
-        topgainers: 5000, // 5초 시차
-        etf: 0
-      },
-      backgroundLoadingDelays: {
-        crypto: 0,
-        topgainers: 500,
-        earnings_calendar: 1000,
-        earnings_news: 1500,
-        sp500: 1750,
-        etf: 2000 // 1.5초로 통일
-      }
+      maxReconnectAttempts: 3,
+      baseReconnectDelay: 5000,
+      healthCheckInterval: 60000,
+      cacheMaxAge: 180000
     };
 
     this.cryptoService = new CryptoService(optimizedConfig);
     this.sp500Service = new SP500Service(optimizedConfig);
-    this.topGainersService = new TopGainersService(optimizedConfig);
     this.etfService = new ETFService(optimizedConfig);
 
     this.setupEventForwarding();
-    console.log('🚀 WebSocketManager 초기화: 최적화된 폴링 간격 및 백그라운드 로딩');
+    console.log('🚀 WebSocketManager 초기화: WebSocket Push 방식');
   }
 
   // ============================================================================
@@ -100,13 +80,13 @@ export class WebSocketManager {
       return;
     }
 
-    console.log('🚀 WebSocketManager 초기화 시작 (분리된 서비스)');
+    console.log('🚀 WebSocketManager 초기화 시작 (WebSocket Push)');
     
     this.startMarketStatusMonitoring();
     this.initializeServices();
 
     this.isInitialized = true;
-    console.log('✅ WebSocketManager 초기화 완료 - 모든 서비스 실행 중');
+    console.log('✅ WebSocketManager 초기화 완료 - 모든 WebSocket 실행 중');
   }
 
   public shutdown(): void {
@@ -121,7 +101,6 @@ export class WebSocketManager {
     // 모든 서비스 종료
     this.cryptoService.shutdown();
     this.sp500Service.shutdown();
-    this.topGainersService.shutdown();
     this.etfService.shutdown();
 
     // 이벤트 구독자 정리
@@ -132,60 +111,50 @@ export class WebSocketManager {
   }
 
   private async initializeServices(): Promise<void> {
-    console.log('🔄 최적화된 서비스 초기화 시작');
+    console.log('🔄 WebSocket 서비스 초기화 시작');
     
     // 백그라운드 로딩 상태 초기화
     this.backgroundLoadingState = {
       isActive: true,
       completed: 0,
-      total: 4, // crypto, topgainers, sp500, etf
-      services: ['crypto', 'topgainers', 'sp500', 'etf']
+      total: 3, // crypto, sp500, etf
+      services: ['crypto', 'sp500', 'etf']
     };
     
     this.emitEvent('background_loading_start', { 
       services: this.backgroundLoadingState.services 
     });
     
-    // 우선순위 기반 순차 초기화
-    const config = this.cryptoService['config'] || {};
-    const delays = config.backgroundLoadingDelays || {
+    // 순차적 WebSocket 연결 (서버 부하 분산)
+    const delays = {
       crypto: 0,
-      topgainers: 500,
-      sp500: 1000,
-      etf: 1500 // 6초에서 1.5초로 단축
+      sp500: 500,
+      etf: 1000
     };
     
-    // 1. Crypto (즉시 시작 - WebSocket)
+    // 1. Crypto WebSocket
     console.log('🚀 1순위: Crypto WebSocket 연결 시작');
     const cryptoStart = Date.now();
     this.cryptoService.initialize();
     this.completeBackgroundLoading('crypto', Date.now() - cryptoStart);
     
-    // 2. TopGainers (홈페이지 메인 데이터)
-    setTimeout(async () => {
-      console.log('🚀 2순위: TopGainers 데이터 로딩 시작');
-      const topGainersStart = Date.now();
-      this.topGainersService.initialize();
-      this.completeBackgroundLoading('topgainers', Date.now() - topGainersStart);
-    }, delays.topgainers);
-    
-    // 3. SP500 (백그라운드 로딩)
-    setTimeout(async () => {
-      console.log('🚀 3순위: SP500 백그라운드 로딩 시작');
+    // 2. SP500 WebSocket
+    setTimeout(() => {
+      console.log('🚀 2순위: SP500 WebSocket 연결 시작');
       const sp500Start = Date.now();
       this.sp500Service.initialize();
       this.completeBackgroundLoading('sp500', Date.now() - sp500Start);
     }, delays.sp500);
     
-    // 4. ETF (백그라운드 로딩)
-    setTimeout(async () => {
-      console.log('🚀 4순위: ETF 백그라운드 로딩 시작');
+    // 3. ETF WebSocket
+    setTimeout(() => {
+      console.log('🚀 3순위: ETF WebSocket 연결 시작');
       const etfStart = Date.now();
       this.etfService.initialize();
       this.completeBackgroundLoading('etf', Date.now() - etfStart);
     }, delays.etf);
     
-    console.log('✅ 백그라운드 로딩 스케줄 완료 - 순차적 초기화 진행 중');
+    console.log('✅ WebSocket 연결 스케줄 완료 - 순차적 초기화 진행 중');
   }
   
   private completeBackgroundLoading(service: WebSocketType, duration: number): void {
@@ -197,16 +166,12 @@ export class WebSocketManager {
       total: this.backgroundLoadingState.total
     });
     
-    console.log(`✅ ${service} 백그라운드 로딩 완료 (${duration}ms) - ${this.backgroundLoadingState.completed}/${this.backgroundLoadingState.total}`);
+    console.log(`✅ ${service} 초기화 완료 (${duration}ms) - ${this.backgroundLoadingState.completed}/${this.backgroundLoadingState.total}`);
     
     if (this.backgroundLoadingState.completed >= this.backgroundLoadingState.total) {
       this.backgroundLoadingState.isActive = false;
-      console.log('🎉 모든 백그라운드 로딩 완료!');
+      console.log('🎉 모든 WebSocket 초기화 완료!');
     }
-  }
-
-  private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   // ============================================================================
@@ -269,23 +234,6 @@ export class WebSocketManager {
       this.emitEvent('error', { type: 'sp500', error: data.error });
     });
 
-    // TopGainersService 이벤트 포워딩
-    this.topGainersService.subscribe('topgainers_update', (data: TopGainersData[]) => {
-      this.emitEvent('topgainers_update', data);
-    });
-    
-    this.topGainersService.subscribe('topgainers_category_stats', (data: TopGainersCategoryStats) => {
-      this.emitEvent('topgainers_category_stats', data);
-    });
-    
-    this.topGainersService.subscribe('connection_change', (data) => {
-      this.emitEvent('connection_change', { type: 'topgainers', status: data.status, mode: data.mode });
-    });
-    
-    this.topGainersService.subscribe('error', (data) => {
-      this.emitEvent('error', { type: 'topgainers', error: data.error });
-    });
-
     // ETFService 이벤트 포워딩
     this.etfService.subscribe('etf_update', (data: ETFData[]) => {
       this.emitEvent('etf_update', data);
@@ -311,8 +259,6 @@ export class WebSocketManager {
         return this.cryptoService.getConnectionStatus();
       case 'sp500':
         return this.sp500Service.getConnectionStatus();
-      case 'topgainers':
-        return this.topGainersService.getConnectionStatus();
       case 'etf':
         return this.etfService.getConnectionStatus();
       default:
@@ -321,16 +267,8 @@ export class WebSocketManager {
   }
 
   public getDataMode(type: WebSocketType): DataMode {
-    switch (type) {
-      case 'crypto':
-        return 'websocket';
-      case 'sp500':
-      case 'topgainers':
-      case 'etf':
-        return 'api';
-      default:
-        return 'websocket';
-    }
+    // 모두 WebSocket 모드
+    return 'websocket';
   }
 
   public getAllConnectionStatuses(): Record<WebSocketType, { status: ConnectionStatus; mode: DataMode }> {
@@ -341,15 +279,11 @@ export class WebSocketManager {
       },
       sp500: { 
         status: this.sp500Service.getConnectionStatus(), 
-        mode: 'api' 
-      },
-      topgainers: { 
-        status: this.topGainersService.getConnectionStatus(), 
-        mode: 'api' 
+        mode: 'websocket' 
       },
       etf: { 
         status: this.etfService.getConnectionStatus(), 
-        mode: 'api' 
+        mode: 'websocket' 
       }
     };
   }
@@ -364,9 +298,6 @@ export class WebSocketManager {
         break;
       case 'sp500':
         this.sp500Service.reconnect();
-        break;
-      case 'topgainers':
-        this.topGainersService.reconnect();
         break;
       case 'etf':
         this.etfService.reconnect();
@@ -391,24 +322,13 @@ export class WebSocketManager {
     });
   }
 
-  // 데이터 새로고침 (우선순위 기반)
+  // 데이터 새로고침 (WebSocket 재연결)
   public refreshData(): void {
-    console.log('🔄 우선순위 기반 데이터 새로고침 시작');
+    console.log('🔄 데이터 새로고침 (WebSocket 재연결)');
     
-    // 1순위: TopGainers (홈페이지 메인 데이터)
-    this.topGainersService.refreshData();
+    this.sp500Service.refreshData();
+    this.etfService.refreshData();
     
-    // 2순위: SP500 (시차를 두어 서버 부하 분산)
-    setTimeout(() => {
-      this.sp500Service.refreshData();
-    }, 2000);
-    
-    // 3순위: ETF
-    setTimeout(() => {
-      this.etfService.refreshData();
-    }, 2500);
-    
-    // WebSocket 서비스는 연결 상태만 확인
     const cryptoStatus = this.cryptoService.getConnectionStatus();
     if (cryptoStatus === 'connected') {
       console.log('✅ crypto WebSocket 연결 유지 - 실시간 데이터 수신 중');
@@ -416,47 +336,6 @@ export class WebSocketManager {
       console.log('🔄 crypto WebSocket 재연결 시도');
       this.cryptoService.reconnect();
     }
-    
-    console.log('✅ 우선순위 기반 새로고침 스케줄 완료');
-  }
-
-  // SP500 전용 메서드들
-  public async loadMoreSP500Data(): Promise<boolean> {
-    return await this.sp500Service.loadMoreData();
-  }
-
-  public getSP500PaginationState() {
-    return this.sp500Service.getPaginationState();
-  }
-
-  // ETF 전용 메서드들
-  public async loadMoreETFData(): Promise<boolean> {
-    return await this.etfService.loadMoreData();
-  }
-
-  public getETFPaginationState() {
-    return this.etfService.getPaginationState();
-  }
-
-  // ETF 서비스 즉시 초기화 (탭 클릭 시 사용)
-  public ensureETFInitialized(): void {
-    if (!this.etfService['isInitialized']) {
-      console.log('🚀 ETF 탭 클릭 - 즉시 초기화 시작');
-      this.etfService.initialize();
-    }
-  }
-
-  // TopGainers 전용 메서드들
-  public getTopGainersByCategory(category: 'top_gainers' | 'top_losers' | 'most_actively_traded'): TopGainersData[] {
-    return this.topGainersService.getDataByCategory(category);
-  }
-
-  public getAllTopGainersCategories(): Record<string, TopGainersData[]> {
-    return this.topGainersService.getAllCategories();
-  }
-
-  public getTopGainersCategoryStats(): TopGainersCategoryStats | null {
-    return this.topGainersService.getCategoryStats();
   }
 
   // 캐시된 데이터 조회
@@ -466,8 +345,6 @@ export class WebSocketManager {
         return this.cryptoService.getLastCachedData();
       case 'sp500':
         return this.sp500Service.getLastCachedData();
-      case 'topgainers':
-        return this.topGainersService.getLastCachedData();
       case 'etf':
         return this.etfService.getLastCachedData();
       default:
@@ -498,7 +375,6 @@ export class WebSocketManager {
       services: {
         crypto: this.cryptoService.getStatus(),
         sp500: this.sp500Service.getStatus(),
-        topgainers: this.topGainersService.getStatus(),
         etf: this.etfService.getStatus()
       },
       connectionStatuses: this.getAllConnectionStatuses(),
@@ -571,26 +447,10 @@ export class WebSocketManager {
 export const webSocketManager = new WebSocketManager({
   maxReconnectAttempts: 3,
   baseReconnectDelay: 5000,
-  apiPollingInterval: 60000, // 1분 간격
-  marketClosedPollingInterval: 600000, // 10분 간격
-  weekendPollingInterval: 1800000, // 30분 간격
   healthCheckInterval: 60000,
-  cacheMaxAge: 180000, // 3분 캐시
+  cacheMaxAge: 180000,
   errorBackoffInterval: 60000,
-  maxConsecutiveErrors: 3,
-  priorityPollingOffsets: {
-    sp500: 0,        // 55초 간격 (기본 60초 - 5초)
-    topgainers: 5000, // 65초 간격 (기본 60초 + 5초)
-    etf: 0           // 60초 간격
-  },
-  backgroundLoadingDelays: {
-    crypto: 0,           // 즉시 시작
-    topgainers: 500,     // 0.5초 후 (홈페이지 필수)
-    earnings_calendar: 1000,  // 1초 후 (홈페이지 필수)
-    earnings_news: 1500,      // 1.5초 후 (홈페이지 필수)
-    sp500: 1750,             // 3초 후 (백그라운드)
-    etf: 2000                // 1.5초로 통일 (백그라운드)
-  }
+  maxConsecutiveErrors: 3
 });
 
 export default webSocketManager;

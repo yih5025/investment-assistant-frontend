@@ -1,5 +1,5 @@
 // hooks/useSP500.ts
-// SP500 전용 훅 (TopGainers 패턴 적용한 HTTP 폴링 방식)
+// SP500 전용 훅 (WebSocket Push 방식)
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
@@ -37,7 +37,7 @@ export interface SP500Stats {
   total_volume: number;
   last_updated: string;
   market_status: 'OPEN' | 'CLOSED';
-  data_source: 'redis' | 'database';
+  data_source: 'websocket' | 'cache';
 }
 
 // ============================================================================
@@ -47,7 +47,7 @@ export interface SP500Stats {
 export function useSP500Connection() {
   const [connectionStatus, setConnectionStatus] = useState<{ status: ConnectionStatus; mode: DataMode }>({
     status: 'disconnected',
-    mode: 'api'  // HTTP 폴링 모드로 고정
+    mode: 'websocket'  // WebSocket Push 모드
   });
 
   const [marketTimeManager] = useState(() => new MarketTimeManager());
@@ -72,13 +72,13 @@ export function useSP500Connection() {
   }, []);
 
   const isConnected = useMemo(() => {
-    return connectionStatus.status === 'connected' || connectionStatus.status === 'api_mode';
+    return connectionStatus.status === 'connected';
   }, [connectionStatus.status]);
 
   const isRealtime = useMemo(() => {
     const marketStatus = marketTimeManager.getCurrentMarketStatus();
-    // HTTP 폴링 모드에서도 실시간으로 간주 (5초 간격)
-    return marketStatus.isOpen && (connectionStatus.status === 'connected' || connectionStatus.status === 'api_mode');
+    // WebSocket Push 모드 - 실시간 데이터 수신
+    return marketStatus.isOpen && connectionStatus.status === 'connected';
   }, [connectionStatus.status, marketTimeManager]);
 
   return {
@@ -146,7 +146,7 @@ function calculateSP500Stats(data: SP500Data[]): SP500Stats {
     total_volume: totalVolume,
     last_updated: new Date().toISOString(),
     market_status: 'OPEN', // 실제로는 MarketTimeManager에서 가져와야 함
-    data_source: 'redis'
+    data_source: 'websocket'
   };
 }
 
@@ -651,9 +651,9 @@ export function useSP500Market() {
   // 데이터 소스 메시지
   const getDataSourceMessage = useCallback(() => {
     if (marketStatus.isOpen) {
-      return isConnected ? 'HTTP 폴링 (5초 간격)' : '연결 중...';
+      return isConnected ? 'WebSocket 실시간 Push' : '연결 중...';
     } else {
-      return '최종 거래가 기준 (30초 간격)';
+      return 'WebSocket Push (최종 거래가)';
     }
   }, [marketStatus.isOpen, isConnected]);
 

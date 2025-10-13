@@ -59,9 +59,9 @@ export function useWebSocketConnection() {
     // 초기 상태
     return {
       crypto: { status: 'disconnected', mode: 'websocket' },  
-      sp500: { status: 'disconnected', mode: 'api' },
+      sp500: { status: 'disconnected', mode: 'websocket' },
       topgainers: { status: 'disconnected', mode: 'api' },
-      etf: { status: 'disconnected', mode: 'api' },
+      etf: { status: 'disconnected', mode: 'websocket' },
     };
   });
 
@@ -106,19 +106,19 @@ export function useWebSocketConnection() {
 
   const isConnected = useCallback((type: WebSocketType) => {
     const connectionInfo = connectionStatuses[type];
-    return connectionInfo.status === 'connected' || connectionInfo.status === 'api_mode';
+    return connectionInfo.status === 'connected';
   }, [connectionStatuses]);
 
   const isAnyConnected = useMemo(() => {
     return Object.values(connectionStatuses).some(info => 
-      info.status === 'connected' || info.status === 'api_mode'
+      info.status === 'connected'
     );
   }, [connectionStatuses]);
 
   const getOverallStatus = useMemo((): ConnectionStatus => {
     const statuses = Object.values(connectionStatuses).map(info => info.status);
     
-    if (statuses.every(status => status === 'connected' || status === 'api_mode')) return 'connected';
+    if (statuses.every(status => status === 'connected')) return 'connected';
     if (statuses.some(status => status === 'connecting' || status === 'reconnecting')) return 'connecting';
     if (statuses.every(status => status === 'disconnected')) return 'disconnected';
     
@@ -371,32 +371,7 @@ export function useMarketData() {
     webSocketManager.refreshData();
   }, []);
 
-  // SP500 더보기 기능
-  const loadMoreSP500 = useCallback(async () => {
-    console.log('🔄 SP500 더보기 요청');
-    return await webSocketManager.loadMoreSP500Data();
-  }, []);
-
-  // SP500 페이징 상태 조회
-  const getSP500PaginationState = useCallback(() => {
-    return webSocketManager.getSP500PaginationState();
-  }, []);
-
-  // ETF 더보기 로드
-  const loadMoreETF = useCallback(async () => {
-    console.log('🔄 ETF 더보기 요청');
-    return await webSocketManager.loadMoreETFData();
-  }, []);
-
-  // ETF 페이징 상태 조회
-  const getETFPaginationState = useCallback(() => {
-    return webSocketManager.getETFPaginationState();
-  }, []);
-
-  // ETF 서비스 즉시 초기화
-  const ensureETFInitialized = useCallback(() => {
-    webSocketManager.ensureETFInitialized();
-  }, []);
+  // WebSocket Push 방식에서는 페이징이 필요하지 않음 (실시간 전체 데이터 수신)
 
   // 🎯 불필요한 초기화 로직 제거 - App.tsx에서 이미 처리됨
   // useEffect 없음: 페이지 마운트/언마운트와 독립적
@@ -414,11 +389,6 @@ export function useMarketData() {
     searchItems,
     formatPrice,
     refreshData,
-    loadMoreSP500,
-    getSP500PaginationState,
-    loadMoreETF,
-    getETFPaginationState,
-    ensureETFInitialized,
     isEmpty: allMarketData.length === 0,
     cryptoCount: cryptoData.length,
     stockCount: sp500Data.length,

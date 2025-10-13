@@ -28,20 +28,6 @@ export interface SP500Data {
   company_name?: string;
 }
 
-export interface TopGainersData {
-  batch_id: number;
-  symbol: string;
-  category: 'top_gainers' | 'top_losers' | 'most_actively_traded';
-  last_updated: string;
-  rank_position?: number;
-  price?: number;
-  change_amount?: number;
-  change_percentage?: string | number;
-  volume?: number;
-  created_at?: string;
-  name?: string;
-  change_percent?: number;
-}
 
 export interface ETFData {
   symbol: string;
@@ -110,28 +96,13 @@ export interface ETFDetailData extends ETFData {
   };
 }
 
-export interface TopGainersCategoryStats {
-  categories: {
-    top_gainers: number;
-    top_losers: number;
-    most_actively_traded: number;
-  };
-  total: number;
-  batch_id: number;
-  last_updated: string;
-  market_status: 'OPEN' | 'CLOSED';
-  data_source: 'redis' | 'database';
-}
 
 export interface WebSocketMessage {
   type: string;
-  data?: CryptoData[] | SP500Data[] | TopGainersData[];
+  data?: CryptoData[] | SP500Data[] | ETFData[];
   timestamp: string;
   status?: string;
   subscription_info?: any;
-  batch_id?: number;
-  data_count?: number;
-  categories?: string[];
   market_status?: {
     is_open: boolean;
     status: string;
@@ -139,8 +110,8 @@ export interface WebSocketMessage {
   };
 }
 
-export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnecting' | 'api_mode';
-export type WebSocketType = 'crypto' | 'sp500' | 'topgainers' | 'etf';
+export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnecting';
+export type WebSocketType = 'crypto' | 'sp500' | 'etf';
 export type DataMode = 'websocket' | 'api';
 
 export type EventCallback<T = any> = (data: T) => void;
@@ -156,20 +127,16 @@ export interface ServiceConfig {
   cacheMaxAge: number;
   errorBackoffInterval: number;
   maxConsecutiveErrors: number;
-  // 우선순위 기반 차등 폴링 설정
+  // 우선순위 기반 차등 폴링 설정 (레거시, WebSocket에서는 미사용)
   priorityPollingOffsets?: {
-    sp500: number;    // 0초 (기본)
-    topgainers: number; // 5초 시차
-    etf: number;      // 10초 시차
+    sp500: number;
+    etf: number;
   };
   // 백그라운드 로딩 우선순위 설정
   backgroundLoadingDelays?: {
-    crypto: number;           // 0초 (즉시)
-    topgainers: number;      // 0.5초
-    earnings_calendar: number; // 1초
-    earnings_news: number;    // 1.5초
-    sp500: number;           // 3초
-    etf: number;             // 6초
+    crypto: number;
+    sp500: number;
+    etf: number;
   };
 }
 
@@ -186,9 +153,7 @@ export interface BaseService {
 export interface ServiceEvents {
   'crypto_update': CryptoData[];
   'sp500_update': SP500Data[];
-  'topgainers_update': TopGainersData[];
   'etf_update': ETFData[];
-  'topgainers_category_stats': TopGainersCategoryStats;
   'connection_change': { type: WebSocketType; status: ConnectionStatus; mode: DataMode };
   'error': { type: WebSocketType; error: string };
   'market_status_change': { isOpen: boolean; status: string };

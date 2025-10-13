@@ -1,93 +1,47 @@
 // services/ETFService.ts
+// ETF WebSocket Push 전용 서비스
+
 import { BaseService } from './BaseService';
-import { ETFData, ServiceConfig } from './types';
-
-/**
- * ETF 데이터 관리 서비스
- * 
- * SP500Service와 유사한 패턴으로 ETF 데이터를 HTTP 폴링 방식으로 관리합니다.
- * 페이징 지원, 실시간 업데이트, 캐싱 등의 기능을 제공합니다.
- */
-
+import { ETFData, WebSocketMessage } from './types';
 
 export class ETFService extends BaseService {
-  private pollingInterval: NodeJS.Timeout | null = null;
-  private ongoingRequest: Promise<void> | null = null;
-  protected consecutiveErrors = 0;
-  
-  // 페이징 상태 관리
-  private paginationState = {
-    offset: 0,
-    limit: 50,
-    hasMore: true,
-    isLoading: false,
-    totalCount: 0,
-    allData: [] as any[]
-  };
-
-  constructor(customConfig?: Partial<ServiceConfig>) {
-    super(customConfig);
-    console.log('🏦 ETFService 초기화');
-  }
+  private connection: WebSocket | null = null;
+  private reconnectTimeout: NodeJS.Timeout | null = null;
+  private heartbeatInterval: NodeJS.Timeout | null = null;
+  private reconnectAttempts = 0;
+  private lastReconnectTime = 0;
 
   protected getServiceName(): string {
     return 'ETFService';
   }
 
   protected getDataMode(): 'websocket' | 'api' {
-    return 'api';
+    return 'websocket';
   }
 
   public initialize(): void {
     if (this.isInitialized) {
-      console.log('✅ ETFService 이미 초기화됨 - 기존 폴링 유지');
+      console.log('✅ ETFService 이미 초기화됨 - 기존 연결 유지');
       return;
     }
-  
+
     if (this.isShutdown) {
       console.log('⚠️ ETFService가 종료된 상태입니다. 재시작이 필요합니다.');
       return;
     }
-  
-    console.log('🚀 ETFService 초기화 시작');
-    
-    // ✅ 즉시 데이터 로드 보장
-    this.fetchDataFromApi().then(() => {
-      this.setConnectionStatus('api_mode');
-      this.startApiPolling();
-    });
-    
+
+    console.log('🚀 ETFService 초기화 시작 (WebSocket Push)');
+    this.connectWebSocket();
     this.isInitialized = true;
     console.log('✅ ETFService 초기화 완료');
   }
 
-  private getApiUrl(offset: number = 0, limit: number = 50): string {
-    const BASE_URL = 'https://api.investment-assistant.site/api/v1';
-    return `${BASE_URL}/etf/polling?limit=${limit}&sort_by=price&order=desc`;
+  public reconnect(): void {
+    console.log('🔄 ETFService 수동 재연결 시도');
+    this.reconnectAttempts = 0;
+    this.connectWebSocket();
   }
 
-  private startApiPolling(): void {
-    this.stopApiPolling();
-  
-    const baseInterval = this.getPollingInterval();
-    const priorityOffset = this.getPriorityOffset('etf');
-    const finalInterval = baseInterval;
-  
-    console.log(`🔄 ETF API 폴링 시작 (${finalInterval}ms 간격)`);
-  
-    const pollData = async () => {
-      if (this.isInitialized && !this.isShutdown) {
-        await this.fetchDataFromApi();
-      }
-    };
-    
-    // 정기 폴링만 설정 (초기 로드는 initialize에서 이미 완료)
-    setTimeout(() => {
-      this.pollingInterval = setInterval(pollData, finalInterval);
-    }, priorityOffset);
-  }
-
-  // 기존 메서드들 모두 유지 (수정 없음)
   public shutdown(): void {
     if (this.isShutdown) {
       console.log('⚠️ ETFService 이미 종료된 상태입니다.');
@@ -97,287 +51,227 @@ export class ETFService extends BaseService {
     console.log('🛑 ETFService 종료 시작');
     this.isShutdown = true;
 
-    this.stopApiPolling();
+    // WebSocket 연결 종료
+    if (this.connection) {
+      console.log('🔌 ETF WebSocket 연결 종료');
+      this.connection.close(1000, 'Service shutdown');
+      this.connection = null;
+    }
+
+    // 타임아웃 정리
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = null;
+    }
+
+    // 하트비트 정리
+    this.stopHeartbeat();
+
+    // 상태 초기화
     this.setConnectionStatus('disconnected');
     this.subscribers.clear();
     this.lastDataCache = [];
-    this.resetPaginationState();
     this.isInitialized = false;
 
     console.log('✅ ETFService 종료 완료');
   }
 
-  public reconnect(): void {
-    console.log('🔄 ETFService 수동 재연결 시도');
-    this.consecutiveErrors = 0;
-    this.startApiPolling();
-  }
-
-  public async loadMoreData(): Promise<boolean> {
-    if (this.paginationState.isLoading || !this.paginationState.hasMore) {
-      console.log('🏦 ETF 더보기: 로딩 중이거나 더 이상 데이터 없음');
-      return false;
-    }
-
-    console.log('🏦 ETF 더보기 로드 시작:', {
-      현재오프셋: this.paginationState.offset,
-      현재리밋: this.paginationState.limit,
-      총데이터: this.paginationState.allData.length
-    });
-
-    this.paginationState.isLoading = true;
-    
-    try {
-      const nextLimit = this.paginationState.limit + 50;
-      const result = await this.fetchETFData(0, nextLimit);
-      
-      if (result && result.data && Array.isArray(result.data)) {
-        this.paginationState.limit = nextLimit;
-        this.paginationState.allData = result.data;
-        this.paginationState.totalCount = result.metadata?.total_available || result.data.length;
-        this.paginationState.hasMore = nextLimit < this.paginationState.totalCount;
-        
-        const allTransformedData = this.transformApiData(this.paginationState.allData);
-        this.updateCache(allTransformedData);
-        this.emitEvent('etf_update', allTransformedData);
-        
-        console.log(`🏦 ETF 더보기 로드: +${result.data.length - (this.paginationState.limit - 50)}개, 총 ${this.paginationState.allData.length}개`);
-        return true;
-      }
-      
-      return false;
-    } catch (error) {
-      console.error('🏦 ETF 더보기 로드 실패:', error);
-      return false;
-    } finally {
-      this.paginationState.isLoading = false;
-    }
-  }
-
-  public getPaginationState() {
-    return {
-      ...this.paginationState,
-      currentCount: this.paginationState.allData.length
-    };
-  }
-
-  public refreshData(): void {
-    console.log('🔄 ETF 데이터 수동 새로고침');
-    
-    this.fetchDataFromApi().catch(error => {
-      console.error('❌ ETF 데이터 새로고침 실패:', error);
-    });
-  }
-
-  // 기존 메서드들 모두 유지 (수정 없음)
-  private async fetchDataFromApi(): Promise<void> {
-    if (this.ongoingRequest) {
-      console.log('🔄 ETF 데이터 요청이 이미 진행 중입니다. 중복 요청 방지');
-      return this.ongoingRequest;
-    }
-
-    this.ongoingRequest = this.performApiRequest();
-    
-    try {
-      await this.ongoingRequest;
-    } finally {
-      this.ongoingRequest = null;
-    }
-  }
-
-  private async loadWithCachePriority(fetchFn: () => Promise<void>): Promise<void> {
-    const now = Date.now();
-    
-    if (this.isCacheValid()) {
-      console.log(`🏦 ETF 캐시 데이터 사용 (${Math.round((now - this.dataTimestamp) / 1000)}초 전)`);
-      
-      this.emitEvent('etf_update', this.lastDataCache);
-      
-      setTimeout(() => fetchFn().catch(console.error), 100);
+  private connectWebSocket(): void {
+    const existingWs = this.connection;
+    if (existingWs && existingWs.readyState === WebSocket.OPEN) {
+      console.log('✅ ETF WebSocket 이미 연결되어 있음 - 재연결 중단');
       return;
     }
 
-    await fetchFn();
+    this.lastReconnectTime = Date.now();
+    this.disconnectWebSocket();
+
+    const url = this.buildWebSocketUrl();
+    console.log(`🔄 ETF WebSocket 연결 시도: ${url}`);
+
+    try {
+      this.setConnectionStatus('connecting');
+
+      const ws = new WebSocket(url);
+      this.connection = ws;
+
+      ws.onopen = () => {
+        console.log('🟢 ETF WebSocket 연결 성공');
+        this.setConnectionStatus('connected');
+        this.reconnectAttempts = 0;
+        this.startHeartbeat();
+      };
+
+      ws.onmessage = (event) => {
+        this.handleMessage(event);
+      };
+
+      ws.onclose = (event) => {
+        console.log('🔴 ETF WebSocket 연결 종료:', event.code, event.reason);
+        this.handleConnectionClose();
+      };
+
+      ws.onerror = (error) => {
+        console.error('❌ ETF WebSocket 오류:', error);
+        this.handleError('WebSocket connection error');
+        this.handleConnectionClose();
+      };
+
+    } catch (error) {
+      console.error('❌ ETF WebSocket 연결 실패:', error);
+      this.setConnectionStatus('disconnected');
+      this.handleConnectionFailure();
+    }
   }
 
-  private async performApiRequest(): Promise<void> {
-    try {
-      const result = await this.fetchETFData(
-        this.paginationState.offset, 
-        this.paginationState.limit
-      );
-      
-      // API 응답 구조 디버깅
-      console.log('🏦 ETF API 응답 구조:', {
-        hasData: !!result.data,
-        hasEtfs: !!result.etfs,
-        hasItems: !!result.items,
-        keys: Object.keys(result),
-        dataLength: result.data?.length || result.etfs?.length || result.items?.length || 0
-      });
-      
-      // 다양한 응답 구조 처리
-      let apiData: any[] = [];
-      let totalCount = 0;
-      
-      if (result.data && Array.isArray(result.data)) {
-        // 예상되는 구조: { data: [...], metadata: {...} }
-        apiData = result.data;
-        totalCount = result.metadata?.total_available || result.data.length;
-      } else if (result.etfs && Array.isArray(result.etfs)) {
-        // 대안 구조: { etfs: [...], total_count: ... }
-        apiData = result.etfs;
-        totalCount = result.total_count || result.etfs.length;
-      } else if (result.items && Array.isArray(result.items)) {
-        // 또 다른 구조: { items: [...] }
-        apiData = result.items;
-        totalCount = result.items.length;
-      } else if (Array.isArray(result)) {
-        // 직접 배열인 경우
-        apiData = result;
-        totalCount = result.length;
-      } else {
-        console.warn('🏦 ETF API 응답 구조를 인식할 수 없음:', result);
+  private buildWebSocketUrl(): string {
+    return 'wss://api.investment-assistant.site/api/v1/ws/etf';
+  }
+
+  private disconnectWebSocket(): void {
+    if (this.connection) {
+      this.connection.close();
+      this.connection = null;
+    }
+
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = null;
+    }
+
+    this.stopHeartbeat();
+    this.setConnectionStatus('disconnected');
+  }
+
+  private handleConnectionClose(): void {
+    this.connection = null;
+    this.setConnectionStatus('disconnected');
+    this.scheduleReconnect();
+  }
+
+  private handleConnectionFailure(): void {
+    this.scheduleReconnect();
+  }
+
+  private scheduleReconnect(): void {
+    const currentStatus = this.connectionStatus;
+
+    const timeSinceLastReconnect = Date.now() - this.lastReconnectTime;
+    if (timeSinceLastReconnect < 10000) {
+      console.log('⚠️ ETF 너무 빠른 재연결 시도 - 10초 대기');
+      return;
+    }
+
+    if (currentStatus === 'reconnecting' || currentStatus === 'connecting' || currentStatus === 'connected') {
+      console.log(`⚠️ ETF 이미 ${currentStatus} 상태 - 재연결 중단`);
+      return;
+    }
+    
+    if (this.reconnectAttempts >= this.config.maxReconnectAttempts) {
+      console.error('❌ ETF 최대 재연결 시도 횟수 초과 - 연결 포기');
+      this.setConnectionStatus('disconnected');
+      return;
+    }
+
+    const delay = Math.min(this.config.baseReconnectDelay * Math.pow(2, this.reconnectAttempts), 30000);
+    console.log(`⏰ ETF ${delay}ms 후 재연결 시도 (${this.reconnectAttempts + 1}/${this.config.maxReconnectAttempts})`);
+
+    this.reconnectAttempts++;
+    this.setConnectionStatus('reconnecting');
+
+    this.reconnectTimeout = setTimeout(() => {
+      const currentStatus = this.connectionStatus;
+      if (currentStatus === 'connected') {
+        console.log('⏭️ ETF 이미 연결됨 - 재연결 중단');
         return;
       }
       
-      if (apiData.length > 0) {
-        // 페이징 상태 업데이트
-        this.paginationState.allData = apiData;
-        this.paginationState.totalCount = totalCount;
-        this.paginationState.hasMore = this.paginationState.limit < totalCount;
+      if (currentStatus !== 'reconnecting') {
+        console.log(`🚫 ETF 재연결 취소 - 현재 상태: ${currentStatus}`);
+        return;
+      }
+      
+      console.log('🔄 ETF WebSocket 재연결 시도');
+      this.connectWebSocket();
+    }, delay);
+  }
 
-        const data = this.transformApiData(apiData);
-        this.updateCache(data);
-        this.emitEvent('etf_update', data);
-        
-        console.log(`🏦 ETF 데이터 로드 성공: ${apiData.length}개 (전체: ${totalCount}개)`);
+  private startHeartbeat(): void {
+    this.stopHeartbeat();
+
+    this.heartbeatInterval = setInterval(() => {
+      if (this.connection && this.connection.readyState === WebSocket.OPEN) {
+        try {
+          this.connection.send(JSON.stringify({ action: 'heartbeat' }));
+        } catch (error) {
+          console.error('❌ ETF heartbeat 전송 실패:', error);
+          this.handleConnectionClose();
+        }
       } else {
-        console.warn('🏦 ETF API에서 빈 데이터 배열 반환');
+        console.log('💔 ETF WebSocket 연결 상태 이상');
+        this.stopHeartbeat();
+        this.handleConnectionClose();
       }
-      
-      this.consecutiveErrors = 0;
-      
-    } catch (error) {
-      console.error('🏦 ETF 데이터 로드 실패:', error);
-      this.handleError(`ETF 데이터 로드 실패: ${error}`);
-      this.consecutiveErrors++;
-      
-      if (this.consecutiveErrors >= this.config.maxConsecutiveErrors) {
-        this.setConnectionStatus('disconnected');
-        this.stopApiPolling();
-      }
+    }, 60000);
+  }
+
+  private stopHeartbeat(): void {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
     }
   }
 
-  private async fetchETFData(offset: number = 0, limit: number = 50): Promise<any> {
-    const url = this.getApiUrl(offset, limit);
-    console.log('🏦 ETF API 요청:', url);
-    
+  private handleMessage(event: MessageEvent): void {
     try {
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        mode: 'cors',
-        credentials: 'omit',
-        signal: AbortSignal.timeout(30000)
-      });
-
-      if (!response.ok) {
-        throw new Error(`ETF API 요청 실패: ${response.status} ${response.statusText}`);
+      const message: WebSocketMessage = JSON.parse(event.data);
+      
+      if (message.type === 'heartbeat_response') {
+        return;
       }
 
-      const data = await response.json();
-      
-      // 응답 데이터 로깅 (디버깅용)
-      console.log('🏦 ETF API 응답 샘플:', {
-        status: response.status,
-        dataType: typeof data,
-        isArray: Array.isArray(data),
-        keys: typeof data === 'object' ? Object.keys(data) : [],
-        firstItem: Array.isArray(data) ? data[0] : typeof data === 'object' && data.data ? data.data[0] : null
-      });
-      
-      return data;
-      
-    } catch (error) {
-      console.error('🏦 ETF API 네트워크 오류:', error);
-      throw error;
-    }
-  }
+      if (message.type === 'status') {
+        console.log('📊 ETF 상태:', message);
+        return;
+      }
 
-  private transformApiData(apiData: any[]): ETFData[] {
-    return apiData.map((item, index) => {
-      // 다양한 필드명 처리
-      const symbol = item.symbol || item.ticker || '';
-      const name = item.name || item.etf_name || item.description || symbol;
-      const currentPrice = item.current_price || item.price || item.last_price || 0;
-      const changeAmount = item.change_amount || item.change || item.price_change || 0;
-      const changePercentage = item.change_percentage || item.change_percent || item.percent_change || 0;
-      const volume = item.volume || item.trading_volume || 0;
-      
-      // 디버깅: 첫 번째 아이템 구조 로깅
-      if (index === 0) {
-        console.log('🏦 ETF 데이터 변환 샘플:', {
-          original: item,
-          transformed: {
-            symbol,
-            name,
-            currentPrice,
-            changeAmount,
-            changePercentage,
-            volume
+      switch (message.type) {
+        case 'etf':
+          if (message.data) {
+            const transformedData = this.transformWebSocketData(message.data);
+            this.updateCache(transformedData);
+            this.emitEvent('etf_update', transformedData);
+            console.log(`📊 ETF push 데이터 수신: ${transformedData.length}개`);
           }
-        });
+          break;
+        default:
+          console.log('📨 ETF 알 수 없는 메시지 타입:', message.type);
       }
-      
-      return {
-        symbol,
-        name,
-        current_price: currentPrice,
-        change_amount: changeAmount,
-        change_percentage: changePercentage,
-        volume,
-        previous_close: item.previous_close || item.prev_close,
-        is_positive: item.is_positive ?? (changeAmount > 0),
-        change_color: item.change_color || (changeAmount > 0 ? 'green' : changeAmount < 0 ? 'red' : 'gray'),
-        last_updated: item.last_updated || item.updated_at,
-        rank: item.rank || index + 1
-      };
-    });
-  }
 
-  private stopApiPolling(): void {
-    if (this.pollingInterval) {
-      console.log('🏦 ETF 폴링 중지');
-      clearInterval(this.pollingInterval);
-      this.pollingInterval = null;
+    } catch (error) {
+      console.error('❌ ETF 메시지 파싱 오류:', error);
     }
   }
 
-  private resetPaginationState(): void {
-    this.paginationState = {
-      offset: 0,
-      limit: 50,
-      hasMore: true,
-      isLoading: false,
-      totalCount: 0,
-      allData: []
-    };
+  private transformWebSocketData(data: any[]): ETFData[] {
+    return data.map((item, index) => ({
+      symbol: item.symbol || item.ticker || '',
+      name: item.name || item.etf_name || item.description || item.symbol,
+      current_price: item.current_price || item.price || item.last_price || 0,
+      change_amount: item.change_amount || item.change || item.price_change || 0,
+      change_percentage: item.change_percentage || item.change_percent || item.percent_change || 0,
+      volume: item.volume || item.trading_volume || 0,
+      previous_close: item.previous_close || item.prev_close,
+      is_positive: item.is_positive ?? ((item.change_amount || 0) > 0),
+      change_color: item.change_color || ((item.change_amount || 0) > 0 ? 'green' : (item.change_amount || 0) < 0 ? 'red' : 'gray'),
+      last_updated: item.last_updated || item.updated_at,
+      rank: item.rank || index + 1
+    }));
   }
 
-  protected handleError(error: string): void {
-    console.error('🏦 ETF 서비스 오류:', error);
-    this.emitEvent('error', { type: 'etf' as const, error });
-    
-    setTimeout(() => {
-      if (this.consecutiveErrors < this.config.maxConsecutiveErrors) {
-        console.log('🏦 ETF 에러 복구 시도');
-        this.fetchDataFromApi();
-      }
-    }, this.config.errorBackoffInterval);
+  // 데이터 수동 새로고침 (WebSocket 재연결)
+  public refreshData(): void {
+    console.log('🔄 ETF 데이터 수동 새로고침 (WebSocket 재연결)');
+    this.reconnect();
   }
 }
