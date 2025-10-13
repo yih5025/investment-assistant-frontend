@@ -345,7 +345,6 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'price' | 'change' | 'volume'>('price'); // 기본값을 주가순으로 변경
-  const [displayCount, setDisplayCount] = useState(100); // 초기 표시 개수
 
   const filteredAndSortedStocks = useMemo(() => {
     let result = stockData;
@@ -377,19 +376,6 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({
 
     return result;
   }, [stockData, searchQuery, sortBy]);
-
-  // 표시할 데이터 (검색 중이 아닐 때만 displayCount 적용)
-  const displayedStocks = useMemo(() => {
-    if (searchQuery.trim()) {
-      return filteredAndSortedStocks; // 검색 중에는 전체 표시
-    }
-    return filteredAndSortedStocks.slice(0, displayCount);
-  }, [filteredAndSortedStocks, displayCount, searchQuery]);
-
-  // 더보기 핸들러
-  const handleLoadMore = () => {
-    setDisplayCount(prev => prev + 100);
-  };
 
   // 로딩 상태일 때
   if (isLoading || stockData.length === 0) {
@@ -441,7 +427,7 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({
 
       {/* 주식 리스트 */}
       <div className="space-y-2">
-        {displayedStocks.map((stock) => (
+        {filteredAndSortedStocks.map((stock) => (
           <div
             key={stock.symbol}
             onClick={() => onStockClick(stock.symbol)}
@@ -482,27 +468,15 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({
         ))}
       </div>
 
-      {/* 데이터 개수 및 더보기 버튼 */}
+      {/* 데이터 개수 정보 */}
       <div className="space-y-4 pt-4">
         <div className="text-center text-sm text-foreground/60">
           {searchQuery ? (
             `검색 결과: ${filteredAndSortedStocks.length}개`
           ) : (
-            `표시 중: ${displayedStocks.length}개 / 전체: ${filteredAndSortedStocks.length}개`
+            `전체: ${filteredAndSortedStocks.length}개`
           )}
         </div>
-
-        {/* 더보기 버튼 - 검색 중이 아니고 더 보여줄 데이터가 있을 때 */}
-        {!searchQuery && displayedStocks.length < filteredAndSortedStocks.length && (
-          <div className="text-center">
-            <button
-              onClick={handleLoadMore}
-              className="flex items-center space-x-2 mx-auto px-6 py-3 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors"
-            >
-              <span>+ 100개 더보기</span>
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -688,7 +662,6 @@ const ETFMarketTab: React.FC<ETFMarketTabProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'price' | 'change' | 'volume'>('price');
-  const [displayCount, setDisplayCount] = useState(100); // 초기 표시 개수
 
   const filteredAndSortedETFs = useMemo(() => {
     let result = etfData;
@@ -719,19 +692,6 @@ const ETFMarketTab: React.FC<ETFMarketTabProps> = ({
 
     return result;
   }, [etfData, searchQuery, sortBy]);
-
-  // 표시할 데이터 (검색 중이 아닐 때만 displayCount 적용)
-  const displayedETFs = useMemo(() => {
-    if (searchQuery.trim()) {
-      return filteredAndSortedETFs; // 검색 중에는 전체 표시
-    }
-    return filteredAndSortedETFs.slice(0, displayCount);
-  }, [filteredAndSortedETFs, displayCount, searchQuery]);
-
-  // 더보기 핸들러
-  const handleLoadMore = () => {
-    setDisplayCount(prev => prev + 100);
-  };
 
   // 로딩 상태일 때
   if (isLoading || etfData.length === 0) {
@@ -783,7 +743,7 @@ const ETFMarketTab: React.FC<ETFMarketTabProps> = ({
 
       {/* ETF 리스트 */}
       <div className="space-y-2">
-        {displayedETFs.map((etf) => (
+        {filteredAndSortedETFs.map((etf) => (
           <div
             key={etf.symbol}
             onClick={() => onETFClick(etf.symbol)}
@@ -824,27 +784,15 @@ const ETFMarketTab: React.FC<ETFMarketTabProps> = ({
         ))}
       </div>
 
-      {/* 데이터 개수 및 더보기 버튼 */}
+      {/* 데이터 개수 정보 */}
       <div className="space-y-4 pt-4">
         <div className="text-center text-sm text-foreground/60">
           {searchQuery ? (
             `검색 결과: ${filteredAndSortedETFs.length}개`
           ) : (
-            `표시 중: ${displayedETFs.length}개 / 전체: ${filteredAndSortedETFs.length}개`
+            `전체: ${filteredAndSortedETFs.length}개`
           )}
         </div>
-
-        {/* 더보기 버튼 - 검색 중이 아니고 더 보여줄 데이터가 있을 때 */}
-        {!searchQuery && displayedETFs.length < filteredAndSortedETFs.length && (
-          <div className="text-center">
-            <button
-              onClick={handleLoadMore}
-              className="flex items-center space-x-2 mx-auto px-6 py-3 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors"
-            >
-              <span>+ 100개 더보기</span>
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
