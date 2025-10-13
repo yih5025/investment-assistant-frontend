@@ -34,17 +34,13 @@ export abstract class BaseService {
     // 우선순위 기반 차등 폴링 설정 (ms)
     priorityPollingOffsets: {
       sp500: 0,        // 최우선 (55초)
-      topgainers: 5000, // +5초 (65초 간격)
       etf: 0           // ETF는 60초 간격으로 별도 설정
     },
     // 백그라운드 로딩 우선순위 설정 (ms)
     backgroundLoadingDelays: {
       crypto: 0,           // 즉시 시작
-      topgainers: 500,     // 0.5초 후
-      earnings_calendar: 1000,  // 1초 후
-      earnings_news: 1500,      // 1.5초 후
-      sp500: 3000,             // 3초 후
-      etf: 6000                // 6초 후
+      sp500: 500,             // 3초 후
+      etf: 1000                // 4초 후
     }
   };
 
@@ -178,8 +174,6 @@ export abstract class BaseService {
     switch (serviceType) {
       case 'sp500':
         return this.config.priorityPollingOffsets.sp500;
-      case 'topgainers':
-        return this.config.priorityPollingOffsets.topgainers;
       case 'etf':
         return this.config.priorityPollingOffsets.etf;
       default:

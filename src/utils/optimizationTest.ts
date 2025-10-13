@@ -38,10 +38,6 @@ export class OptimizationTester {
       this.recordRequest('sp500');
     });
 
-    webSocketManager.subscribe('topgainers_update', () => {
-      this.recordRequest('topgainers');
-    });
-
     webSocketManager.subscribe('etf_update', () => {
       this.recordRequest('etf');
     });

@@ -65,12 +65,7 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick, on
     etfData,
     overallStatus,
     isEmpty,
-    refreshData,
-    loadMoreSP500,
-    getSP500PaginationState,
-    loadMoreETF,
-    getETFPaginationState,
-    ensureETFInitialized
+    refreshData
   } = useMarketData();
 
   // 주식 클릭 핸들러
@@ -293,7 +288,6 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick, on
         <button
           onClick={() => {
             setActiveTab('etf');
-            ensureETFInitialized(); // ETF 탭 클릭 시 즉시 초기화
           }}
           className={`flex-1 py-3 px-4 rounded-lg transition-all text-sm font-medium ${
             activeTab === 'etf' 
@@ -315,8 +309,6 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick, on
           onStockClick={handleStockClick}
           isLoading={overallStatus === 'connecting' || overallStatus === 'reconnecting' || (isEmpty && overallStatus === 'disconnected')}
           connectionStatus={overallStatus}
-          loadMoreSP500={loadMoreSP500}
-          getSP500PaginationState={getSP500PaginationState}
         />
       ) : activeTab === 'crypto' ? (
         <CryptoMarketTab 
@@ -331,8 +323,6 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick, on
           onETFClick={handleETFClick}
           isLoading={overallStatus === 'connecting' || overallStatus === 'reconnecting' || (isEmpty && overallStatus === 'disconnected')}
           connectionStatus={overallStatus}
-          loadMoreETF={loadMoreETF}
-          getETFPaginationState={getETFPaginationState}
         />
       )}
     </div>
@@ -345,21 +335,17 @@ interface StockMarketTabProps {
   onStockClick: (symbol: string) => void;
   isLoading?: boolean;
   connectionStatus?: string;
-  loadMoreSP500?: () => Promise<boolean>;
-  getSP500PaginationState?: () => any;
 }
 
 const StockMarketTab: React.FC<StockMarketTabProps> = ({ 
   stockData, 
   onStockClick, 
   isLoading = false, 
-  connectionStatus,
-  loadMoreSP500,
-  getSP500PaginationState
+  connectionStatus
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'price' | 'change' | 'volume'>('price'); // 기본값을 주가순으로 변경
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [displayCount, setDisplayCount] = useState(100); // 초기 표시 개수
 
   const filteredAndSortedStocks = useMemo(() => {
     let result = stockData;
@@ -392,33 +378,17 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({
     return result;
   }, [stockData, searchQuery, sortBy]);
 
-  // 페이징 상태 조회
-  const paginationState = getSP500PaginationState ? getSP500PaginationState() : {
-    hasMore: false,
-    isLoading: false,
-    currentCount: stockData.length,
-    totalCount: stockData.length
-  };
+  // 표시할 데이터 (검색 중이 아닐 때만 displayCount 적용)
+  const displayedStocks = useMemo(() => {
+    if (searchQuery.trim()) {
+      return filteredAndSortedStocks; // 검색 중에는 전체 표시
+    }
+    return filteredAndSortedStocks.slice(0, displayCount);
+  }, [filteredAndSortedStocks, displayCount, searchQuery]);
 
   // 더보기 핸들러
-  const handleLoadMore = async () => {
-    if (!loadMoreSP500 || isLoadingMore || !paginationState.hasMore) {
-      return;
-    }
-
-    setIsLoadingMore(true);
-    try {
-      const success = await loadMoreSP500();
-      if (success) {
-        console.log('✅ SP500 더보기 로드 성공');
-      } else {
-        console.log('⚠️ SP500 더보기 로드 실패 또는 더 이상 데이터 없음');
-      }
-    } catch (error) {
-      console.error('❌ SP500 더보기 로드 오류:', error);
-    } finally {
-      setIsLoadingMore(false);
-    }
+  const handleLoadMore = () => {
+    setDisplayCount(prev => prev + 100);
   };
 
   // 로딩 상태일 때
@@ -471,7 +441,7 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({
 
       {/* 주식 리스트 */}
       <div className="space-y-2">
-        {filteredAndSortedStocks.map((stock) => (
+        {displayedStocks.map((stock) => (
           <div
             key={stock.symbol}
             onClick={() => onStockClick(stock.symbol)}
@@ -512,35 +482,24 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({
         ))}
       </div>
 
-      {/* 페이징 정보 및 더보기 버튼 */}
+      {/* 데이터 개수 및 더보기 버튼 */}
       <div className="space-y-4 pt-4">
-        {/* 페이징 정보 */}
         <div className="text-center text-sm text-foreground/60">
           {searchQuery ? (
             `검색 결과: ${filteredAndSortedStocks.length}개`
           ) : (
-            `표시 중: ${paginationState.currentCount}개 ${paginationState.totalCount > paginationState.currentCount ? `/ 전체 ${paginationState.totalCount}개` : ''}`
+            `표시 중: ${displayedStocks.length}개 / 전체: ${filteredAndSortedStocks.length}개`
           )}
         </div>
 
-        {/* 더보기 버튼 - 검색 중이 아니고 더 가져올 데이터가 있을 때만 표시 */}
-        {!searchQuery && paginationState.hasMore && (
+        {/* 더보기 버튼 - 검색 중이 아니고 더 보여줄 데이터가 있을 때 */}
+        {!searchQuery && displayedStocks.length < filteredAndSortedStocks.length && (
           <div className="text-center">
             <button
               onClick={handleLoadMore}
-              disabled={isLoadingMore || paginationState.isLoading}
-              className="flex items-center space-x-2 mx-auto px-6 py-3 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center space-x-2 mx-auto px-6 py-3 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors"
             >
-              {isLoadingMore || paginationState.isLoading ? (
-                <>
-                  <Loader2 className="animate-spin" size={16} />
-                  <span>불러오는 중...</span>
-                </>
-              ) : (
-                <>
-                  <span>+ 50개 더보기</span>
-                </>
-              )}
+              <span>+ 100개 더보기</span>
             </button>
           </div>
         )}
@@ -719,21 +678,17 @@ interface ETFMarketTabProps {
   onETFClick: (symbol: string) => void;
   isLoading?: boolean;
   connectionStatus?: string;
-  loadMoreETF?: () => Promise<boolean>;
-  getETFPaginationState?: () => any;
 }
 
 const ETFMarketTab: React.FC<ETFMarketTabProps> = ({ 
   etfData, 
   onETFClick, 
   isLoading = false, 
-  connectionStatus,
-  loadMoreETF,
-  getETFPaginationState
+  connectionStatus
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'price' | 'change' | 'volume'>('price');
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [displayCount, setDisplayCount] = useState(100); // 초기 표시 개수
 
   const filteredAndSortedETFs = useMemo(() => {
     let result = etfData;
@@ -765,33 +720,17 @@ const ETFMarketTab: React.FC<ETFMarketTabProps> = ({
     return result;
   }, [etfData, searchQuery, sortBy]);
 
-  // 페이징 상태 조회
-  const paginationState = getETFPaginationState ? getETFPaginationState() : {
-    hasMore: false,
-    isLoading: false,
-    currentCount: etfData.length,
-    totalCount: etfData.length
-  };
+  // 표시할 데이터 (검색 중이 아닐 때만 displayCount 적용)
+  const displayedETFs = useMemo(() => {
+    if (searchQuery.trim()) {
+      return filteredAndSortedETFs; // 검색 중에는 전체 표시
+    }
+    return filteredAndSortedETFs.slice(0, displayCount);
+  }, [filteredAndSortedETFs, displayCount, searchQuery]);
 
   // 더보기 핸들러
-  const handleLoadMore = async () => {
-    if (!loadMoreETF || isLoadingMore || !paginationState.hasMore) {
-      return;
-    }
-
-    setIsLoadingMore(true);
-    try {
-      const success = await loadMoreETF();
-      if (success) {
-        console.log('✅ ETF 더보기 로드 성공');
-      } else {
-        console.log('⚠️ ETF 더보기 로드 실패 또는 더 이상 데이터 없음');
-      }
-    } catch (error) {
-      console.error('❌ ETF 더보기 로드 오류:', error);
-    } finally {
-      setIsLoadingMore(false);
-    }
+  const handleLoadMore = () => {
+    setDisplayCount(prev => prev + 100);
   };
 
   // 로딩 상태일 때
@@ -844,7 +783,7 @@ const ETFMarketTab: React.FC<ETFMarketTabProps> = ({
 
       {/* ETF 리스트 */}
       <div className="space-y-2">
-        {filteredAndSortedETFs.map((etf) => (
+        {displayedETFs.map((etf) => (
           <div
             key={etf.symbol}
             onClick={() => onETFClick(etf.symbol)}
@@ -885,35 +824,24 @@ const ETFMarketTab: React.FC<ETFMarketTabProps> = ({
         ))}
       </div>
 
-      {/* 페이징 정보 및 더보기 버튼 */}
+      {/* 데이터 개수 및 더보기 버튼 */}
       <div className="space-y-4 pt-4">
-        {/* 페이징 정보 */}
         <div className="text-center text-sm text-foreground/60">
           {searchQuery ? (
             `검색 결과: ${filteredAndSortedETFs.length}개`
           ) : (
-            `표시 중: ${paginationState.currentCount}개 ${paginationState.totalCount > paginationState.currentCount ? `/ 전체 ${paginationState.totalCount}개` : ''}`
+            `표시 중: ${displayedETFs.length}개 / 전체: ${filteredAndSortedETFs.length}개`
           )}
         </div>
 
-        {/* 더보기 버튼 - 검색 중이 아니고 더 가져올 데이터가 있을 때만 표시 */}
-        {!searchQuery && paginationState.hasMore && (
+        {/* 더보기 버튼 - 검색 중이 아니고 더 보여줄 데이터가 있을 때 */}
+        {!searchQuery && displayedETFs.length < filteredAndSortedETFs.length && (
           <div className="text-center">
             <button
               onClick={handleLoadMore}
-              disabled={isLoadingMore || paginationState.isLoading}
-              className="flex items-center space-x-2 mx-auto px-6 py-3 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center space-x-2 mx-auto px-6 py-3 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors"
             >
-              {isLoadingMore || paginationState.isLoading ? (
-                <>
-                  <Loader2 className="animate-spin" size={16} />
-                  <span>불러오는 중...</span>
-                </>
-              ) : (
-                <>
-                  <span>+ 50개 더보기</span>
-                </>
-              )}
+              <span>+ 100개 더보기</span>
             </button>
           </div>
         )}
