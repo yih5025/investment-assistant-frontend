@@ -4,31 +4,14 @@ type Theme = "light" | "dark" | "system";
 
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(() => {
-    // localStorage에서 테마 불러오기
+    // localStorage에서 테마 불러오기 (기본값: dark)
     const saved = localStorage.getItem("theme") as Theme;
-    return saved || "system";
+    return saved || "dark";
   });
 
   useEffect(() => {
-    // 기존 CSS 링크 제거
-    const removePreviousStylesheet = () => {
-      const existingLight = document.getElementById("theme-light");
-      const existingDark = document.getElementById("theme-dark");
-      if (existingLight) existingLight.remove();
-      if (existingDark) existingDark.remove();
-    };
-
-    // 새로운 CSS 파일 로드
-    const loadStylesheet = (cssFile: string, id: string) => {
-      const link = document.createElement("link");
-      link.id = id;
-      link.rel = "stylesheet";
-      link.href = cssFile;
-      document.head.appendChild(link);
-    };
-
-    // 테마 적용 함수
-    const applyTheme = (selectedTheme: Theme) => {
+    // 테마 적용 함수 - 동적 import 사용
+    const applyTheme = async (selectedTheme: Theme) => {
       let finalTheme: "light" | "dark";
 
       if (selectedTheme === "system") {
@@ -39,14 +22,25 @@ export function useTheme() {
         finalTheme = selectedTheme;
       }
 
-      // 기존 CSS 제거
-      removePreviousStylesheet();
+      // 기존의 모든 style 태그 제거 (Vite가 생성한 것들)
+      const existingStyles = document.querySelectorAll('style[data-vite-dev-id*="globals"]');
+      existingStyles.forEach(style => style.remove());
 
-      // 새 CSS 로드
-      if (finalTheme === "dark") {
-        loadStylesheet("/src/styles/globals-dark.css", "theme-dark");
-      } else {
-        loadStylesheet("/src/styles/globals-light.css", "theme-light");
+      // 기존 동적 link 제거
+      const existingLight = document.getElementById("theme-light");
+      const existingDark = document.getElementById("theme-dark");
+      if (existingLight) existingLight.remove();
+      if (existingDark) existingDark.remove();
+
+      // 새 CSS를 동적으로 import
+      try {
+        if (finalTheme === "dark") {
+          await import("../styles/globals-dark.css");
+        } else {
+          await import("../styles/globals-light.css");
+        }
+      } catch (error) {
+        console.error("Failed to load theme CSS:", error);
       }
 
       // localStorage에 저장
