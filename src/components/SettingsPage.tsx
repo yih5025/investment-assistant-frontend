@@ -1,46 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Moon, Sun, Monitor, ChevronRight, Info, Bell, Lock, HelpCircle, LogOut } from "lucide-react";
 
 interface SettingsPageProps {
   onBack: () => void;
   onLogout?: () => void;
+  theme: "light" | "dark" | "system";
+  onThemeChange: (theme: "light" | "dark" | "system") => void;
 }
 
 type Theme = "light" | "dark" | "system";
 
-export function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    // localStorage에서 테마 불러오기
-    const saved = localStorage.getItem("theme") as Theme;
-    return saved || "system";
-  });
-
-  useEffect(() => {
-    // 테마 적용 로직
-    const applyTheme = (selectedTheme: Theme) => {
-      const root = document.documentElement;
-      
-      if (selectedTheme === "system") {
-        // 시스템 설정 따르기
-        const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        root.classList.toggle("dark", systemPrefersDark);
-      } else {
-        root.classList.toggle("dark", selectedTheme === "dark");
-      }
-    };
-
-    applyTheme(theme);
-    localStorage.setItem("theme", theme);
-
-    // 시스템 테마 변경 감지
-    if (theme === "system") {
-      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-      const handleChange = () => applyTheme("system");
-      mediaQuery.addEventListener("change", handleChange);
-      return () => mediaQuery.removeEventListener("change", handleChange);
-    }
-  }, [theme]);
-
+export function SettingsPage({ onBack, onLogout, theme, onThemeChange }: SettingsPageProps) {
   const themeOptions = [
     { value: "light" as Theme, label: "라이트 모드", icon: Sun, description: "밝은 테마" },
     { value: "dark" as Theme, label: "다크 모드", icon: Moon, description: "어두운 테마" },
@@ -75,7 +45,7 @@ export function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
               return (
                 <button
                   key={option.value}
-                  onClick={() => setTheme(option.value)}
+                  onClick={() => onThemeChange(option.value)}
                   className={`w-full flex items-center gap-3 px-4 py-4 transition-colors ${
                     index !== themeOptions.length - 1 ? "border-b border-border" : ""
                   } ${
@@ -100,59 +70,6 @@ export function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
           </div>
         </section>
 
-        {/* 알림 설정 */}
-        <section>
-          <h2 className="text-sm font-semibold text-muted-foreground mb-3 px-2">알림</h2>
-          <div className="bg-card rounded-xl border border-border overflow-hidden">
-            <SettingItem
-              icon={Bell}
-              label="푸시 알림"
-              description="중요한 시장 변동 알림 받기"
-              hasSwitch
-            />
-          </div>
-        </section>
-
-        {/* 계정 설정 */}
-        <section>
-          <h2 className="text-sm font-semibold text-muted-foreground mb-3 px-2">계정</h2>
-          <div className="bg-card rounded-xl border border-border overflow-hidden">
-            <SettingItem
-              icon={Lock}
-              label="보안 설정"
-              description="비밀번호 및 2단계 인증"
-            />
-            <SettingItem
-              icon={Info}
-              label="앱 정보"
-              description="버전 1.0.0"
-              hasChevron={false}
-            />
-          </div>
-        </section>
-
-        {/* 고객 지원 */}
-        <section>
-          <h2 className="text-sm font-semibold text-muted-foreground mb-3 px-2">지원</h2>
-          <div className="bg-card rounded-xl border border-border overflow-hidden">
-            <SettingItem
-              icon={HelpCircle}
-              label="도움말"
-              description="사용 가이드 및 FAQ"
-            />
-          </div>
-        </section>
-
-        {/* 로그아웃 버튼 */}
-        {onLogout && (
-          <button
-            onClick={onLogout}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-destructive/10 text-destructive rounded-xl hover:bg-destructive/20 transition-colors font-semibold"
-          >
-            <LogOut size={20} />
-            <span>로그아웃</span>
-          </button>
-        )}
       </div>
     </div>
   );

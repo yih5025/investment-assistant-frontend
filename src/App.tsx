@@ -5,6 +5,9 @@ import { ReactQueryDevtools } from 'react-query/devtools';
 // 최적화된 WebSocket 서비스 import
 import { webSocketManager } from './services/WebSocketManager';
 
+// 테마 훅 import
+import { useTheme } from './hooks/useTheme';
+
 import { BottomNavigation } from "./components/BottomNavigation";
 import { SideMenu } from "./components/SideMenu";
 import { SettingsPage } from "./components/SettingsPage";
@@ -103,6 +106,9 @@ interface StockNewsItem {
 // ============================================================================
 
 function AppContent() {
+  // 테마 관리
+  const { theme, setTheme } = useTheme();
+  
   const [activeTab, setActiveTab] = useState("home");
   const [authState, setAuthState] = useState<AuthState>("guest");
   const [viewState, setViewState] = useState<ViewState>(() => {
@@ -531,6 +537,8 @@ function AppContent() {
         <SettingsPage 
           onBack={handleBackToMain} 
           onLogout={isLoggedIn ? handleLogout : undefined}
+          theme={theme}
+          onThemeChange={setTheme}
         />
       </div>
     );
@@ -720,7 +728,8 @@ function AppContent() {
             Wise & Easy Investing - Your Investment Cheatsheet
           </p>
         </div>
-        <div className="flex items-center space-x-2">
+        {/* 로그인 UI 숨김 - 기능 코드는 유지 */}
+        {/* <div className="flex items-center space-x-2">
           {isLoggedIn ? (
             <>
               <button
@@ -746,7 +755,7 @@ function AppContent() {
               <span className="text-xs font-medium">로그인</span>
             </button>
           )}
-        </div>
+        </div> */}
       </div>
     );
   };

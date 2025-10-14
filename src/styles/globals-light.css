@@ -1,0 +1,442 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Toss Style Variables - Light Theme */
+  --background: #f9fafb;
+  --foreground: #191f28;
+  --card: #ffffff;
+  --card-foreground: #191f28;
+  --popover: #ffffff;
+  --popover-foreground: #191f28;
+  --primary: #3182f6;
+  --primary-foreground: #ffffff;
+  --secondary: #f2f4f6;
+  --secondary-foreground: #4e5968;
+  --muted: #f2f4f6;
+  --muted-foreground: #8b95a1;
+  --accent: #e5f4ff;
+  --accent-foreground: #3182f6;
+  --destructive: #f04452;
+  --destructive-foreground: #ffffff;
+  --border: #e5e8eb;
+  --input: #f2f4f6;
+  --input-background: #f2f4f6;
+  --switch-background: #d1d6db;
+  --font-weight-medium: 600;
+  --font-weight-normal: 400;
+  --ring: #3182f6;
+  --chart-1: #3182f6;
+  --chart-2: #22d3ee;
+  --chart-3: #a78bfa;
+  --chart-4: #34d399;
+  --chart-5: #fbbf24;
+  --radius: 0.75rem;
+  --font-size: 15px;
+  
+  /* Shadow Variables */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+.dark {
+  /* Toss Style Variables - Dark Theme */
+  --background: #17171c;
+  --foreground: #ffffff;
+  --card: #1e1e23;
+  --card-foreground: #ffffff;
+  --popover: #1e1e23;
+  --popover-foreground: #ffffff;
+  --primary: #4593fc;
+  --primary-foreground: #ffffff;
+  --secondary: #2c2c35;
+  --secondary-foreground: #b8bfc8;
+  --muted: #2c2c35;
+  --muted-foreground: #6b7684;
+  --accent: #1e3a5f;
+  --accent-foreground: #4593fc;
+  --destructive: #f04452;
+  --destructive-foreground: #ffffff;
+  --border: #333740;
+  --input: #2c2c35;
+  --input-background: #2c2c35;
+  --switch-background: #4e5968;
+  --ring: #4593fc;
+  --chart-1: #4593fc;
+  --chart-2: #67e8f9;
+  --chart-3: #c4b5fd;
+  --chart-4: #6ee7b7;
+  --chart-5: #fde047;
+}
+
+@theme inline {
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html, body {
+    color: var(--foreground);
+    min-height: 100vh;
+    min-height: 100dvh;
+    position: relative;
+    overflow-x: hidden;
+    font-size: var(--font-size);
+    background: var(--background);
+  }
+
+
+
+  /* ==========================================
+     📝 TOSS TYPOGRAPHY
+     ========================================== */
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+  }
+
+  h2 {
+    font-size: 1.375rem;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  p {
+    font-size: 0.9375rem;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  input {
+    font-size: 0.9375rem;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+}
+
+/* ==========================================
+   🎨 TOSS CARD STYLES 🎨
+   ========================================== */
+
+/* Base Card - Toss Style */
+.glass {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+}
+
+.glass:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.glass-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+}
+
+.glass-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.glass-strong {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+}
+
+.glass-strong:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.glass-subtle {
+  background: var(--secondary);
+  border-radius: calc(var(--radius) - 0.25rem);
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.glass-subtle:hover {
+  background: var(--card);
+  border-color: var(--border);
+}
+
+/* ==========================================
+   🎰 SMOOTH SLOT MACHINE VERTICAL SCROLL 🎰
+   ========================================== */
+
+/* 세로 무한 스크롤 룰렛 애니메이션 - 느리고 부드럽게 */
+.slot-machine {
+  overflow: hidden;
+  position: relative;
+  height: 100%;
+}
+
+.slot-reel {
+  display: flex;
+  flex-direction: column;
+  animation: slotSpin 8s linear infinite;
+  will-change: transform;
+}
+
+.slot-reel-fast {
+  animation: slotSpinFast 6s linear infinite;
+}
+
+.slot-reel-slow {
+  animation: slotSpinSlow 10s linear infinite;
+}
+
+/* 🎮 새로운 인터랙티브 룰렛 애니메이션 */
+.slot-reel-interactive {
+  display: flex;
+  flex-direction: column;
+  animation: slotSpin linear infinite;
+  will-change: transform;
+  transform-origin: center;
+  transition: all 0.1s ease-out;
+}
+
+/* 부드럽고 일정한 속도의 룰렛 애니메이션 */
+@keyframes slotSpin {
+  0% {
+    transform: translateY(0%);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes slotSpinFast {
+  0% {
+    transform: translateY(0%);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes slotSpinSlow {
+  0% {
+    transform: translateY(0%);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+/* 🎯 Enhanced 룰렛 컨테이너 그라데이션 마스크 */
+.slot-machine::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.4), transparent);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.slot-machine::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* 🎰 Interactive Slot Machine Touch Effects */
+.slot-machine:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease-out;
+}
+
+/* 각 슬롯 아이템에 미묘한 호버 효과 */
+.slot-reel-interactive > div:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  transform: scale(1.02);
+  transition: all 0.15s ease-out;
+  z-index: 5;
+  position: relative;
+}
+
+/* ==========================================
+   🎯 OTHER ANIMATIONS 🎯
+   ========================================== */
+
+/* 컨베이어 벨트 애니메이션 */
+@keyframes conveyor {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.conveyor-container {
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+}
+
+.conveyor-content {
+  display: inline-flex;
+  animation: conveyor 60s linear infinite;
+  will-change: transform;
+}
+
+.conveyor-content:hover {
+  animation-play-state: paused;
+}
+
+/* 캘린더 그리드 스타일 */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  padding: 1px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.calendar-day:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: scale(1.05);
+}
+
+.calendar-day.has-event {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.calendar-day.has-event::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 4px;
+  height: 4px;
+  background: #60a5fa;
+  border-radius: 50%;
+}
+
+/* 스크롤바 스타일링 - Toss Style */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* Scrollbar Hide Utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

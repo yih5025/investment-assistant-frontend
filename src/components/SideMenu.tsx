@@ -77,8 +77,8 @@ export function SideMenu({
                 </button>
               </div>
 
-              {/* User Section */}
-              {isLoggedIn && user ? (
+              {/* User Section - 로그인 UI 숨김 (기능 코드는 유지) */}
+              {/* {isLoggedIn && user ? (
                 <div className="p-4 border-b border-border">
                   <button
                     onClick={() => {
@@ -109,7 +109,7 @@ export function SideMenu({
                     <span>로그인</span>
                   </button>
                 </div>
-              )}
+              )} */}
 
               {/* Menu Items */}
               <div className="flex-1 overflow-y-auto p-2">
@@ -143,8 +143,8 @@ export function SideMenu({
                   <span className="font-medium">설정</span>
                 </button>
 
-                {/* 로그아웃 버튼 - 로그인 상태에만 표시 */}
-                {isLoggedIn && (
+                {/* 로그아웃 버튼 - UI 숨김 (기능 코드는 유지) */}
+                {/* {isLoggedIn && (
                   <button
                     onClick={() => {
                       onLogout();
@@ -155,7 +155,7 @@ export function SideMenu({
                     <LogOut size={20} />
                     <span className="font-medium">로그아웃</span>
                   </button>
-                )}
+                )} */}
               </div>
             </div>
           </motion.div>
