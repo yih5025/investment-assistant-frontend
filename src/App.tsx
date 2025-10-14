@@ -6,6 +6,8 @@ import { ReactQueryDevtools } from 'react-query/devtools';
 import { webSocketManager } from './services/WebSocketManager';
 
 import { BottomNavigation } from "./components/BottomNavigation";
+import { SideMenu } from "./components/SideMenu";
+import { SettingsPage } from "./components/SettingsPage";
 import { EarningsCalendar } from "./components/EarningsCalendar";
 import MarketPage from "./components/MarketPage";
 import { MarketDetailPage } from "./components/SP500Detail";
@@ -82,7 +84,7 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
 // ============================================================================
 
 type AuthState = "guest" | "login" | "signup" | "authenticated";
-type ViewState = "welcome" | "main" | "auth" | "profile" | "sns-detail" | "stock-news" | "news-detail" | "stock-detail" | "crypto-detail" | "etf-detail" | "cheatsheet";
+type ViewState = "welcome" | "main" | "auth" | "profile" | "sns-detail" | "stock-news" | "news-detail" | "stock-detail" | "crypto-detail" | "etf-detail" | "cheatsheet" | "settings";
 
 
 interface StockNewsItem {
@@ -109,6 +111,7 @@ function AppContent() {
     return hasVisited ? "main" : "welcome";
   });
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [selectedSNSPost, setSelectedSNSPost] = useState<SNSPost | null>(null);
   const [selectedStockNews, setSelectedStockNews] = useState<{ news: StockNewsItem[], symbol: string } | null>(null);
   const [selectedNewsItem, setSelectedNewsItem] = useState<DetailNewsItem | null>(null);
@@ -326,12 +329,36 @@ function AppContent() {
     setViewState("main");
     setActiveTab("home");
     setShowNotifications(false);
+    setIsSideMenuOpen(false);
   };
 
   const handleLoginClick = () => {
     pushToHistory("auth", activeTab);
     setAuthState("login");
     setViewState("auth");
+  };
+
+  const handleMenuClick = () => {
+    setIsSideMenuOpen(true);
+  };
+
+  const handleMenuClose = () => {
+    setIsSideMenuOpen(false);
+  };
+
+  const handleNavigate = (tab: string) => {
+    setActiveTab(tab);
+    setViewState("main");
+  };
+
+  const handleProfile = () => {
+    pushToHistory("profile", activeTab);
+    setViewState("profile");
+  };
+
+  const handleSettings = () => {
+    pushToHistory("settings", activeTab);
+    setViewState("settings");
   };
 
   const handleUserIconClick = () => {
@@ -493,6 +520,18 @@ function AppContent() {
     return (
       <div className="min-h-screen relative z-10">
         <CheatsheetPage onBack={handleBackToMain} />
+      </div>
+    );
+  }
+
+  // 설정 페이지
+  if (viewState === "settings") {
+    return (
+      <div className="min-h-screen relative z-10">
+        <SettingsPage 
+          onBack={handleBackToMain} 
+          onLogout={isLoggedIn ? handleLogout : undefined}
+        />
       </div>
     );
   }
@@ -818,6 +857,20 @@ function AppContent() {
               setActiveTab(tab);
             }
           }} 
+          onMenuClick={handleMenuClick}
+        />
+
+        <SideMenu
+          isOpen={isSideMenuOpen}
+          isLoggedIn={isLoggedIn}
+          onClose={handleMenuClose}
+          onNavigate={handleNavigate}
+          onLogin={handleLoginClick}
+          onLogout={handleLogout}
+          onProfile={handleProfile}
+          onSettings={handleSettings}
+          activeTab={activeTab}
+          user={isLoggedIn ? user : undefined}
         />
 
         {isLoggedIn && (

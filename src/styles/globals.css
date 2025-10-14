@@ -4,49 +4,55 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ==========================================
+   🌈 THEME VARIABLES
+   ========================================== */
+
 :root {
-  --font-size: 14px;
-  --foreground: #ffffff;
-  --card: rgba(255, 255, 255, 0.1);
-  --card-foreground: #ffffff;
-  --popover: rgba(255, 255, 255, 0.15);
-  --popover-foreground: #ffffff;
-  --primary: #60a5fa;
+  /* 🌞 Toss Light Theme */
+  --background: #f9fafb;
+  --foreground: #191f28;
+  --card: #ffffff;
+  --card-foreground: #191f28;
+  --popover: #ffffff;
+  --popover-foreground: #191f28;
+  --primary: #3182f6;
   --primary-foreground: #ffffff;
-  --secondary: rgba(96, 165, 250, 0.2);
-  --secondary-foreground: #ffffff;
-  --muted: rgba(255, 255, 255, 0.1);
-  --muted-foreground: rgba(255, 255, 255, 0.7);
-  --accent: rgba(96, 165, 250, 0.3);
-  --accent-foreground: #ffffff;
-  --destructive: #ef4444;
+  --secondary: #f2f4f6;
+  --secondary-foreground: #4e5968;
+  --muted: #f2f4f6;
+  --muted-foreground: #8b95a1;
+  --accent: #e5f4ff;
+  --accent-foreground: #3182f6;
+  --destructive: #f04452;
   --destructive-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.2);
-  --input: rgba(255, 255, 255, 0.1);
-  --input-background: rgba(255, 255, 255, 0.1);
-  --switch-background: rgba(255, 255, 255, 0.3);
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --ring: rgba(96, 165, 250, 0.5);
-  --chart-1: #60a5fa;
+  --border: #e5e8eb;
+  --input: #f2f4f6;
+  --input-background: #f2f4f6;
+  --switch-background: #d1d6db;
+  --ring: #3182f6;
+  --chart-1: #3182f6;
   --chart-2: #22d3ee;
   --chart-3: #a78bfa;
   --chart-4: #34d399;
   --chart-5: #fbbf24;
-  --radius: 1rem;
-  --sidebar: rgba(255, 255, 255, 0.1);
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #60a5fa;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(96, 165, 250, 0.2);
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.2);
-  --sidebar-ring: rgba(96, 165, 250, 0.5);
+  --radius: 0.75rem;
+  --font-size: 15px;
+  --font-weight-medium: 600;
+  --font-weight-normal: 400;
+
+  /* Shadow Variables (Light) */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
 }
 
 .dark {
+  /* 🌙 Starry Night Dark Theme */
+  --background: #0f172a;
   --foreground: #ffffff;
-  --card: rgba(255, 255, 255, 0.03);
+  --card: rgba(255, 255, 255, 0.05);
   --card-foreground: #ffffff;
   --popover: rgba(255, 255, 255, 0.08);
   --popover-foreground: #ffffff;
@@ -54,33 +60,32 @@
   --primary-foreground: #1e3a8a;
   --secondary: rgba(147, 197, 253, 0.2);
   --secondary-foreground: #ffffff;
-  --muted: rgba(255, 255, 255, 0.03);
-  --muted-foreground: rgba(255, 255, 255, 0.6);
+  --muted: rgba(255, 255, 255, 0.05);
+  --muted-foreground: rgba(255, 255, 255, 0.7);
   --accent: rgba(147, 197, 253, 0.3);
   --accent-foreground: #ffffff;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.03);
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.05);
+  --input-background: rgba(255, 255, 255, 0.05);
+  --switch-background: rgba(255, 255, 255, 0.3);
   --ring: rgba(147, 197, 253, 0.5);
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
   --chart-1: #93c5fd;
   --chart-2: #67e8f9;
   --chart-3: #c4b5fd;
   --chart-4: #6ee7b7;
   --chart-5: #fde047;
-  --sidebar: rgba(255, 255, 255, 0.03);
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #93c5fd;
-  --sidebar-primary-foreground: #1e3a8a;
-  --sidebar-accent: rgba(147, 197, 253, 0.2);
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: rgba(147, 197, 253, 0.5);
+
+  /* Shadow Variables (Dark) */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.4);
 }
 
 @theme inline {
+  --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
@@ -98,8 +103,6 @@
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
-  --color-input-background: var(--input-background);
-  --color-switch-background: var(--switch-background);
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -110,15 +113,11 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
 }
+
+/* ==========================================
+   🎨 BASE STYLES
+   ========================================== */
 
 @layer base {
   * {
@@ -131,318 +130,216 @@
     min-height: 100dvh;
     position: relative;
     overflow-x: hidden;
+    font-size: var(--font-size);
+    background: var(--background);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
-  /* 별이 빛나는 밤 배경 - 반 고흐 모티브 */
-  body {
+  /* 🌙 별이 빛나는 밤 배경 (다크모드 전용) */
+  .dark body {
     background: 
-      /* 기본 깊은 밤하늘 */
       radial-gradient(ellipse at 30% 20%, #1e3a8a 0%, #0f172a 40%),
       radial-gradient(ellipse at 70% 80%, #1e40af 0%, #0c1420 50%),
       radial-gradient(ellipse at 50% 50%, #312e81 0%, #020617 60%),
-      /* 소용돌이 효과
-      conic-gradient(from 45deg at 20% 30%, 
-        rgba(59, 130, 246, 0.3) 0deg,
-        rgba(147, 51, 234, 0.2) 60deg,
-        rgba(30, 58, 138, 0.4) 120deg,
-        rgba(59, 130, 246, 0.3) 180deg,
-        rgba(49, 46, 129, 0.3) 240deg,
-        rgba(30, 64, 175, 0.4) 300deg,
-        rgba(59, 130, 246, 0.3) 360deg
-      ),
-      /* 추가 소용돌이 
-      conic-gradient(from 135deg at 80% 70%, 
-        rgba(30, 64, 175, 0.3) 0deg,
-        rgba(59, 130, 246, 0.2) 90deg,
-        rgba(147, 51, 234, 0.3) 180deg,
-        rgba(30, 58, 138, 0.2) 270deg,
-        rgba(30, 64, 175, 0.3) 360deg
-      ), */
-      /* 베이스 그라데이션 */
       linear-gradient(135deg, #0f172a 0%, #1e3a8a 25%, #312e81 50%, #1e40af 75%, #0c1420 100%);
-    
-    background-size: 
-      150% 150%,
-      120% 120%, 
-      200% 200%,
-      80% 80%,
-      60% 60%,
-      100% 100%;
-    
-    background-position: 
-      0% 0%, 
-      100% 100%, 
-      50% 50%,
-      20% 30%,
-      80% 70%,
-      center;
-    
+    background-size: 150% 150%, 120% 120%, 200% 200%, 100% 100%;
+    background-position: 0% 0%, 100% 100%, 50% 50%, center;
     background-attachment: fixed;
     animation: starryNightFlow 20s ease-in-out infinite alternate;
   }
 
-  /* 소용돌이 배경 애니메이션
   @keyframes starryNightFlow {
-    0% {
-      background-position: 
-        0% 0%, 
-        100% 100%, 
-        50% 50%,
-        20% 30%,
-        80% 70%,
-        center;
-    }
-    50% {
-      background-position: 
-        10% 10%, 
-        90% 90%, 
-        60% 40%,
-        25% 35%,
-        75% 65%,
-        center;
-    }
-    100% {
-      background-position: 
-        5% 5%, 
-        95% 95%, 
-        45% 55%,
-        15% 25%,
-        85% 75%,
-        center;
-    }
-  } */
+    0% { background-position: 0% 0%, 100% 100%, 50% 50%, center; }
+    50% { background-position: 10% 10%, 90% 90%, 60% 40%, center; }
+    100% { background-position: 5% 5%, 95% 95%, 45% 55%, center; }
+  }
 
-  /* 별빛 효과 레이어 */
-  body::before {
+  /* 별빛 효과 (다크모드 전용) */
+  .dark body::before {
     content: '';
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    top: 0; left: 0; right: 0; bottom: 0;
     background: 
-      /* 큰 별들 */
       radial-gradient(circle at 15% 25%, rgba(255, 215, 0, 0.8) 0px, transparent 2px),
       radial-gradient(circle at 85% 15%, rgba(255, 223, 0, 0.9) 0px, transparent 1.5px),
       radial-gradient(circle at 70% 40%, rgba(255, 215, 0, 0.7) 0px, transparent 2.5px),
       radial-gradient(circle at 25% 70%, rgba(255, 255, 224, 0.8) 0px, transparent 2px),
       radial-gradient(circle at 90% 80%, rgba(255, 215, 0, 0.9) 0px, transparent 1.8px),
-      /* 작은 별들 */
       radial-gradient(circle at 10% 60%, rgba(255, 255, 255, 0.6) 0px, transparent 1px),
-      radial-gradient(circle at 95% 30%, rgba(255, 255, 255, 0.5) 0px, transparent 0.8px),
-      radial-gradient(circle at 40% 85%, rgba(255, 255, 255, 0.7) 0px, transparent 1.2px),
-      radial-gradient(circle at 60% 20%, rgba(255, 255, 255, 0.4) 0px, transparent 1px),
-      radial-gradient(circle at 30% 45%, rgba(255, 255, 255, 0.6) 0px, transparent 0.9px),
-      /* 미세한 별먼지 */
-      radial-gradient(circle at 50% 10%, rgba(255, 255, 255, 0.2) 0px, transparent 0.5px),
-      radial-gradient(circle at 80% 90%, rgba(255, 255, 255, 0.3) 0px, transparent 0.6px),
-      radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.2) 0px, transparent 0.4px);
-    
+      radial-gradient(circle at 95% 30%, rgba(255, 255, 255, 0.5) 0px, transparent 0.8px);
     pointer-events: none;
     z-index: -1;
     animation: starsTwinkle 4s ease-in-out infinite alternate;
   }
 
-  /* 별 반짝임 애니메이션 */
   @keyframes starsTwinkle {
-    0% {
-      opacity: 0.7;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 1;
-      transform: scale(1.05);
-    }
-    100% {
-      opacity: 0.8;
-      transform: scale(0.98);
-    }
+    0% { opacity: 0.7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+    100% { opacity: 0.8; transform: scale(0.98); }
   }
 
-  /* 달빛 효과
-  body::after {
-    content: '';
-    position: fixed;
-    top: 15%;
-    right: 20%;
-    width: 60px;
-    height: 60px;
-    background: 
-      radial-gradient(circle at 30% 30%, 
-        rgba(255, 255, 224, 0.9) 0%, 
-        rgba(255, 255, 224, 0.7) 30%, 
-        rgba(255, 255, 224, 0.3) 60%, 
-        transparent 100%
-      );
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: -1;
-    animation: moonGlow 6s ease-in-out infinite alternate;
-  } */
-
-  /* 달 빛남 애니메이션
-  @keyframes moonGlow {
-    0% {
-      opacity: 0.6;
-      box-shadow: 
-        0 0 20px rgba(255, 255, 224, 0.3),
-        0 0 40px rgba(255, 255, 224, 0.2),
-        0 0 60px rgba(255, 255, 224, 0.1);
-    }
-    100% {
-      opacity: 0.9;
-      box-shadow: 
-        0 0 30px rgba(255, 255, 224, 0.4),
-        0 0 60px rgba(255, 255, 224, 0.3),
-        0 0 90px rgba(255, 255, 224, 0.2);
-    }
-  } */
+  /* 🌞 라이트 모드 배경 (깔끔한 단색) */
+  body:not(.dark) {
+    background: var(--background);
+  }
 }
 
-/* 더욱 투명하고 반짝이는 Liquid Glass 효과 */
+/* ==========================================
+   📝 TYPOGRAPHY
+   ========================================== */
+
+@layer base {
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+  }
+
+  h2 {
+    font-size: 1.375rem;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  p {
+    font-size: 0.9375rem;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  button {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+}
+
+/* ==========================================
+   🎨 CARD STYLES
+   ========================================== */
+
 .glass {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(2px) saturate(180%);
-  -webkit-backdrop-filter: blur(2px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
-  position: relative;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
 }
 
-.glass::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.1) 100%);
-  border-radius: inherit;
-  pointer-events: none;
-  opacity: 0.5;
+.glass:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(2px) saturate(150%);
-  -webkit-backdrop-filter: blur(2px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 
-    0 4px 24px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
-  position: relative;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
 }
 
-.glass-card::before {
+.glass-strong {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+}
+
+.glass-subtle {
+  background: var(--secondary);
+  border-radius: calc(var(--radius) - 0.25rem);
+  border: 1px solid transparent;
+}
+
+/* 다크모드 전용 Liquid Glass 효과 */
+.dark .glass,
+.dark .glass-card,
+.dark .glass-strong {
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+.dark .glass::before,
+.dark .glass-card::before,
+.dark .glass-strong::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 50%, rgba(255, 255, 255, 0.08) 100%);
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 50%, rgba(255, 255, 255, 0.1) 100%);
   border-radius: inherit;
   pointer-events: none;
   opacity: 0.3;
 }
 
-.glass-strong {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(2px) saturate(120%);
-  -webkit-backdrop-filter: blur(2px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 
-    0 12px 40px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
-    0 0 0 1px rgba(255, 255, 255, 0.1);
-  position: relative;
-}
+/* ==========================================
+   🎰 SLOT MACHINE ANIMATIONS
+   ========================================== */
 
-.glass-strong::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.15) 100%);
-  border-radius: inherit;
-  pointer-events: none;
-  opacity: 0.4;
-}
-
-.glass-subtle {
-  background: rgba(255, 255, 255, 0.01);
-  backdrop-filter: blur(16px) saturate(120%);
-  -webkit-backdrop-filter: blur(16px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 
-    0 2px 16px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  position: relative;
-}
-
-/* 공항 arrivals board 스타일 Flip 애니메이션 */
-.flip-container {
-  perspective: 1000px;
-  height: 100%;
-}
-
-.flip-content {
-  position: relative;
-  transition: transform 0.6s;
-  transform-style: preserve-3d;
-  height: 100%;
-}
-
-.flip-container.flipping .flip-content {
-  transform: rotateX(180deg);
-}
-
-.flip-content > div {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden;
-}
-
-/* 컨베이어 벨트 애니메이션 */
-@keyframes conveyor {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
-}
-
-.conveyor-container {
+.slot-machine {
   overflow: hidden;
-  white-space: nowrap;
   position: relative;
+  height: 100%;
 }
 
-.conveyor-content {
-  display: inline-flex;
-  animation: conveyor 60s linear infinite;
+.slot-reel {
+  display: flex;
+  flex-direction: column;
+  animation: slotSpin 8s linear infinite;
   will-change: transform;
 }
 
-.conveyor-content:hover {
-  animation-play-state: paused;
+@keyframes slotSpin {
+  0% { transform: translateY(0%); }
+  100% { transform: translateY(-50%); }
 }
 
-/* 캘린더 그리드 스타일 */
+/* ==========================================
+   🎯 SCROLLBAR
+   ========================================== */
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ==========================================
+   📅 CALENDAR STYLES
+   ========================================== */
+
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 1px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border);
   border-radius: 12px;
   overflow: hidden;
   padding: 1px;
@@ -453,19 +350,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--card);
   transition: all 0.2s ease;
   cursor: pointer;
   position: relative;
 }
 
 .calendar-day:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--accent);
   transform: scale(1.05);
 }
 
 .calendar-day.has-event {
-  background: rgba(59, 130, 246, 0.2);
+  background: var(--accent);
 }
 
 .calendar-day.has-event::after {
@@ -475,393 +372,6 @@
   right: 2px;
   width: 4px;
   height: 4px;
-  background: #60a5fa;
+  background: var(--primary);
   border-radius: 50%;
-}
-
-/* 스크롤바 스타일링 */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.4);
-}
-
-/**
- * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
- */
-@layer base {
-  :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
-    h1 {
-      font-size: var(--text-2xl);
-      font-weight: var(--font-weight-medium);
-      line-height: 1.5;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    }
-
-    h2 {
-      font-size: var(--text-xl);
-      font-weight: var(--font-weight-medium);
-      line-height: 1.5;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    }
-
-    h3 {
-      font-size: var(--text-lg);
-      font-weight: var(--font-weight-medium);
-      line-height: 1.5;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    }
-
-    h4 {
-      font-size: var(--text-base);
-      font-weight: var(--font-weight-medium);
-      line-height: 1.5;
-    }
-
-    p {
-      font-size: var(--text-base);
-      font-weight: var(--font-weight-normal);
-      line-height: 1.5;
-    }
-
-    label {
-      font-size: var(--text-base);
-      font-weight: var(--font-weight-medium);
-      line-height: 1.5;
-    }
-
-    button {
-      font-size: var(--text-base);
-      font-weight: var(--font-weight-medium);
-      line-height: 1.5;
-    }
-
-    input {
-      font-size: var(--text-base);
-      font-weight: var(--font-weight-normal);
-      line-height: 1.5;
-    }
-  }
-}
-
-html {
-  font-size: var(--font-size);
-}
-
-/* ============================================================================
-   룰렛 슬롯 머신 애니메이션 (기존 globals.css 하단에 추가)
-   ============================================================================ */
-
-/* 룰렛 컨테이너 */
-.slot-machine {
-  position: relative;
-  overflow: hidden;
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  -webkit-touch-callout: none;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: none;
-}
-
-/* 룰렛 스크롤 영역 */
-.slot-reel-interactive {
-  display: flex;
-  flex-direction: column;
-  height: auto;
-  animation-name: slot-scroll;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-/* 수직 스크롤 애니메이션 */
-@keyframes slot-scroll {
-  0% {
-    transform: translateY(0);
-  }
-  100% {
-    /* 1/3만큼 이동 (데이터를 3배로 복제했으므로) */
-    transform: translateY(-33.333%);
-  }
-}
-
-/* GPU 가속 최적화 */
-.slot-reel-interactive > div {
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-/* 호버 효과 (기존 glass 테마와 일치) */
-.slot-machine .cursor-pointer:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-  transition: background-color 0.2s ease;
-}
-
-/* 일시정지 상태 */
-.slot-reel-interactive[style*="paused"] {
-  animation-play-state: paused !important;
-}
-
-/* 반응형 최적화 */
-@media (max-width: 768px) {
-  .slot-machine {
-    font-size: 0.875rem;
-  }
-  
-  .slot-reel-interactive > div {
-    padding: 0.5rem;
-  }
-}
-
-/* 성능 최적화 - 폰트 렌더링 */
-.slot-machine * {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* 스크롤바 숨김 */
-.slot-machine::-webkit-scrollbar {
-  display: none;
-}
-
-.slot-machine {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* 터치 디바이스 최적화 */
-@media (hover: none) and (pointer: coarse) {
-  .slot-machine {
-    -webkit-overflow-scrolling: touch;
-  }
-}
-
-/* Enhanced Calendar Styles - globals.css에 추가할 스타일 */
-
-/* 개선된 캘린더 그리드 - 높이 증가 */
-.calendar-grid-enhanced {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 0px;
-  background: rgba(255, 255, 255, 0.1);
-  overflow: hidden;
-  padding: 0px;
-}
-
-/* 개선된 캘린더 날짜 칸 - 모바일 터치 최적화된 높이 */
-.calendar-day-enhanced {
-  height: 70px; /* 모바일 터치를 위해 대폭 증가 */
-  min-height: 70px;
-  display: flex;
-  flex-direction: column;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid #ffffff29;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  position: relative;
-  padding: 2px;
-}
-
-.calendar-day-enhanced:active {
-  background: rgba(59, 130, 246, 0.1);
-  transform: scale(0.98);
-}
-
-.calendar-day-enhanced.has-event {
-  background: rgba(59, 130, 246, 0.1);
-}
-
-/* 날짜 숫자 스타일 - 상단 좌측에 배치, 텍스트 크기 증가 */
-.calendar-date-number {
-  position: absolute;
-  top: 4px;
-  left: 8px;
-  font-weight: 600;
-  font-size: 12px; /* 기존 12px에서 증가 */
-  line-height: 1;
-  z-index: 2;
-}
-
-/* 이벤트 컨테이너 - 날짜 숫자 아래에 배치 */
-.calendar-events-container {
-  display: flex;
-  flex-direction: column;
-  gap: 4px; /* 간격 증가 */
-  margin-top: 28px; /* 날짜 숫자 공간 더 확보 */
-  flex: 1;
-  overflow: hidden;
-  padding: 2px;
-}
-
-/* 이벤트 배지 스타일 - 모바일 터치 최적화 */
-.event-badge {
-  font-size: 10px; /* 8px에서 11px로 대폭 증가 */
-  font-weight: 600;
-  padding: 4px 6px; /* 패딩 대폭 증가 */
-  border-radius: 4px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  border: 1px solid;
-  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  min-height: 20px; /* 최소 터치 영역 확보 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(255, 255, 255, 1);
-  background: #162f6e;
-}
-
-.event-badge:active {
-  transform: scale(0.95);
-  z-index: 10;
-}
-
-/* 더 보기 배지 스타일 - 모바일 터치 최적화 */
-.event-badge-more {
-  font-size: 12px; /* 7px에서 10px로 증가 */
-  font-weight: 600;
-  padding: 2px 2px; /* 패딩 대폭 증가 */
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  line-height: 1.2;
-  color: rgba(255, 255, 255, 1);
-  background: #162f6e;
-  border: 1px solid rgba(255, 255, 255, 1);
-  border-radius: 4px;
-  min-height: 24px; /* 최소 터치 영역 확보 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.event-badge-more:active {
-  background: rgba(255, 255, 255, 0.25);
-  color: rgba(255, 255, 255, 1);
-  transform: scale(0.95);
-}
-
-/* 반응형 조정 - 모바일 우선 */
-@media (max-width: 768px) {
-  .calendar-day-enhanced {
-    height: 140px; /* 모바일에서 더 크게 */
-    min-height: 140px;
-    padding: 8px;
-  }
-  
-  .calendar-date-number {
-    top: 8px;
-    left: 10px;
-    font-size: 16px; /* 모바일에서 더 크게 */
-    font-weight: 700;
-  }
-  
-  .calendar-events-container {
-    margin-top: 32px;
-    gap: 5px; /* 간격 더 증가 */
-  }
-  
-  .event-badge {
-    font-size: 12px; /* 모바일에서 더 크게 */
-    padding: 5px 5px;
-    min-height: 28px; /* 터치 영역 더 증가 */
-
-  }
-  
-  .event-badge-more {
-    font-size: 14px;
-    padding: 5px 5px;
-    min-height: 28px;
-  }
-}
-
-@media (max-width: 640px) {
-  .calendar-day-enhanced {
-    height: 130px;
-    min-height: 130px;
-    padding: 2px;
-  }
-  
-  .calendar-date-number {
-    font-size: 14px;
-    top: 6px;
-    left: 8px;
-  }
-  
-  .calendar-events-container {
-    margin-top: 20px;
-    gap: 2px;
-  }
-  
-  .event-badge {
-    font-size: 11px;
-    padding: 5px 5px;
-    min-height: 22px;
-  }
-  
-  .event-badge-more {
-    font-size: 12px;
-    padding: 2px 2px;
-    min-height: 22px;
-  }
-}
-
-/* 데스크톱에서는 조금 작게 */
-@media (min-width: 1024px) {
-  .calendar-day-enhanced {
-    height: 110px;
-    min-height: 110px;
-  }
-  
-  .calendar-date-number {
-    font-size: 13px;
-  }
-  
-  .event-badge {
-    font-size: 10px;
-    padding: 5px 7px;
-    min-height: 22px;
-  }
-  
-  .event-badge-more {
-    font-size: 9px;
-    padding: 5px 7px;
-    min-height: 22px;
-  }
-}
-
-
-/* 접근성 개선 */
-.calendar-day-enhanced:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-
-.event-badge:focus-visible,
-.event-badge-more:focus-visible {
-  outline: 1px solid var(--primary);
-  outline-offset: 1px;
 }
