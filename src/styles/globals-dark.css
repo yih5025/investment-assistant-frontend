@@ -6,8 +6,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
-:root {
+:root,
+[data-theme="dark"],
+html.dark {
   --font-size: 14px;
+  --background: #0f172a;
   --foreground: #ffffff;
   --card: rgba(255, 255, 255, 0.1);
   --card-foreground: #ffffff;
@@ -44,6 +47,12 @@
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: rgba(255, 255, 255, 0.2);
   --sidebar-ring: rgba(96, 165, 250, 0.5);
+  
+  /* Shadow Variables */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
 }
 
 .dark {
@@ -163,31 +172,14 @@
     overflow-x: hidden;
   }
 
-  /* 별이 빛나는 밤 배경 - 반 고흐 모티브 */
-  body {
+  /* 별이 빛나는 밤 배경 - 반 고흐 모티브 (다크 모드 전용) */
+  [data-theme="dark"] body,
+  html.dark body {
     background: 
       /* 기본 깊은 밤하늘 */
       radial-gradient(ellipse at 30% 20%, #1e3a8a 0%, #0f172a 40%),
       radial-gradient(ellipse at 70% 80%, #1e40af 0%, #0c1420 50%),
       radial-gradient(ellipse at 50% 50%, #312e81 0%, #020617 60%),
-      /* 소용돌이 효과
-      conic-gradient(from 45deg at 20% 30%, 
-        rgba(59, 130, 246, 0.3) 0deg,
-        rgba(147, 51, 234, 0.2) 60deg,
-        rgba(30, 58, 138, 0.4) 120deg,
-        rgba(59, 130, 246, 0.3) 180deg,
-        rgba(49, 46, 129, 0.3) 240deg,
-        rgba(30, 64, 175, 0.4) 300deg,
-        rgba(59, 130, 246, 0.3) 360deg
-      ),
-      /* 추가 소용돌이 
-      conic-gradient(from 135deg at 80% 70%, 
-        rgba(30, 64, 175, 0.3) 0deg,
-        rgba(59, 130, 246, 0.2) 90deg,
-        rgba(147, 51, 234, 0.3) 180deg,
-        rgba(30, 58, 138, 0.2) 270deg,
-        rgba(30, 64, 175, 0.3) 360deg
-      ), */
       /* 베이스 그라데이션 */
       linear-gradient(135deg, #0f172a 0%, #1e3a8a 25%, #312e81 50%, #1e40af 75%, #0c1420 100%);
     
@@ -195,24 +187,21 @@
       150% 150%,
       120% 120%, 
       200% 200%,
-      80% 80%,
-      60% 60%,
       100% 100%;
     
     background-position: 
       0% 0%, 
       100% 100%, 
       50% 50%,
-      20% 30%,
-      80% 70%,
       center;
     
     background-attachment: fixed;
     animation: starryNightFlow 20s ease-in-out infinite alternate;
   }
 
-  /* 별빛 효과 레이어 */
-  body::before {
+  /* 별빛 효과 레이어 (다크 모드 전용) */
+  [data-theme="dark"] body::before,
+  html.dark body::before {
     content: '';
     position: fixed;
     top: 0;

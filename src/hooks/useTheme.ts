@@ -24,51 +24,26 @@ export function useTheme() {
 
       console.log('🎨 테마 변경:', selectedTheme, '→', finalTheme);
 
-      // body에 data-theme 속성 설정
-      document.body.setAttribute('data-theme', finalTheme);
-      
-      // html에도 클래스 추가 (Tailwind dark mode)
-      if (finalTheme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
+      const html = document.documentElement;
+      const body = document.body;
 
-      // 기존 테마 링크 제거
-      const existingThemeLinks = document.querySelectorAll('link[data-theme-css]');
-      existingThemeLinks.forEach(el => el.remove());
-
-      // 새 CSS 파일을 link 태그로 추가
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.setAttribute('data-theme-css', finalTheme);
-      
-      // 개발 환경과 프로덕션 환경 구분
-      if (import.meta.env.DEV) {
-        // Vite dev server에서는 절대 경로 사용
-        link.href = `/src/styles/globals-${finalTheme}.css`;
+      // HTML과 Body에 테마 적용
+      if (finalTheme === 'light') {
+        html.setAttribute('data-theme', 'light');
+        body.setAttribute('data-theme', 'light');
+        html.classList.remove('dark');
+        html.classList.add('light');
       } else {
-        // 프로덕션에서는 빌드된 CSS 경로 사용  
-        link.href = `/assets/globals-${finalTheme}.css`;
+        html.setAttribute('data-theme', 'dark');
+        body.setAttribute('data-theme', 'dark');
+        html.classList.remove('light');
+        html.classList.add('dark');
       }
-      
-      // 캐시 방지를 위한 timestamp 추가
-      link.href += `?t=${Date.now()}`;
-      
-      // CSS 로드 완료 시 로그
-      link.onload = () => {
-        console.log('✅ 테마 CSS 로드 완료:', link.href);
-      };
-      
-      link.onerror = () => {
-        console.error('❌ 테마 CSS 로드 실패:', link.href);
-      };
-      
-      // head 끝에 추가하여 우선순위 높임
-      document.head.appendChild(link);
 
       // localStorage에 저장
       localStorage.setItem("theme", selectedTheme);
+      
+      console.log('✅ 테마 적용 완료:', finalTheme, 'HTML classes:', html.className);
     };
 
     // 테마 적용
