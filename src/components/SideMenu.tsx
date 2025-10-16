@@ -63,8 +63,7 @@ export function SideMenu({
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed left-0 top-0 bottom-0 w-80 z-50 shadow-2xl glass-strong"
-            // ✅ style 속성 완전히 제거!
+            className="fixed left-0 top-0 bottom-0 w-80 bg-background z-50 shadow-2xl border-r border-border"
           >
             <div className="flex flex-col h-full">
               {/* Header */}
