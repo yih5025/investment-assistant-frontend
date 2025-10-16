@@ -12,7 +12,7 @@ html.dark {
   --font-size: 14px;
   --background: #0f172a;
   --foreground: #ffffff;
-  --card: rgba(255, 255, 255, 0.1);
+  --card: rgba(255, 255, 255, 0.08);
   --card-foreground: #ffffff;
   --popover: rgba(255, 255, 255, 0.15);
   --popover-foreground: #ffffff;

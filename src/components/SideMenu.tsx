@@ -63,7 +63,7 @@ export function SideMenu({
               {/* Header */}
               <div className="flex items-center justify-between p-5 border-b border-border/50">
                 <div>
-                  <h2 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  <h2 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text">
                     W.E Investing
                   </h2>
                   <p className="text-xs text-muted-foreground mt-0.5">
