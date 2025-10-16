@@ -199,63 +199,16 @@ html.dark {
     animation: starryNightFlow 20s ease-in-out infinite alternate;
   }
 
-  /* 별빛 효과 레이어 (다크 모드 전용) */
-  [data-theme="dark"] body::before,
-  html.dark body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-      /* 큰 별들 */
-      radial-gradient(circle at 15% 25%, rgba(255, 215, 0, 0.8) 0px, transparent 2px),
-      radial-gradient(circle at 85% 15%, rgba(255, 223, 0, 0.9) 0px, transparent 1.5px),
-      radial-gradient(circle at 70% 40%, rgba(255, 215, 0, 0.7) 0px, transparent 2.5px),
-      radial-gradient(circle at 25% 70%, rgba(255, 255, 224, 0.8) 0px, transparent 2px),
-      radial-gradient(circle at 90% 80%, rgba(255, 215, 0, 0.9) 0px, transparent 1.8px),
-      /* 작은 별들 */
-      radial-gradient(circle at 10% 60%, rgba(255, 255, 255, 0.6) 0px, transparent 1px),
-      radial-gradient(circle at 95% 30%, rgba(255, 255, 255, 0.5) 0px, transparent 0.8px),
-      radial-gradient(circle at 40% 85%, rgba(255, 255, 255, 0.7) 0px, transparent 1.2px),
-      radial-gradient(circle at 60% 20%, rgba(255, 255, 255, 0.4) 0px, transparent 1px),
-      radial-gradient(circle at 30% 45%, rgba(255, 255, 255, 0.6) 0px, transparent 0.9px),
-      /* 미세한 별먼지 */
-      radial-gradient(circle at 50% 10%, rgba(255, 255, 255, 0.2) 0px, transparent 0.5px),
-      radial-gradient(circle at 80% 90%, rgba(255, 255, 255, 0.3) 0px, transparent 0.6px),
-      radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.2) 0px, transparent 0.4px);
-    
-    pointer-events: none;
-    z-index: -1;
-    animation: starsTwinkle 4s ease-in-out infinite alternate;
-  }
-
-  /* 별 반짝임 애니메이션 */
-  @keyframes starsTwinkle {
-    0% {
-      opacity: 0.7;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 1;
-      transform: scale(1.05);
-    }
-    100% {
-      opacity: 0.8;
-      transform: scale(0.98);
-    }
-  }
 }
 
-/* 더욱 투명하고 반짝이는 Liquid Glass 효과 */
+/* 일관된 Glass 효과 */
 .glass {
-  /* background: rgba(255, 255, 255, 0.03); */
-  /* backdrop-filter: blur(2px) saturate(180%); */
-  -webkit-backdrop-filter: blur(2px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px) saturate(180%);
+  -webkit-backdrop-filter: blur(8px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 8px 32px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
     inset 0 -1px 0 rgba(255, 255, 255, 0.05);
   position: relative;
@@ -275,14 +228,14 @@ html.dark {
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(2px) saturate(150%);
-  -webkit-backdrop-filter: blur(2px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 
-    0 4px 24px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
+    0 8px 32px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
   position: relative;
 }
 
@@ -300,15 +253,15 @@ html.dark {
 }
 
 .glass-strong {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(2px) saturate(120%);
-  -webkit-backdrop-filter: blur(2px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow: 
-    0 12px 40px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
-    0 0 0 1px rgba(255, 255, 255, 0.1);
+    0 12px 40px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.12);
   position: relative;
 }
 
@@ -326,13 +279,13 @@ html.dark {
 }
 
 .glass-subtle {
-  background: rgba(255, 255, 255, 0.01);
-  backdrop-filter: blur(16px) saturate(120%);
-  -webkit-backdrop-filter: blur(16px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 
-    0 2px 16px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 4px 20px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
   position: relative;
 }
 
@@ -628,14 +581,14 @@ html {
   padding: 2px;
 }
 
-.calendar-day-enhanced:active {
+/* .calendar-day-enhanced:active {
   background: rgba(59, 130, 246, 0.1);
   transform: scale(0.98);
 }
 
 .calendar-day-enhanced.has-event {
   background: rgba(59, 130, 246, 0.1);
-}
+} */
 
 /* 날짜 숫자 스타일 - 상단 좌측에 배치, 텍스트 크기 증가 */
 .calendar-date-number {
