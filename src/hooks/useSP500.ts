@@ -20,7 +20,7 @@ export interface SP500Item {
   price: number;
   change_amount: number;
   change_percent: number;
-  volume: number;
+  volume_24h: number;
   sector?: string;
   market_cap?: string;
   previous_close?: number;
@@ -128,7 +128,7 @@ function calculateSP500Stats(data: SP500Data[]): SP500Stats {
   data.forEach(item => {
     const changePercent = item.change_percentage || 0;
     totalChangePercent += changePercent;
-    totalVolume += item.volume || 0;
+    totalVolume += item.volume_24h || 0;
 
     if (changePercent > 0) positiveCount++;
     else if (changePercent < 0) negativeCount++;
@@ -164,7 +164,7 @@ const transformSP500Data = (data: SP500Data[]): SP500Item[] => {
     change_percent: typeof item.change_percentage === 'number' 
       ? item.change_percentage 
       : parseFloat(String(item.change_percentage || 0)),
-    volume: item.volume || 0,
+    volume_24h: item.volume_24h || 0,
     sector: undefined, // 향후 company_overview 테이블에서 가져올 예정
     market_cap: undefined,
     previous_close: item.previous_close,
@@ -299,7 +299,7 @@ export function useSP500Data() {
   // 거래량 상위 종목
   const getByVolume = useCallback((count: number = 20) => {
     return [...allSP500Data]
-      .sort((a, b) => b.volume - a.volume)
+      .sort((a, b) => b.volume_24h - a.volume_24h)
       .slice(0, count);
   }, [allSP500Data]);
 
@@ -317,7 +317,7 @@ export function useSP500Data() {
       avgChangePercent: allSP500Data.length > 0 
         ? allSP500Data.reduce((sum, item) => sum + item.change_percent, 0) / allSP500Data.length 
         : 0,
-      totalVolume: allSP500Data.reduce((sum, item) => sum + item.volume, 0),
+      totalVolume: allSP500Data.reduce((sum, item) => sum + item.volume_24h, 0),
       priceRange: {
         min: Math.min(...allSP500Data.map(item => item.price)),
         max: Math.max(...allSP500Data.map(item => item.price))
@@ -446,8 +446,8 @@ export function useSP500Filter(sp500Data: SP500Item[], initialFilters?: Partial<
           bValue = b.change_percent;
           break;
         case 'volume':
-          aValue = a.volume;
-          bValue = b.volume;
+          aValue = a.volume_24h;
+          bValue = b.volume_24h;
           break;
         default:
           aValue = a.symbol;

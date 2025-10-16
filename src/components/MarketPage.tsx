@@ -442,7 +442,7 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({
                 <p className="text-sm text-foreground/70 truncate">
                   {stock.name || `${stock.symbol} Inc.`}
                 </p>
-                <p className="text-xs text-foreground/50 mt-1">거래량: {stock.volume}</p>
+                <p className="text-xs text-foreground/50 mt-1">24h 거래량: {stock.volume}</p>
               </div>
 
               <div className="text-right">

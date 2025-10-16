@@ -257,7 +257,7 @@ export class SP500Service extends BaseService {
     return data.map(item => ({
       symbol: item.symbol,
       price: item.current_price || item.price || 0,
-      volume: item.volume || 0,
+      volume_24h: item.volume_24h || 0,
       timestamp_ms: item.timestamp_ms || Date.now(),
       category: item.category,
       source: item.source || 'websocket',

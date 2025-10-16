@@ -224,7 +224,7 @@ export function useSP500Data() {
           price: currentPrice,
           change: changeAmount,
           changePercent,
-          volume: formatVolume(stock.volume || 0),
+          volume: formatVolume(stock.volume_24h || 0),
           type: 'stock' as const,
         };
       });
@@ -251,7 +251,7 @@ export function useSP500Data() {
           price: currentPrice,
           change: changeAmount,
           changePercent,
-          volume: formatVolume(stock.volume || 0),
+          volume: formatVolume(stock.volume_24h || 0),
           type: 'stock' as const,
         };
       });

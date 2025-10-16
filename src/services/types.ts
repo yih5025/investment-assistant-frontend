@@ -15,7 +15,7 @@ export interface CryptoData {
 export interface SP500Data {
   symbol: string;
   price: number;
-  volume: number;
+  volume_24h: number;
   timestamp_ms: number;
   category?: string;
   source: string;
