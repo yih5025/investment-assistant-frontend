@@ -21,9 +21,9 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
   // 로딩 단계별 메시지 (최적화된 버전)
   const loadingSteps = [
     "암호화폐 실시간 연결 중...",
-    "SNS 데이터 로딩 중...",
-    "SP500 백그라운드 로딩 중...",
+    "SP500 기업 분석 중...",
     "ETF 데이터 준비 중...",
+    "SNS 데이터 로딩 중...",
     "서비스 준비 완료!"
   ];
 
@@ -198,7 +198,7 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-blue-600/5"></div>
         <BookOpenCheck className="w-16 h-16 mx-auto text-primary drop-shadow-md relative z-10" />
         <h2 className="text-2xl font-bold leading-tight relative z-10">
-          투자가 어렵다면,<br />
+          S&P 500, ETF, 암호화폐 투자가 어렵다면,<br />
           실시간 시장 데이터를 기반으로<br />
           <span className="text-primary drop-shadow-sm">쉽고 현명하게</span> 배우면서 투자하세요
         </h2>
@@ -293,7 +293,7 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
           <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-blue-600/10 group-hover:from-primary/20 group-hover:to-blue-600/20 transition-all duration-300"></div>
           <div className="flex items-center justify-center space-x-4 relative z-10">
             <Play size={24} className="text-primary group-hover:scale-110 transition-transform" />
-            <span className="font-bold text-lg">W.E Investing과 함께 투자 여정 시작하기</span>
+            <span className="font-bold text-lg">투자 여정 시작하기</span>
             <ChevronRight size={24} className="text-primary group-hover:translate-x-2 transition-transform" />
           </div>
         </button>

@@ -56,7 +56,7 @@ const LoadingState = ({ message, subMessage }: { message: string; subMessage?: s
 );
 
 const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick, onETFClick }) => {
-  const [activeTab, setActiveTab] = useState<TabType>('stocks');
+  const [activeTab, setActiveTab] = useState<TabType>('crypto');
   
   const {
     allMarketData,
@@ -100,8 +100,6 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick, on
     if (status === 'disconnected' || (!hasData && status !== 'connecting')) {
       console.log('🔄 연결 또는 데이터 없음 - 새로고침 필요');
       refreshData();
-    } else {
-      console.log('✅ 이미 연결되고 데이터 있음 - 새로고침 불필요');
     }
   }, []); // 🎯 빈 의존성 배열로 변경 - 마운트 시 한번만 실행
 
@@ -109,59 +107,26 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick, on
     <div className="space-y-6">
       <div className="glass-card rounded-2xl p-6">
         <h2 className="text-2xl font-bold mb-4 flex items-center">
-          {activeTab === 'stocks' ? (
-            <>
-              <BarChart3 size={24} className="mr-3 text-blue-400" />
-              📊 미국 대표 주식 시장
-            </>
-          ) : activeTab === 'crypto' ? (
+          {activeTab === 'crypto' ? (
             <>
               <Coins size={24} className="mr-3 text-orange-400" />
               🪙 암호화폐 시장
             </>
-          ) : (
+          ) : activeTab === 'etf' ? (
             <>
               <PieChart size={24} className="mr-3 text-green-400" />
               📈 ETF 시장
+            </>
+          ) : (
+            <>
+              <BarChart3 size={24} className="mr-3 text-blue-400" />
+              📊 미국 대표 주식 시장
             </>
           )}
         </h2>
         
         <div className="space-y-4">
-          {activeTab === 'stocks' ? (
-            <>
-              <p className="text-base text-foreground/80 leading-relaxed">
-                S&P 500은 미국 증권거래소에 상장된 500개 주요 기업의 주가를 추적하는 대표 지수예요. 
-                애플, 마이크로소프트, 엔비디아 같은 대기업부터 다양한 산업의 기업들이 포함되어 있습니다.
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="glass rounded-xl p-4">
-                  <h3 className="font-semibold mb-2 text-blue-400 flex items-center">
-                    <BarChart3 size={16} className="mr-2" />
-                    이런 걸 확인할 수 있어요
-                  </h3>
-                  <ul className="text-sm text-foreground/70 space-y-1">
-                    <li>• <span className="font-medium">실시간 주가</span> - 시장이 열려있는 동안 계속 업데이트돼요</li>
-                    <li>• <span className="font-medium">기업 정보</span> - 회사가 어떤 사업을 하는지 알 수 있어요</li>
-                    <li>• <span className="font-medium">재무 상태</span> - 회사가 건강한지 분석해드려요</li>
-                  </ul>
-                </div>
-                
-                <div className="glass rounded-xl p-4">
-                  <h3 className="font-semibold mb-2 text-primary flex items-center">
-                    <TrendingUp size={16} className="mr-2" />
-                    이렇게 활용하세요
-                  </h3>
-                  <ul className="text-sm text-foreground/70 space-y-1">
-                    <li>• <span className="font-medium">관심 종목 탐색</span> - 마음에 드는 기업을 찾아보세요</li>
-                    <li>• <span className="font-medium">가격 변동 확인</span> - 오늘 얼마나 올랐는지 내렸는지 확인해요</li>
-                    <li>• <span className="font-medium">상세 정보 보기</span> - 종목을 클릭하면 더 많은 정보를 볼 수 있어요</li>
-                  </ul>
-                </div>
-              </div>
-            </>
-          ) : activeTab === 'crypto' ? (
+          {activeTab === 'crypto' ? (
             <>
               <p className="text-base text-foreground/80 leading-relaxed">
                 암호화폐는 블록체인 기술을 기반으로 한 디지털 자산이에요. 
@@ -206,7 +171,7 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick, on
                 </div>
               </div>
             </>
-          ) : (
+          ) : activeTab === 'etf' ? (
             <>
               <p className="text-base text-foreground/80 leading-relaxed">
                 ETF(상장지수펀드)는 여러 종목에 한 번에 투자할 수 있는 펀드 상품이에요. 
@@ -251,26 +216,45 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick, on
                 </div>
               </div>
             </>
+          ) : (
+            <>
+              <p className="text-base text-foreground/80 leading-relaxed">
+                S&P 500은 미국 증권거래소에 상장된 500개 주요 기업의 주가를 추적하는 대표 지수예요. 
+                애플, 마이크로소프트, 엔비디아 같은 대기업부터 다양한 산업의 기업들이 포함되어 있습니다.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="glass rounded-xl p-4">
+                  <h3 className="font-semibold mb-2 text-blue-400 flex items-center">
+                    <BarChart3 size={16} className="mr-2" />
+                    이런 걸 확인할 수 있어요
+                  </h3>
+                  <ul className="text-sm text-foreground/70 space-y-1">
+                    <li>• <span className="font-medium">실시간 주가</span> - 시장이 열려있는 동안 계속 업데이트돼요</li>
+                    <li>• <span className="font-medium">기업 정보</span> - 회사가 어떤 사업을 하는지 알 수 있어요</li>
+                    <li>• <span className="font-medium">재무 상태</span> - 회사가 건강한지 분석해드려요</li>
+                  </ul>
+                </div>
+                
+                <div className="glass rounded-xl p-4">
+                  <h3 className="font-semibold mb-2 text-primary flex items-center">
+                    <TrendingUp size={16} className="mr-2" />
+                    이렇게 활용하세요
+                  </h3>
+                  <ul className="text-sm text-foreground/70 space-y-1">
+                    <li>• <span className="font-medium">관심 종목 탐색</span> - 마음에 드는 기업을 찾아보세요</li>
+                    <li>• <span className="font-medium">가격 변동 확인</span> - 오늘 얼마나 올랐는지 내렸는지 확인해요</li>
+                    <li>• <span className="font-medium">상세 정보 보기</span> - 종목을 클릭하면 더 많은 정보를 볼 수 있어요</li>
+                  </ul>
+                </div>
+              </div>
+            </>
           )}
         </div>
       </div>
 
       {/* 탭 네비게이션 */}
       <div className="flex space-x-1 glass-card rounded-xl p-1">
-        <button
-          onClick={() => setActiveTab('stocks')}
-          className={`flex-1 py-3 px-4 rounded-lg transition-all text-sm font-medium ${
-            activeTab === 'stocks' 
-              ? 'glass-strong text-primary' 
-              : 'text-foreground/70 hover:text-foreground'
-          }`}
-        >
-          <div className="flex items-center justify-center space-x-2">
-            <BarChart3 size={16} />
-            <span>S&P 500</span>
-          </div>
-        </button>
-        
         <button
           onClick={() => setActiveTab('crypto')}
           className={`flex-1 py-3 px-4 rounded-lg transition-all text-sm font-medium ${
@@ -300,27 +284,41 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick, on
             <span>ETF</span>
           </div>
         </button>
+        
+        <button
+          onClick={() => setActiveTab('stocks')}
+          className={`flex-1 py-3 px-4 rounded-lg transition-all text-sm font-medium ${
+            activeTab === 'stocks' 
+              ? 'glass-strong text-primary' 
+              : 'text-foreground/70 hover:text-foreground'
+          }`}
+        >
+          <div className="flex items-center justify-center space-x-2">
+            <BarChart3 size={16} />
+            <span>S&P 500</span>
+          </div>
+        </button>
       </div>
 
       {/* 탭 콘텐츠 */}
-      {activeTab === 'stocks' ? (
-        <StockMarketTab 
-          stockData={sp500Data}
-          onStockClick={handleStockClick}
-          isLoading={overallStatus === 'connecting' || overallStatus === 'reconnecting' || (isEmpty && overallStatus === 'disconnected')}
-          connectionStatus={overallStatus}
-        />
-      ) : activeTab === 'crypto' ? (
+      {activeTab === 'crypto' ? (
         <CryptoMarketTab 
           cryptoData={cryptoData}
           onCryptoClick={handleCryptoClick}
           isLoading={overallStatus === 'connecting' || overallStatus === 'reconnecting' || (isEmpty && overallStatus === 'disconnected')}
           connectionStatus={overallStatus}
         />
-      ) : (
+      ) : activeTab === 'etf' ? (
         <ETFMarketTab 
           etfData={etfData}
           onETFClick={handleETFClick}
+          isLoading={overallStatus === 'connecting' || overallStatus === 'reconnecting' || (isEmpty && overallStatus === 'disconnected')}
+          connectionStatus={overallStatus}
+        />
+      ) : (
+        <StockMarketTab 
+          stockData={sp500Data}
+          onStockClick={handleStockClick}
           isLoading={overallStatus === 'connecting' || overallStatus === 'reconnecting' || (isEmpty && overallStatus === 'disconnected')}
           connectionStatus={overallStatus}
         />

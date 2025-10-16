@@ -68,19 +68,19 @@ export default function NewsPage({ isLoggedIn, onLoginPrompt, onNewsClick }: New
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case "sentiment": return "bg-blue-500/20 text-blue-400";
-      case "financial": return "bg-green-500/20 text-green-400";
-      case "market": return "bg-orange-500/20 text-orange-400";
-      default: return "bg-gray-500/20 text-gray-400";
+      case "sentiment": return "badge-news-sentiment";
+      case "financial": return "badge-news-financial";
+      case "market": return "badge-news-market";
+      default: return "badge-news-default";
     }
   };
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case "crypto": return "bg-orange-500/20 text-orange-400";
-      case "forex": return "bg-green-500/20 text-green-400";
-      case "merger": return "bg-purple-500/20 text-purple-400";
-      default: return "bg-blue-500/20 text-blue-400";
+      case "crypto": return "badge-category-crypto";
+      case "forex": return "badge-category-forex";
+      case "merger": return "badge-category-merger";
+      default: return "badge-category-default";
     }
   };
 

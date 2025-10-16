@@ -1026,12 +1026,12 @@ const CHEATSHEET_DATA: CheatsheetItem[] = [
 // ============================================================================
 
 const CATEGORIES = [
-  { id: "주식기초", label: "주식 기초", icon: "📈", color: "bg-blue-500/20 text-blue-400" },
-  { id: "암호화폐", label: "암호화폐", icon: "₿", color: "bg-orange-500/20 text-orange-400" },
-  { id: "ETF", label: "ETF", icon: "📊", color: "bg-green-500/20 text-green-400" },
-  { id: "경제지표", label: "경제 지표", icon: "🌍", color: "bg-purple-500/20 text-purple-400" },
-  { id: "재무제표", label: "재무제표", icon: "📋", color: "bg-pink-500/20 text-pink-400" },
-  { id: "앱용어", label: "앱 용어", icon: "📱", color: "bg-cyan-500/20 text-cyan-400" }
+  { id: "주식기초", label: "주식 기초", icon: "📈", color: "badge-cheatsheet-stock" },
+  { id: "암호화폐", label: "암호화폐", icon: "₿", color: "badge-cheatsheet-crypto" },
+  { id: "ETF", label: "ETF", icon: "📊", color: "badge-cheatsheet-etf" },
+  { id: "경제지표", label: "경제 지표", icon: "🌍", color: "badge-cheatsheet-economy" },
+  { id: "재무제표", label: "재무제표", icon: "📋", color: "badge-cheatsheet-finance" },
+  { id: "앱용어", label: "앱 용어", icon: "📱", color: "badge-cheatsheet-app" }
 ] as const;
 
 // ============================================================================

@@ -9,7 +9,7 @@ interface SideMenuProps {
   onLogin: () => void;
   onLogout: () => void;
   onProfile: () => void;
-  onSettings: () => void; // ⭐ 설정 페이지 이동
+  onSettings: () => void;
   activeTab: string;
   user?: {
     name: string;
@@ -25,7 +25,7 @@ export function SideMenu({
   onLogin, 
   onLogout,
   onProfile,
-  onSettings, // ⭐ 추가
+  onSettings,
   activeTab,
   user
 }: SideMenuProps) {
@@ -53,7 +53,7 @@ export function SideMenu({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/40 z-50"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
             onClick={onClose}
           />
 
@@ -63,22 +63,24 @@ export function SideMenu({
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed left-0 top-0 bottom-0 w-80 bg-card z-50 shadow-2xl"
+            className="fixed left-0 top-0 bottom-0 w-80 z-50 shadow-2xl glass-strong"
+            // ✅ style 속성 완전히 제거!
           >
             <div className="flex flex-col h-full">
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-border">
-                <h2 className="text-xl font-bold">W.E.I</h2>
+                <h2 className="text-xl font-bold text-foreground">W.E.I</h2>
                 <button
                   onClick={onClose}
                   className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-secondary transition-colors"
+                  aria-label="메뉴 닫기"
                 >
                   <X size={20} />
                 </button>
               </div>
 
-              {/* User Section - 로그인 UI 숨김 (기능 코드는 유지) */}
-              {/* {isLoggedIn && user ? (
+              {/* User Section */}
+              {isLoggedIn && user ? (
                 <div className="p-4 border-b border-border">
                   <button
                     onClick={() => {
@@ -87,11 +89,11 @@ export function SideMenu({
                     }}
                     className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-secondary transition-colors text-left"
                   >
-                    <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+                    <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold">
                       {user.name.charAt(0)}
                     </div>
                     <div className="flex-1">
-                      <div className="font-semibold">{user.name}</div>
+                      <div className="font-semibold text-foreground">{user.name}</div>
                       <div className="text-sm text-muted-foreground">{user.email}</div>
                     </div>
                   </button>
@@ -103,16 +105,16 @@ export function SideMenu({
                       onLogin();
                       onClose();
                     }}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-semibold"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all font-semibold"
                   >
                     <LogIn size={20} />
                     <span>로그인</span>
                   </button>
                 </div>
-              )} */}
+              )}
 
               {/* Menu Items */}
-              <div className="flex-1 overflow-y-auto p-2">
+              <div className="flex-1 overflow-y-auto p-2 scrollbar-hide">
                 {menuItems.map((item) => (
                   <button
                     key={item.id}
@@ -120,8 +122,9 @@ export function SideMenu({
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors mb-1 ${
                       activeTab === item.id
                         ? "bg-accent text-accent-foreground"
-                        : "hover:bg-secondary"
+                        : "hover:bg-secondary text-foreground"
                     }`}
+                    aria-current={activeTab === item.id ? "page" : undefined}
                   >
                     <item.icon size={20} />
                     <span className="font-medium">{item.label}</span>
@@ -129,22 +132,22 @@ export function SideMenu({
                 ))}
               </div>
 
-              {/* Footer - 항상 표시 (로그인 여부 무관) */}
+              {/* Footer */}
               <div className="p-4 border-t border-border space-y-2">
-                {/* ⭐ 설정 버튼 - 항상 표시 */}
+                {/* 설정 버튼 */}
                 <button
                   onClick={() => {
-                    onSettings(); // ⭐ 설정 페이지로 이동
+                    onSettings();
                     onClose();
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-secondary transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-secondary transition-colors text-foreground"
                 >
                   <Settings size={20} />
                   <span className="font-medium">설정</span>
                 </button>
 
-                {/* 로그아웃 버튼 - UI 숨김 (기능 코드는 유지) */}
-                {/* {isLoggedIn && (
+                {/* 로그아웃 버튼 */}
+                {isLoggedIn && (
                   <button
                     onClick={() => {
                       onLogout();
@@ -155,7 +158,7 @@ export function SideMenu({
                     <LogOut size={20} />
                     <span className="font-medium">로그아웃</span>
                   </button>
-                )} */}
+                )}
               </div>
             </div>
           </motion.div>

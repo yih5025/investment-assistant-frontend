@@ -1,4 +1,4 @@
-import { Home, TrendingUp, MessageSquare, Newspaper, BarChart3, Menu } from "lucide-react";
+import { Home, TrendingUp, MessageSquare, BarChart3, Menu } from "lucide-react";
 
 interface BottomNavigationProps {
   activeTab: string;
@@ -8,48 +8,47 @@ interface BottomNavigationProps {
 
 export function BottomNavigation({ activeTab, onTabChange, onMenuClick }: BottomNavigationProps) {
   const tabs = [
-    { id: "home", label: "홈", icon: Home },
-    { id: "markets", label: "시장", icon: TrendingUp },
-    { id: "sns", label: "SNS", icon: MessageSquare },
-    { id: "economy", label: "경제", icon: BarChart3 },
+    { id: "home", label: "투자 캘린더", icon: Home },
+    { id: "markets", label: "투자 시장", icon: TrendingUp },
+    { id: "sns", label: "SNS 분석", icon: MessageSquare },
+    { id: "economy", label: "경제 지표", icon: BarChart3 },
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border shadow-lg">
+    <div className="fixed bottom-0 left-0 right-0 z-40">
       <div className="max-w-md mx-auto">
-        <div className="flex items-center justify-around px-2 py-1">
-          {/* 메뉴 버튼 (좌측 끝) */}
-          <button
-            onClick={onMenuClick}
-            className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all hover:bg-secondary active:scale-95"
-            aria-label="메뉴 열기"
-          >
-            <Menu size={24} strokeWidth={2} />
-            <span className="text-xs font-semibold">메뉴</span>
-          </button>
+        <div className="glass-strong backdrop-blur-xl border-t border-white/30 px-1 py-2 m-2 rounded-2xl">
+          <div className="flex justify-around items-center">
+            {/* 메뉴 버튼 - 이전 스타일 적용 */}
+            <button
+              onClick={onMenuClick}
+              className="flex flex-col items-center space-y-1 px-2 py-2 rounded-xl transition-all duration-300 text-foreground/70 hover:text-foreground hover:glass-subtle hover:scale-105"
+            >
+              <Menu size={18} />
+              <span className="text-xs font-medium">메뉴</span>
+            </button>
 
-          {/* 탭 버튼들 */}
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            
-            return (
-              <button
-                key={tab.id}
-                onClick={() => onTabChange(tab.id)}
-                className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all active:scale-95 ${
-                  isActive 
-                    ? "text-primary bg-accent" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                }`}
-                aria-label={tab.label}
-                aria-current={isActive ? "page" : undefined}
-              >
-                <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
-                <span className="text-xs font-semibold">{tab.label}</span>
-              </button>
-            );
-          })}
+            {/* 탭 버튼들 - 이전 스타일 적용 */}
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => onTabChange(tab.id)}
+                  className={`flex flex-col items-center space-y-1 px-2 py-2 rounded-xl transition-all duration-300 ${
+                    isActive 
+                      ? "glass text-primary scale-105 shadow-lg" 
+                      : "text-foreground/70 hover:text-foreground hover:glass-subtle hover:scale-105"
+                  }`}
+                >
+                  <Icon size={18} />
+                  <span className="text-xs font-medium">{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

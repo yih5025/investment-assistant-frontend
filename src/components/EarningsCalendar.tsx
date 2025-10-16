@@ -588,13 +588,10 @@ export function EarningsCalendar() {
                         {events.slice(0, 3).map((event, eventIndex) => (
                           <div
                             key={eventIndex}
-                            className={`event-badge ${getEventColor(event)}`}
+                            className={`event-badge ${getEventColor(event)} ${isIPOEvent(event) ? 'ipo-event-bg' : ''}`}
                             title={`${event.symbol} - ${event.company_name}${
                               isIPOEvent(event) ? ' (IPO)' : `\n뉴스: ${event.total_news_count || 0}개`
                             }`}
-                            style={{
-                              backgroundColor: isIPOEvent(event) ? '#10b981' : undefined
-                            }}
                           >
                             {event.symbol}
                           </div>
@@ -619,7 +616,9 @@ export function EarningsCalendar() {
           {/* 이번주 탭 */}
           <TabsContent value="thisweek" className="mt-4">
             <div className="space-y-3">
-              {getThisWeekEvents().map((event, index) => {
+              {getThisWeekEvents()
+                .filter(event => !isIPOEvent(event) && event.total_news_count > 0)
+                .map((event, index) => {
                 const isIPO = isIPOEvent(event);
                 
                 return (
@@ -665,10 +664,10 @@ export function EarningsCalendar() {
                 );
               })}
               
-              {getThisWeekEvents().length === 0 && (
+              {getThisWeekEvents().filter(event => !isIPOEvent(event) && event.total_news_count > 0).length === 0 && (
                 <div className="glass-subtle p-8 rounded-lg text-center">
                   <Calendar size={48} className="mx-auto mb-4 text-foreground/30" />
-                  <p className="text-foreground/70">이번 주 일정이 없습니다</p>
+                  <p className="text-foreground/70">이번 주 뉴스가 있는 실적 발표가 없습니다</p>
                 </div>
               )}
             </div>
@@ -677,7 +676,9 @@ export function EarningsCalendar() {
           {/* 이번달 탭 */}
           <TabsContent value="thismonth" className="mt-4">
             <div className="space-y-3">
-              {getThisMonthEvents().map((event, index) => {
+              {getThisMonthEvents()
+                .filter(event => !isIPOEvent(event) && event.total_news_count > 0)
+                .map((event, index) => {
                 const isIPO = isIPOEvent(event);
                 
                 return (
@@ -723,10 +724,10 @@ export function EarningsCalendar() {
                 );
               })}
               
-              {getThisMonthEvents().length === 0 && (
+              {getThisMonthEvents().filter(event => !isIPOEvent(event) && event.total_news_count > 0).length === 0 && (
                 <div className="glass-subtle p-8 rounded-lg text-center">
                   <Calendar size={48} className="mx-auto mb-4 text-foreground/30" />
-                  <p className="text-foreground/70">이번 달 일정이 없습니다</p>
+                  <p className="text-foreground/70">이번 달 뉴스가 있는 실적 발표가 없습니다</p>
                 </div>
               )}
             </div>

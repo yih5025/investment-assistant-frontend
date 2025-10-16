@@ -51,15 +51,15 @@ function getAvatarText(username: string): string {
 
 // 사용자명 기반 그라데이션 색상 생성
 function getAvatarGradient(username: string): string {
-  if (!username) return 'bg-gradient-to-br from-gray-400 to-gray-600';
+  if (!username) return 'avatar-gradient-default';
   
   // 유명 인물들은 특별한 색상
   const specialUsers: { [key: string]: string } = {
-    'realDonaldTrump': 'bg-gradient-to-br from-red-500 to-red-700',
-    'elonmusk': 'bg-gradient-to-br from-purple-500 to-indigo-600',
-    'WhiteHouse': 'bg-gradient-to-br from-blue-600 to-blue-800',
-    'JoeBiden': 'bg-gradient-to-br from-blue-500 to-blue-700',
-    'SpeakerPelosi': 'bg-gradient-to-br from-green-500 to-green-700',
+    'realDonaldTrump': 'avatar-gradient-trump',
+    'elonmusk': 'avatar-gradient-elon',
+    'WhiteHouse': 'avatar-gradient-whitehouse',
+    'JoeBiden': 'avatar-gradient-biden',
+    'SpeakerPelosi': 'avatar-gradient-pelosi',
   };
   
   if (specialUsers[username]) {
@@ -73,16 +73,16 @@ function getAvatarGradient(username: string): string {
   }
   
   const gradients = [
-    'bg-gradient-to-br from-blue-500 to-purple-600',
-    'bg-gradient-to-br from-green-500 to-teal-600',
-    'bg-gradient-to-br from-orange-500 to-red-600',
-    'bg-gradient-to-br from-pink-500 to-rose-600',
-    'bg-gradient-to-br from-indigo-500 to-blue-600',
-    'bg-gradient-to-br from-purple-500 to-pink-600',
-    'bg-gradient-to-br from-teal-500 to-green-600',
-    'bg-gradient-to-br from-yellow-500 to-orange-600',
-    'bg-gradient-to-br from-red-500 to-pink-600',
-    'bg-gradient-to-br from-cyan-500 to-blue-600',
+    'avatar-gradient-1',
+    'avatar-gradient-2',
+    'avatar-gradient-3',
+    'avatar-gradient-4',
+    'avatar-gradient-5',
+    'avatar-gradient-6',
+    'avatar-gradient-7',
+    'avatar-gradient-8',
+    'avatar-gradient-9',
+    'avatar-gradient-10',
   ];
   
   return gradients[Math.abs(hash) % gradients.length];

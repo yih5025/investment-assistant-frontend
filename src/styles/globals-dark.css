@@ -1,4 +1,4 @@
-/* 기존 밤하늘 + liquid glass 디자인 global.css 파일 */
+/* globals-dark.css */
 
 @tailwind base;
 @tailwind components;
@@ -80,6 +80,34 @@
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: rgba(255, 255, 255, 0.08);
   --sidebar-ring: rgba(147, 197, 253, 0.5);
+  
+  /* 컴포넌트별 색상 변수 */
+  --sidemenu-bg: rgba(15, 23, 42, 0.95);
+  --ipo-event-bg: #10b981;
+  
+  /* 차트 색상 */
+  --chart-orange: #f59e0b;
+  --chart-orange-light: rgba(245, 158, 11, 0.2);
+  --chart-red: #ef4444;
+  --chart-blue: #60a5fa;
+  --chart-green: #10b981;
+  --chart-purple: #a78bfa;
+  --chart-pink: #ec4899;
+  --chart-cyan: #22d3ee;
+  --chart-indigo: #6366f1;
+  --chart-teal: #14b8a6;
+  
+  /* 뉴스 타입 색상 */
+  --news-sentiment: #3b82f6;
+  --news-financial: #22c55e;
+  --news-market: #f97316;
+  --news-default: #6b7280;
+  
+  /* 카테고리 색상 */
+  --category-crypto: #f97316;
+  --category-forex: #22c55e;
+  --category-merger: #a855f7;
+  --category-default: #3b82f6;
 }
 
 @theme inline {
@@ -183,37 +211,6 @@
     animation: starryNightFlow 20s ease-in-out infinite alternate;
   }
 
-  /* 소용돌이 배경 애니메이션
-  @keyframes starryNightFlow {
-    0% {
-      background-position: 
-        0% 0%, 
-        100% 100%, 
-        50% 50%,
-        20% 30%,
-        80% 70%,
-        center;
-    }
-    50% {
-      background-position: 
-        10% 10%, 
-        90% 90%, 
-        60% 40%,
-        25% 35%,
-        75% 65%,
-        center;
-    }
-    100% {
-      background-position: 
-        5% 5%, 
-        95% 95%, 
-        45% 55%,
-        15% 25%,
-        85% 75%,
-        center;
-    }
-  } */
-
   /* 별빛 효과 레이어 */
   body::before {
     content: '';
@@ -260,45 +257,6 @@
       transform: scale(0.98);
     }
   }
-
-  /* 달빛 효과
-  body::after {
-    content: '';
-    position: fixed;
-    top: 15%;
-    right: 20%;
-    width: 60px;
-    height: 60px;
-    background: 
-      radial-gradient(circle at 30% 30%, 
-        rgba(255, 255, 224, 0.9) 0%, 
-        rgba(255, 255, 224, 0.7) 30%, 
-        rgba(255, 255, 224, 0.3) 60%, 
-        transparent 100%
-      );
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: -1;
-    animation: moonGlow 6s ease-in-out infinite alternate;
-  } */
-
-  /* 달 빛남 애니메이션
-  @keyframes moonGlow {
-    0% {
-      opacity: 0.6;
-      box-shadow: 
-        0 0 20px rgba(255, 255, 224, 0.3),
-        0 0 40px rgba(255, 255, 224, 0.2),
-        0 0 60px rgba(255, 255, 224, 0.1);
-    }
-    100% {
-      opacity: 0.9;
-      box-shadow: 
-        0 0 30px rgba(255, 255, 224, 0.4),
-        0 0 60px rgba(255, 255, 224, 0.3),
-        0 0 90px rgba(255, 255, 224, 0.2);
-    }
-  } */
 }
 
 /* 더욱 투명하고 반짝이는 Liquid Glass 효과 */
@@ -866,4 +824,856 @@ html {
 .event-badge-more:focus-visible {
   outline: 1px solid var(--primary);
   outline-offset: 1px;
+}
+
+/* ==========================================
+   🎯 COMMON LAYOUT UTILITIES 🎯
+   ========================================== */
+
+/* Flex Utilities */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-start {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.flex-end {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.flex-col-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==========================================
+   🎨 INTERACTIVE CARD STYLES 🎨
+   ========================================== */
+
+/* Interactive Card - 클릭/호버 가능한 카드 */
+.card-interactive {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.card-interactive:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.card-interactive:active {
+  transform: translateY(0);
+}
+
+/* Group Hover - Primary Color */
+.group:hover .group-hover-primary {
+  color: var(--primary);
+  transition: color 0.2s ease;
+}
+
+/* ==========================================
+   🔘 BUTTON UTILITIES 🔘
+   ========================================== */
+
+/* Icon Button - 아이콘 버튼 */
+.btn-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-icon:hover {
+  box-shadow: var(--shadow-md);
+  transform: scale(1.05);
+}
+
+.btn-icon-lg {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.btn-icon-sm {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+/* Glass Button */
+.btn-glass {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-glass:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+/* Primary Button */
+.btn-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: var(--radius);
+  padding: 0.625rem 1.25rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* ==========================================
+   ✨ GRADIENT & BLUR DECORATIONS ✨
+   ========================================== */
+
+/* Gradient Blur Decorations - 장식용 배경 효과 */
+.gradient-blur-purple {
+  position: absolute;
+  width: 8rem;
+  height: 8rem;
+  background: linear-gradient(to bottom right, rgba(168, 85, 247, 0.1), transparent);
+  border-radius: 9999px;
+  filter: blur(2rem);
+  pointer-events: none;
+}
+
+.gradient-blur-blue {
+  position: absolute;
+  width: 8rem;
+  height: 8rem;
+  background: linear-gradient(to bottom right, rgba(59, 130, 246, 0.1), transparent);
+  border-radius: 9999px;
+  filter: blur(2rem);
+  pointer-events: none;
+}
+
+.gradient-blur-primary {
+  position: absolute;
+  width: 8rem;
+  height: 8rem;
+  background: linear-gradient(to bottom right, rgba(147, 197, 253, 0.1), transparent);
+  border-radius: 9999px;
+  filter: blur(2rem);
+  pointer-events: none;
+}
+
+.gradient-blur-orange {
+  position: absolute;
+  width: 10rem;
+  height: 10rem;
+  background: linear-gradient(to bottom right, rgba(249, 115, 22, 0.1), transparent);
+  border-radius: 9999px;
+  filter: blur(2rem);
+  pointer-events: none;
+}
+
+.gradient-blur-green {
+  position: absolute;
+  width: 8rem;
+  height: 8rem;
+  background: linear-gradient(to top right, rgba(34, 197, 94, 0.1), transparent);
+  border-radius: 9999px;
+  filter: blur(2rem);
+  pointer-events: none;
+}
+
+.gradient-blur-multi {
+  position: absolute;
+  width: 12rem;
+  height: 12rem;
+  background: linear-gradient(to bottom right, rgba(168, 85, 247, 0.1), rgba(59, 130, 246, 0.1), transparent);
+  border-radius: 9999px;
+  filter: blur(3rem);
+  pointer-events: none;
+}
+
+/* Gradient Border */
+.gradient-border-vertical {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--primary), rgba(168, 85, 247, 1), rgba(59, 130, 246, 1));
+}
+
+.gradient-border-horizontal {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(to right, var(--primary), rgba(168, 85, 247, 1), rgba(59, 130, 246, 1));
+}
+
+/* ==========================================
+   🎬 ANIMATION & TRANSITION UTILITIES 🎬
+   ========================================== */
+
+/* Hover Lift Effect */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Hover Scale */
+.hover-scale {
+  transition: transform 0.2s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+.hover-scale-sm:hover {
+  transform: scale(1.02);
+}
+
+/* Hover Primary Color */
+.hover-primary {
+  transition: color 0.2s ease;
+}
+
+.hover-primary:hover {
+  color: var(--primary);
+}
+
+/* Smooth Transition */
+.transition-smooth {
+  transition: all 0.2s ease;
+}
+
+.transition-fast {
+  transition: all 0.15s ease;
+}
+
+.transition-slow {
+  transition: all 0.3s ease;
+}
+
+/* ==========================================
+   📦 CONTAINER & SPACING UTILITIES 📦
+   ========================================== */
+
+/* Content Container */
+.container-sm {
+  max-width: 28rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.container-md {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Spacing Utilities */
+.space-y-xs > * + * {
+  margin-top: 0.5rem;
+}
+
+.space-y-sm > * + * {
+  margin-top: 0.75rem;
+}
+
+.space-y-base > * + * {
+  margin-top: 1rem;
+}
+
+.space-y-lg > * + * {
+  margin-top: 1.5rem;
+}
+
+.space-y-xl > * + * {
+  margin-top: 2rem;
+}
+
+/* ==========================================
+   📱 TEXT UTILITIES 📱
+   ========================================== */
+
+/* Text Gradient */
+.text-gradient-primary {
+  background: linear-gradient(to right, var(--primary), rgba(147, 197, 253, 1));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-gradient-sunset {
+  background: linear-gradient(to right, #f59e0b, #ef4444, #ec4899);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Text Truncate */
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ==========================================
+   🎨 BADGE & TAG STYLES 🎨
+   ========================================== */
+
+/* Status Badge */
+.badge-success {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(34, 197, 94, 0.1);
+  color: rgb(110, 231, 183);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.badge-danger {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(239, 68, 68, 0.1);
+  color: rgb(252, 165, 165);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.badge-warning {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(245, 158, 11, 0.1);
+  color: rgb(253, 224, 71);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.badge-info {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(59, 130, 246, 0.1);
+  color: rgb(147, 197, 253);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.badge-primary {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(147, 197, 253, 0.1);
+  color: var(--primary);
+  border: 1px solid rgba(147, 197, 253, 0.2);
+}
+
+/* ==========================================
+   🖼️ IMAGE & MEDIA UTILITIES 🖼️
+   ========================================== */
+
+/* Avatar */
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--secondary);
+  overflow: hidden;
+}
+
+.avatar-sm {
+  width: 2rem;
+  height: 2rem;
+}
+
+.avatar-md {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.avatar-lg {
+  width: 3rem;
+  height: 3rem;
+}
+
+.avatar-xl {
+  width: 4rem;
+  height: 4rem;
+}
+
+/* ==========================================
+   🎯 POSITION UTILITIES 🎯
+   ========================================== */
+
+.absolute-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.absolute-top-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.absolute-top-left {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.absolute-bottom-right {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+.absolute-bottom-left {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+/* ==========================================
+   ⚡ PERFORMANCE UTILITIES ⚡
+   ========================================== */
+
+/* GPU Acceleration */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* ==========================================
+   📊 DATA VISUALIZATION UTILITIES 📊
+   ========================================== */
+
+/* Price Change Indicator */
+.price-up {
+  color: rgb(110, 231, 183);
+}
+
+.price-down {
+  color: rgb(252, 165, 165);
+}
+
+.price-neutral {
+  color: var(--muted-foreground);
+}
+
+/* ==========================================
+   🌈 OVERLAY & BACKDROP UTILITIES 🌈
+   ========================================== */
+
+/* Modal Overlay */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+}
+
+.overlay-light {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+}
+
+.overlay-dark {
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+}
+
+/* ==========================================
+   🎪 LOADING & SKELETON UTILITIES 🎪
+   ========================================== */
+
+/* Skeleton Loader */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--muted) 0%,
+    var(--secondary) 50%,
+    var(--muted) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: var(--radius);
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Pulse Animation */
+.pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Spin Animation */
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==========================================
+   📢 NOTIFICATION & ALERT UTILITIES 📢
+   ========================================== */
+
+/* Notification Dot */
+.notification-dot {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  width: 0.625rem;
+  height: 0.625rem;
+  background: rgb(239, 68, 68);
+  border-radius: 9999px;
+  box-shadow: 0 0 0 2px var(--card);
+}
+
+/* ==========================================
+   🔍 SEARCH & INPUT UTILITIES 🔍
+   ========================================== */
+
+/* Search Icon Position */
+.search-icon-left {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted-foreground);
+  pointer-events: none;
+}
+
+/* ==========================================
+   📱 RESPONSIVE UTILITIES 📱
+   ========================================== */
+
+/* Hide on Mobile */
+@media (max-width: 640px) {
+  .hide-mobile {
+    display: none;
+  }
+}
+
+/* Hide on Desktop */
+@media (min-width: 641px) {
+  .hide-desktop {
+    display: none;
+  }
+}
+
+/* ==========================================
+   🎨 BORDER UTILITIES 🎨
+   ========================================== */
+
+.border-gradient {
+  border: 1px solid transparent;
+  background: linear-gradient(var(--card), var(--card)) padding-box,
+              linear-gradient(to right, var(--primary), rgba(147, 197, 253, 1)) border-box;
+  border-radius: var(--radius);
+}
+
+/* ==========================================
+   ✨ GLASS MORPHISM VARIATIONS ✨
+   ========================================== */
+
+.glass-frosted {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.glass-intense {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ==========================================
+   🎨 NEWS & CATEGORY BADGE STYLES 🎨
+   ========================================== */
+
+/* 뉴스 타입 배지 */
+.badge-news-sentiment {
+  background: rgba(59, 130, 246, 0.2);
+  color: rgb(96, 165, 250);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.badge-news-financial {
+  background: rgba(34, 197, 94, 0.2);
+  color: rgb(74, 222, 128);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.badge-news-market {
+  background: rgba(249, 115, 22, 0.2);
+  color: rgb(251, 146, 60);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.badge-news-default {
+  background: rgba(107, 114, 128, 0.2);
+  color: rgb(156, 163, 175);
+  border: 1px solid rgba(107, 114, 128, 0.3);
+}
+
+/* 카테고리 배지 */
+.badge-category-crypto {
+  background: rgba(249, 115, 22, 0.2);
+  color: rgb(251, 146, 60);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.badge-category-forex {
+  background: rgba(34, 197, 94, 0.2);
+  color: rgb(74, 222, 128);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.badge-category-merger {
+  background: rgba(168, 85, 247, 0.2);
+  color: rgb(192, 132, 252);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.badge-category-default {
+  background: rgba(59, 130, 246, 0.2);
+  color: rgb(96, 165, 250);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+/* ==========================================
+   👤 AVATAR GRADIENT STYLES 👤
+   ========================================== */
+
+/* 아바타 그라데이션 - 특별 사용자 */
+.avatar-gradient-trump {
+  background: linear-gradient(to bottom right, rgb(239, 68, 68), rgb(185, 28, 28));
+}
+
+.avatar-gradient-elon {
+  background: linear-gradient(to bottom right, rgb(168, 85, 247), rgb(79, 70, 229));
+}
+
+.avatar-gradient-whitehouse {
+  background: linear-gradient(to bottom right, rgb(37, 99, 235), rgb(30, 64, 175));
+}
+
+.avatar-gradient-biden {
+  background: linear-gradient(to bottom right, rgb(59, 130, 246), rgb(29, 78, 216));
+}
+
+.avatar-gradient-pelosi {
+  background: linear-gradient(to bottom right, rgb(34, 197, 94), rgb(21, 128, 61));
+}
+
+/* 아바타 그라데이션 - 일반 (10가지 변형) */
+.avatar-gradient-1 {
+  background: linear-gradient(to bottom right, rgb(59, 130, 246), rgb(168, 85, 247));
+}
+
+.avatar-gradient-2 {
+  background: linear-gradient(to bottom right, rgb(34, 197, 94), rgb(20, 184, 166));
+}
+
+.avatar-gradient-3 {
+  background: linear-gradient(to bottom right, rgb(249, 115, 22), rgb(239, 68, 68));
+}
+
+.avatar-gradient-4 {
+  background: linear-gradient(to bottom right, rgb(236, 72, 153), rgb(244, 63, 94));
+}
+
+.avatar-gradient-5 {
+  background: linear-gradient(to bottom right, rgb(99, 102, 241), rgb(59, 130, 246));
+}
+
+.avatar-gradient-6 {
+  background: linear-gradient(to bottom right, rgb(168, 85, 247), rgb(236, 72, 153));
+}
+
+.avatar-gradient-7 {
+  background: linear-gradient(to bottom right, rgb(20, 184, 166), rgb(34, 197, 94));
+}
+
+.avatar-gradient-8 {
+  background: linear-gradient(to bottom right, rgb(234, 179, 8), rgb(249, 115, 22));
+}
+
+.avatar-gradient-9 {
+  background: linear-gradient(to bottom right, rgb(239, 68, 68), rgb(236, 72, 153));
+}
+
+.avatar-gradient-10 {
+  background: linear-gradient(to bottom right, rgb(6, 182, 212), rgb(59, 130, 246));
+}
+
+.avatar-gradient-default {
+  background: linear-gradient(to bottom right, rgb(107, 114, 128), rgb(75, 85, 99));
+}
+
+/* ==========================================
+   🎯 COMPONENT-SPECIFIC STYLES 🎯
+   ========================================== */
+
+/* SideMenu 배경 */
+.sidemenu-bg {
+  background-color: var(--sidemenu-bg);
+}
+
+/* IPO 이벤트 배경 */
+.ipo-event-bg {
+  background-color: var(--ipo-event-bg);
+}
+
+/* 차트셋 페이지 카테고리 배지 */
+.badge-cheatsheet-stock {
+  background: rgba(59, 130, 246, 0.2);
+  color: rgb(96, 165, 250);
+}
+
+.badge-cheatsheet-crypto {
+  background: rgba(249, 115, 22, 0.2);
+  color: rgb(251, 146, 60);
+}
+
+.badge-cheatsheet-etf {
+  background: rgba(34, 197, 94, 0.2);
+  color: rgb(74, 222, 128);
+}
+
+.badge-cheatsheet-economy {
+  background: rgba(168, 85, 247, 0.2);
+  color: rgb(192, 132, 252);
+}
+
+.badge-cheatsheet-finance {
+  background: rgba(236, 72, 153, 0.2);
+  color: rgb(244, 114, 182);
+}
+
+.badge-cheatsheet-app {
+  background: rgba(6, 182, 212, 0.2);
+  color: rgb(34, 211, 238);
 }

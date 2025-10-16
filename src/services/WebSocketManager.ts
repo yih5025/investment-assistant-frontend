@@ -128,8 +128,8 @@ export class WebSocketManager {
     // 순차적 WebSocket 연결 (서버 부하 분산)
     const delays = {
       crypto: 0,
-      sp500: 500,
-      etf: 1000
+      sp500: 250,
+      etf: 500
     };
     
     // 1. Crypto WebSocket
