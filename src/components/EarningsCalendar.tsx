@@ -548,7 +548,7 @@ export function EarningsCalendar() {
           </TabsList>
 
           {/* 캘린더 탭 */}
-          <TabsContent value="calendar" className="mt-4">
+          <TabsContent value="calendar">
             {/* 요일 헤더 */}
             <div className="grid grid-cols-7 gap-1 mb-2">
               {['일', '월', '화', '수', '목', '금', '토'].map((day, index) => (
