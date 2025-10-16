@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Moon, Sun, Monitor, ChevronRight, Info, Bell, Lock, HelpCircle, LogOut } from "lucide-react";
+import { Moon, Sun, ChevronRight } from "lucide-react";
 
 interface SettingsPageProps {
   onBack: () => void;
@@ -8,23 +7,23 @@ interface SettingsPageProps {
   onThemeChange: (theme: "light" | "dark" | "system") => void;
 }
 
-type Theme = "light" | "dark" | "system";
+export function SettingsPage({ onBack, theme, onThemeChange }: SettingsPageProps) {
+  // system 모드인 경우 실제 적용된 테마 확인
+  const isDarkMode = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
 
-export function SettingsPage({ onBack, onLogout, theme, onThemeChange }: SettingsPageProps) {
-  const themeOptions = [
-    { value: "light" as Theme, label: "라이트 모드", icon: Sun, description: "밝은 테마" },
-    { value: "dark" as Theme, label: "다크 모드", icon: Moon, description: "어두운 테마" },
-    { value: "system" as Theme, label: "시스템 설정", icon: Monitor, description: "기기 설정 따르기" },
-  ];
+  const handleToggle = () => {
+    const newTheme = isDarkMode ? "light" : "dark";
+    onThemeChange(newTheme);
+  };
 
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* 헤더 */}
-      <div className="sticky top-0 z-10 bg-card border-b border-border">
+      <div className="sticky top-0 z-10 glass-card border-b border-border/50">
         <div className="max-w-md mx-auto px-4 py-4 flex items-center gap-3">
           <button
             onClick={onBack}
-            className="p-2 hover:bg-secondary rounded-lg transition-colors"
+            className="p-2 glass-subtle hover:glass rounded-xl transition-all"
             aria-label="뒤로 가기"
           >
             <ChevronRight size={24} className="rotate-180" />
@@ -34,94 +33,65 @@ export function SettingsPage({ onBack, onLogout, theme, onThemeChange }: Setting
       </div>
 
       <div className="max-w-md mx-auto px-4 py-6 space-y-6">
-        {/* 테마 설정 섹션 */}
+        {/* 테마 토글 섹션 */}
         <section>
-          <h2 className="text-sm font-semibold text-muted-foreground mb-3 px-2">테마</h2>
-          <div className="bg-card rounded-xl border border-border overflow-hidden">
-            {themeOptions.map((option, index) => {
-              const Icon = option.icon;
-              const isActive = theme === option.value;
-              
-              return (
-                <button
-                  key={option.value}
-                  onClick={() => onThemeChange(option.value)}
-                  className={`w-full flex items-center gap-3 px-4 py-4 transition-colors ${
-                    index !== themeOptions.length - 1 ? "border-b border-border" : ""
-                  } ${
-                    isActive 
-                      ? "bg-accent text-accent-foreground" 
-                      : "hover:bg-secondary text-foreground"
+          <h2 className="text-sm font-semibold text-muted-foreground mb-3 px-2">화면 모드</h2>
+          <div className="glass-card rounded-2xl p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className={`p-3 rounded-xl transition-all ${isDarkMode ? "glass" : "glass-subtle"}`}>
+                  {isDarkMode ? (
+                    <Moon size={24} className="text-primary" />
+                  ) : (
+                    <Sun size={24} className="text-amber-500" />
+                  )}
+                </div>
+                <div>
+                  <div className="font-semibold text-lg">
+                    {isDarkMode ? "다크 모드" : "라이트 모드"}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {isDarkMode ? "어두운 테마로 보기" : "밝은 테마로 보기"}
+                  </div>
+                </div>
+              </div>
+
+              {/* 커스텀 토글 스위치 */}
+              <button
+                onClick={handleToggle}
+                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-all duration-300 ${
+                  isDarkMode 
+                    ? "bg-primary shadow-lg shadow-primary/30" 
+                    : "bg-amber-500 shadow-lg shadow-amber-500/30"
+                }`}
+                aria-label="테마 토글"
+              >
+                <span
+                  className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-300 ${
+                    isDarkMode ? "translate-x-7" : "translate-x-1"
                   }`}
                 >
-                  <div className={`p-2 rounded-lg ${isActive ? "bg-primary/20" : "bg-muted"}`}>
-                    <Icon size={20} className={isActive ? "text-primary" : "text-muted-foreground"} />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <div className="font-semibold">{option.label}</div>
-                    <div className="text-xs text-muted-foreground">{option.description}</div>
-                  </div>
-                  {isActive && (
-                    <div className="w-2 h-2 rounded-full bg-primary" />
+                  {isDarkMode ? (
+                    <Moon size={14} className="m-auto mt-1 text-primary" />
+                  ) : (
+                    <Sun size={14} className="m-auto mt-1 text-amber-500" />
                   )}
-                </button>
-              );
-            })}
+                </span>
+              </button>
+            </div>
+
+            {/* 설명 */}
+            <div className="mt-4 pt-4 border-t border-border/50">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {isDarkMode 
+                  ? "🌙 다크 모드는 어두운 환경에서 눈의 피로를 줄여줍니다."
+                  : "☀️ 라이트 모드는 밝은 환경에서 더 편안하게 볼 수 있습니다."}
+              </p>
+            </div>
           </div>
         </section>
 
       </div>
     </div>
-  );
-}
-
-// 설정 아이템 컴포넌트
-interface SettingItemProps {
-  icon: any;
-  label: string;
-  description: string;
-  hasChevron?: boolean;
-  hasSwitch?: boolean;
-  onClick?: () => void;
-}
-
-function SettingItem({ 
-  icon: Icon, 
-  label, 
-  description, 
-  hasChevron = true, 
-  hasSwitch = false,
-  onClick 
-}: SettingItemProps) {
-  const [enabled, setEnabled] = useState(false);
-
-  return (
-    <button
-      onClick={hasSwitch ? undefined : onClick}
-      className="w-full flex items-center gap-3 px-4 py-4 hover:bg-secondary transition-colors text-left border-b border-border last:border-b-0"
-    >
-      <div className="p-2 rounded-lg bg-muted">
-        <Icon size={20} className="text-muted-foreground" />
-      </div>
-      <div className="flex-1">
-        <div className="font-semibold">{label}</div>
-        <div className="text-xs text-muted-foreground">{description}</div>
-      </div>
-      {hasSwitch ? (
-        <label className="relative inline-flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            checked={enabled}
-            onChange={(e) => setEnabled(e.target.checked)}
-            className="sr-only peer"
-          />
-          <div className="w-11 h-6 bg-muted rounded-full peer peer-checked:bg-primary transition-colors peer-focus:ring-2 peer-focus:ring-primary/50">
-            <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${enabled ? "translate-x-5" : ""}`} />
-          </div>
-        </label>
-      ) : hasChevron ? (
-        <ChevronRight size={20} className="text-muted-foreground" />
-      ) : null}
-    </button>
   );
 }

@@ -22,21 +22,21 @@ export function useTheme() {
         finalTheme = selectedTheme;
       }
 
+      console.log('🎨 테마 변경:', selectedTheme, '→', finalTheme);
+
       // body에 data-theme 속성 설정
       document.body.setAttribute('data-theme', finalTheme);
+      
+      // html에도 클래스 추가 (Tailwind dark mode)
+      if (finalTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
 
       // 기존 테마 링크 제거
       const existingThemeLinks = document.querySelectorAll('link[data-theme-css]');
       existingThemeLinks.forEach(el => el.remove());
-
-      // Vite의 style 태그 중 globals 관련 것 제거
-      const allStyles = document.querySelectorAll('style');
-      allStyles.forEach(style => {
-        const viteId = style.getAttribute('data-vite-dev-id');
-        if (viteId && (viteId.includes('globals-light') || viteId.includes('globals-dark'))) {
-          style.remove();
-        }
-      });
 
       // 새 CSS 파일을 link 태그로 추가
       const link = document.createElement('link');
@@ -54,6 +54,15 @@ export function useTheme() {
       
       // 캐시 방지를 위한 timestamp 추가
       link.href += `?t=${Date.now()}`;
+      
+      // CSS 로드 완료 시 로그
+      link.onload = () => {
+        console.log('✅ 테마 CSS 로드 완료:', link.href);
+      };
+      
+      link.onerror = () => {
+        console.error('❌ 테마 CSS 로드 실패:', link.href);
+      };
       
       // head 끝에 추가하여 우선순위 높임
       document.head.appendChild(link);
