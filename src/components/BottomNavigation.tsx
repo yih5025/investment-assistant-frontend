@@ -17,12 +17,12 @@ export function BottomNavigation({ activeTab, onTabChange, onMenuClick }: Bottom
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40">
       <div className="max-w-md mx-auto">
-        <div className="glass-strong backdrop-blur-xl border-t border-white/30 px-1 py-2 m-2 rounded-2xl">
+        <div className="glass-strong border-t border-white/30 px-1 py-2">
           <div className="flex justify-around items-center">
             {/* 메뉴 버튼 - 이전 스타일 적용 */}
             <button
               onClick={onMenuClick}
-              className="flex flex-col items-center space-y-1 px-2 py-2 rounded-xl transition-all duration-300 text-foreground/70 hover:text-foreground hover:glass-subtle hover:scale-105"
+              className="flex flex-col items-center space-y-1 px-2 py-2 transition-all duration-300 text-foreground/70 hover:text-foreground hover:glass-subtle hover:scale-105"
             >
               <Menu size={18} />
               <span className="text-xs font-medium">메뉴</span>
