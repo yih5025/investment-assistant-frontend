@@ -447,17 +447,17 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({
 
               <div className="text-right">
                 <div className="text-xl font-semibold mb-1">
-                  ${stock.price.toFixed(2)}
+                  ${stock.price?.toFixed(2) || '0.00'}
                 </div>
                 <div className={`flex items-center justify-end space-x-1 ${
-                  stock.changePercent >= 0 ? "text-green-400" : "text-red-400"
+                  (stock.changePercent || 0) >= 0 ? "text-green-400" : "text-red-400"
                 }`}>
-                  {stock.changePercent >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                  {(stock.changePercent || 0) >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
                   <span className="text-sm">
-                    {stock.changePercent >= 0 ? "+" : ""}{stock.change.toFixed(2)}
+                    {(stock.changePercent || 0) >= 0 ? "+" : ""}{(stock.change || 0).toFixed(2)}
                   </span>
                   <span className="text-xs">
-                    ({stock.changePercent >= 0 ? "+" : ""}{stock.changePercent.toFixed(2)}%)
+                    ({(stock.changePercent || 0) >= 0 ? "+" : ""}{(stock.changePercent || 0).toFixed(2)}%)
                   </span>
                 </div>
               </div>
@@ -610,17 +610,17 @@ const CryptoMarketTab: React.FC<CryptoMarketTabProps> = ({
 
               <div className="text-right">
                 <div className="text-xl font-semibold mb-1">
-                  ₩{crypto.price >= 1000 
-                    ? crypto.price.toLocaleString('ko-KR', { maximumFractionDigits: 0 }) 
-                    : crypto.price.toFixed(2)
+                  ₩{(crypto.price || 0) >= 1000 
+                    ? (crypto.price || 0).toLocaleString('ko-KR', { maximumFractionDigits: 0 }) 
+                    : (crypto.price || 0).toFixed(2)
                   }
                 </div>
                 <div className={`flex items-center justify-end space-x-1 ${
-                  crypto.changePercent >= 0 ? "text-green-400" : "text-red-400"
+                  (crypto.changePercent || 0) >= 0 ? "text-green-400" : "text-red-400"
                 }`}>
-                  {crypto.changePercent >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                  {(crypto.changePercent || 0) >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
                   <span className="text-sm">
-                    {crypto.changePercent >= 0 ? "+" : ""}{crypto.changePercent.toFixed(2)}%
+                    {(crypto.changePercent || 0) >= 0 ? "+" : ""}{(crypto.changePercent || 0).toFixed(2)}%
                   </span>
                 </div>
               </div>
@@ -765,17 +765,17 @@ const ETFMarketTab: React.FC<ETFMarketTabProps> = ({
 
               <div className="text-right">
                 <div className="text-xl font-semibold mb-1">
-                  ${etf.price.toFixed(2)}
+                  ${etf.price?.toFixed(2) || '0.00'}
                 </div>
                 <div className={`flex items-center justify-end space-x-1 ${
-                  etf.change_percentage >= 0 ? "text-green-400" : "text-red-400"
+                  (etf.change_percentage || 0) >= 0 ? "text-green-400" : "text-red-400"
                 }`}>
-                  {etf.change_percentage >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                  {(etf.change_percentage || 0) >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
                   <span className="text-sm">
-                    {etf.change_percentage >= 0 ? "+" : ""}{etf.change_amount.toFixed(2)}
+                    {(etf.change_percentage || 0) >= 0 ? "+" : ""}{(etf.change_amount || 0).toFixed(2)}
                   </span>
                   <span className="text-xs">
-                    ({etf.change_percentage >= 0 ? "+" : ""}{etf.change_percentage.toFixed(2)}%)
+                    ({(etf.change_percentage || 0) >= 0 ? "+" : ""}{(etf.change_percentage || 0).toFixed(2)}%)
                   </span>
                 </div>
               </div>
