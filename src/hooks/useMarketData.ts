@@ -277,7 +277,7 @@ export function useETFData() {
     if (cachedData && cachedData.length > 0) {
       console.log('📦 ETF 캐시된 데이터로 즉시 초기화:', cachedData.length, '개');
       return cachedData.map(etf => {
-        const name = etf.name || `${etf.symbol} ETF`;
+        const name = etf.name || etf.etf_name || `${etf.symbol} ETF`;
         const currentPrice = etf.current_price || etf.price || 0;
         const changeAmount = etf.change_amount || 0;
         const changePercent = etf.change_percentage || 0;
@@ -288,7 +288,7 @@ export function useETFData() {
           price: currentPrice,
           change: changeAmount,
           changePercent,
-          volume: formatVolume(etf.volume || 0),
+          volume: formatVolume(etf.volume_24h || etf.volume || 0),
           type: 'etf' as const,
         };
       });
@@ -304,8 +304,8 @@ export function useETFData() {
   useEffect(() => {
     const unsubscribe = webSocketManager.subscribe('etf_update', (data: ETFData[]) => {
       const items: MarketItem[] = data.map(etf => {
-        const name = etf.name || `${etf.symbol} ETF`;
-        const currentPrice = etf.current_price || 0;
+        const name = etf.name || etf.etf_name || `${etf.symbol} ETF`;
+        const currentPrice = etf.current_price || etf.price || 0;
         const changeAmount = etf.change_amount || 0;
         const changePercent = etf.change_percentage || 0;
         
@@ -315,7 +315,7 @@ export function useETFData() {
           price: currentPrice,
           change: changeAmount,
           changePercent,
-          volume: formatVolume(etf.volume || 0),
+          volume: formatVolume(etf.volume_24h || etf.volume || 0),
           type: 'etf' as const,
         };
       });

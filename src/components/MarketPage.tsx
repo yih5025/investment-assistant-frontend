@@ -678,10 +678,10 @@ const ETFMarketTab: React.FC<ETFMarketTabProps> = ({
         case 'price':
           return b.price - a.price;
         case 'change':
-          return Math.abs(b.changePercent) - Math.abs(a.changePercent);
+          return Math.abs(b.change_percentage) - Math.abs(a.change_percentage);
         case 'volume':
-          const aVol = parseFloat(a.volume.replace(/[^\d.-]/g, '')) || 0;
-          const bVol = parseFloat(b.volume.replace(/[^\d.-]/g, '')) || 0;
+          const aVol = typeof a.volume === 'number' ? a.volume : (parseFloat(String(a.volume).replace(/[^\d.-]/g, '')) || 0);
+          const bVol = typeof b.volume === 'number' ? b.volume : (parseFloat(String(b.volume).replace(/[^\d.-]/g, '')) || 0);
           return bVol - aVol;
         default:
           return b.price - a.price;
@@ -758,7 +758,9 @@ const ETFMarketTab: React.FC<ETFMarketTabProps> = ({
                 <p className="text-sm text-foreground/70 truncate">
                   {etf.name || `${etf.symbol} ETF`}
                 </p>
-                <p className="text-xs text-foreground/50 mt-1">거래량: {etf.volume}</p>
+                <p className="text-xs text-foreground/50 mt-1">
+                  24h 거래량: {typeof etf.volume_24h === 'number' ? etf.volume_24h.toLocaleString() : (etf.volume_24h || 'N/A')}
+                </p>
               </div>
 
               <div className="text-right">
@@ -766,14 +768,14 @@ const ETFMarketTab: React.FC<ETFMarketTabProps> = ({
                   ${etf.price.toFixed(2)}
                 </div>
                 <div className={`flex items-center justify-end space-x-1 ${
-                  etf.changePercent >= 0 ? "text-green-400" : "text-red-400"
+                  etf.change_percentage >= 0 ? "text-green-400" : "text-red-400"
                 }`}>
-                  {etf.changePercent >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                  {etf.change_percentage >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
                   <span className="text-sm">
-                    {etf.changePercent >= 0 ? "+" : ""}{etf.change.toFixed(2)}
+                    {etf.change_percentage >= 0 ? "+" : ""}{etf.change_amount.toFixed(2)}
                   </span>
                   <span className="text-xs">
-                    ({etf.changePercent >= 0 ? "+" : ""}{etf.changePercent.toFixed(2)}%)
+                    ({etf.change_percentage >= 0 ? "+" : ""}{etf.change_percentage.toFixed(2)}%)
                   </span>
                 </div>
               </div>

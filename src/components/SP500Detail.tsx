@@ -455,6 +455,11 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
                   {formatPercent(stockPrice.change_percentage || 0)})
                 </span>
               </div>
+              {stockPrice.volume_24h && (
+                <div className="text-xs text-foreground/50 mt-2">
+                  24h 거래량: {stockPrice.volume_24h.toLocaleString()}
+                </div>
+              )}
             </div>
           </Card>
 

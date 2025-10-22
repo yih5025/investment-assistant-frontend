@@ -202,7 +202,7 @@ export function ETFDetailPage({ symbol, onBack }: ETFDetailPageProps) {
                 <span>실시간</span>
               </div>
               <p className="text-xs text-foreground/50 mt-1">
-                거래량: {etfData.volume?.toLocaleString() || 0}
+                24h 거래량: {etfData.volume_24h ? (typeof etfData.volume_24h === 'number' ? etfData.volume_24h.toLocaleString() : etfData.volume_24h) : 'N/A'}
               </p>
             </div>
           </div>

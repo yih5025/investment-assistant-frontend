@@ -8,6 +8,7 @@ interface ETFDetailData {
   change_amount: number;
   change_percentage: number;
   volume: number;
+  volume_24h?: number;
   previous_close?: number;
   is_positive?: boolean;
   change_color: string;
@@ -139,6 +140,7 @@ export function useETFDetail(initialSymbol?: string): UseETFDetailReturn {
         change_amount: result.basic_info?.change_amount || 0,
         change_percentage: result.basic_info?.change_percentage || 0,
         volume: result.basic_info?.volume || 0,
+        volume_24h: result.basic_info?.volume_24h || result.basic_info?.volume || 0,
         previous_close: result.basic_info?.previous_close,
         is_positive: result.basic_info?.is_positive,
         change_color: result.basic_info?.change_amount > 0 ? 'green' : 

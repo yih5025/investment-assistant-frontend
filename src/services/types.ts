@@ -32,15 +32,19 @@ export interface SP500Data {
 export interface ETFData {
   symbol: string;
   name: string;
+  etf_name?: string;  // 백엔드 응답에서 사용
   current_price: number;
+  price?: number;  // 백엔드 응답에서 사용
   change_amount: number;
   change_percentage: number;
   volume: number;
+  volume_24h?: number;  // 백엔드 응답에서 사용
   previous_close?: number;
   is_positive?: boolean;
   change_color?: string;
   last_updated?: string;
   rank?: number;
+  timestamp?: number;  // 백엔드 응답에서 사용
 }
 
 export interface ETFProfile {

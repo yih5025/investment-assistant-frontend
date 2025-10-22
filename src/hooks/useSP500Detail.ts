@@ -7,6 +7,7 @@ interface APIStockPrice {
   change_amount: number;
   change_percentage: number;
   volume: number;
+  volume_24h?: number;  // 24시간 거래량 (백엔드 병합 데이터)
   previous_close: number;
   market_status: {
     is_open: boolean;
