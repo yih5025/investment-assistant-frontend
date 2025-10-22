@@ -111,9 +111,15 @@ export function EarningsCalendar() {
   const handleEventClick = async (event: UnifiedCalendarEvent) => {
     setSelectedEvent(event);
     
-    // Earnings 이벤트만 뉴스 조회
-    if (isEarningsEvent(event) && event.total_news_count > 0) {
-      await fetchEventNews(event.id);
+    // 이벤트의 날짜를 selectedDate로 설정 (Level 3 렌더링을 위해 필요)
+    if (isEarningsEvent(event)) {
+      setSelectedDate(new Date(event.report_date));
+      // Earnings 이벤트만 뉴스 조회
+      if (event.total_news_count > 0) {
+        await fetchEventNews(event.id);
+      }
+    } else if (isIPOEvent(event)) {
+      setSelectedDate(new Date(event.ipo_date));
     }
   };
 
