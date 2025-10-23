@@ -13,6 +13,25 @@ interface MarketPageProps {
 
 type TabType = 'crypto' | 'stocks' | 'etf';
 
+// 거래량 파싱 유틸 함수 (k, M, B 단위 처리)
+const parseVolumeToNumber = (volume: string | number): number => {
+  if (typeof volume === 'number') return volume;
+  if (!volume) return 0;
+  
+  const volumeStr = String(volume).trim().toUpperCase();
+  const numericPart = parseFloat(volumeStr.replace(/[^\d.-]/g, ''));
+  
+  if (volumeStr.includes('B')) {
+    return numericPart * 1000000000;
+  } else if (volumeStr.includes('M')) {
+    return numericPart * 1000000;
+  } else if (volumeStr.includes('K')) {
+    return numericPart * 1000;
+  }
+  
+  return numericPart || 0;
+};
+
 // 로딩 스켈레톤 컴포넌트 (MarketDetailPage와 동일한 스타일)
 const LoadingSkeleton = ({ count = 8 }: { count?: number }) => (
   <div className="space-y-2">
@@ -270,6 +289,20 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick, on
         </button>
         
         <button
+          onClick={() => setActiveTab('stocks')}
+          className={`flex-1 py-3 px-4 rounded-lg transition-all text-sm font-medium ${
+            activeTab === 'stocks' 
+              ? 'glass-strong text-primary' 
+              : 'text-foreground/70 hover:text-foreground'
+          }`}
+        >
+          <div className="flex items-center justify-center space-x-2">
+            <BarChart3 size={16} />
+            <span>S&P 500</span>
+          </div>
+        </button>
+        
+        <button
           onClick={() => {
             setActiveTab('etf');
           }}
@@ -284,20 +317,6 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick, on
             <span>ETF</span>
           </div>
         </button>
-        
-        <button
-          onClick={() => setActiveTab('stocks')}
-          className={`flex-1 py-3 px-4 rounded-lg transition-all text-sm font-medium ${
-            activeTab === 'stocks' 
-              ? 'glass-strong text-primary' 
-              : 'text-foreground/70 hover:text-foreground'
-          }`}
-        >
-          <div className="flex items-center justify-center space-x-2">
-            <BarChart3 size={16} />
-            <span>S&P 500</span>
-          </div>
-        </button>
       </div>
 
       {/* 탭 콘텐츠 */}
@@ -308,17 +327,17 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick, on
           isLoading={overallStatus === 'connecting' || overallStatus === 'reconnecting' || (isEmpty && overallStatus === 'disconnected')}
           connectionStatus={overallStatus}
         />
-      ) : activeTab === 'etf' ? (
-        <ETFMarketTab 
-          etfData={etfData}
-          onETFClick={handleETFClick}
+      ) : activeTab === 'stocks' ? (
+        <StockMarketTab 
+          stockData={sp500Data}
+          onStockClick={handleStockClick}
           isLoading={overallStatus === 'connecting' || overallStatus === 'reconnecting' || (isEmpty && overallStatus === 'disconnected')}
           connectionStatus={overallStatus}
         />
       ) : (
-        <StockMarketTab 
-          stockData={sp500Data}
-          onStockClick={handleStockClick}
+        <ETFMarketTab 
+          etfData={etfData}
+          onETFClick={handleETFClick}
           isLoading={overallStatus === 'connecting' || overallStatus === 'reconnecting' || (isEmpty && overallStatus === 'disconnected')}
           connectionStatus={overallStatus}
         />
@@ -364,8 +383,8 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({
         case 'change':
           return Math.abs(b.changePercent) - Math.abs(a.changePercent);
         case 'volume':
-          const aVol = parseFloat(a.volume.replace(/[^\d.-]/g, '')) || 0;
-          const bVol = parseFloat(b.volume.replace(/[^\d.-]/g, '')) || 0;
+          const aVol = parseVolumeToNumber(a.volume);
+          const bVol = parseVolumeToNumber(b.volume);
           return bVol - aVol;
         default:
           return 0;
@@ -518,8 +537,8 @@ const CryptoMarketTab: React.FC<CryptoMarketTabProps> = ({
         case 'change':
           return Math.abs(b.changePercent) - Math.abs(a.changePercent);
         case 'volume':
-          const aVol = parseFloat(a.volume.replace(/[^\d.-]/g, '')) || 0;
-          const bVol = parseFloat(b.volume.replace(/[^\d.-]/g, '')) || 0;
+          const aVol = parseVolumeToNumber(a.volume);
+          const bVol = parseVolumeToNumber(b.volume);
           return bVol - aVol;
         default:
           return 0;
@@ -680,8 +699,8 @@ const ETFMarketTab: React.FC<ETFMarketTabProps> = ({
         case 'change':
           return Math.abs(b.change_percentage) - Math.abs(a.change_percentage);
         case 'volume':
-          const aVol = typeof a.volume === 'number' ? a.volume : (parseFloat(String(a.volume).replace(/[^\d.-]/g, '')) || 0);
-          const bVol = typeof b.volume === 'number' ? b.volume : (parseFloat(String(b.volume).replace(/[^\d.-]/g, '')) || 0);
+          const aVol = parseVolumeToNumber(a.volume);
+          const bVol = parseVolumeToNumber(b.volume);
           return bVol - aVol;
         default:
           return b.price - a.price;
