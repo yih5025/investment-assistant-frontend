@@ -1,11 +1,12 @@
-/* globals-light.css - Toss Style Light Theme */
+/* globals-light.css - Light Theme Only (Toss Style) */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@custom-variant light (&:is(.light *));
 
-@custom-variant dark (&:is(.dark *));
+/* ==========================================
+   라이트 테마 CSS 변수
+   ========================================== */
 
+:root,
 [data-theme="light"],
 html.light {
   /* Toss Style Variables - Light Theme */
@@ -85,1484 +86,324 @@ html.light {
   --category-default: #3182f6;
 }
 
-.dark {
-  /* Toss Style Variables - Dark Theme (fallback) */
-  --background: #17171c;
-  --foreground: #ffffff;
-  --card: #1e1e23;
-  --card-foreground: #ffffff;
-  --popover: #1e1e23;
-  --popover-foreground: #ffffff;
-  --primary: #4593fc;
-  --primary-foreground: #ffffff;
-  --secondary: #2c2c35;
-  --secondary-foreground: #b8bfc8;
-  --muted: #2c2c35;
-  --muted-foreground: #6b7684;
-  --accent: #1e3a5f;
-  --accent-foreground: #4593fc;
-  --destructive: #f04452;
-  --destructive-foreground: #ffffff;
-  --border: #333740;
-  --input: #2c2c35;
-  --input-background: #2c2c35;
-  --switch-background: #4e5968;
-  --ring: #4593fc;
-  --chart-1: #4593fc;
-  --chart-2: #67e8f9;
-  --chart-3: #c4b5fd;
-  --chart-4: #6ee7b7;
-  --chart-5: #fde047;
-  --sidebar: #1e1e23;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #4593fc;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1e3a5f;
-  --sidebar-accent-foreground: #4593fc;
-  --sidebar-border: #333740;
-  --sidebar-ring: #4593fc;
-}
+/* ==========================================
+   라이트 테마 전용 스타일
+   ========================================== */
 
-@theme inline {
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-input-background: var(--input-background);
-  --color-switch-background: var(--switch-background);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-
-  html, body {
-    color: var(--foreground);
-    min-height: 100vh;
-    min-height: 100dvh;
-    position: relative;
-    overflow-x: hidden;
-  }
-
-  /* 깨끗한 라이트 배경 - Toss 스타일 (라이트 모드 전용) */
-  [data-theme="light"] body,
-  html.light body {
+[data-theme="light"],
+html.light {
+  
+  /* 깔끔한 배경 - Toss 스타일 */
+  body {
     background: var(--background);
     background-attachment: fixed;
   }
 
-.gradient-blur-orange {
-  position: absolute;
-  width: 10rem;
-  height: 10rem;
-  background: linear-gradient(to bottom right, rgba(249, 115, 22, 0.08), transparent);
-  border-radius: 9999px;
-  filter: blur(2rem);
-  pointer-events: none;
-}
-
-.gradient-blur-green {
-  position: absolute;
-  width: 8rem;
-  height: 8rem;
-  background: linear-gradient(to top right, rgba(34, 197, 94, 0.08), transparent);
-  border-radius: 9999px;
-  filter: blur(2rem);
-  pointer-events: none;
-}
-
-.gradient-blur-multi {
-  position: absolute;
-  width: 12rem;
-  height: 12rem;
-  background: linear-gradient(to bottom right, rgba(168, 85, 247, 0.08), rgba(59, 130, 246, 0.08), transparent);
-  border-radius: 9999px;
-  filter: blur(3rem);
-  pointer-events: none;
-}
-
-.gradient-border-vertical {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 1px;
-  height: 100%;
-  background: linear-gradient(to bottom, var(--primary), rgba(168, 85, 247, 1), rgba(59, 130, 246, 1));
-}
-
-.gradient-border-horizontal {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background: linear-gradient(to right, var(--primary), rgba(168, 85, 247, 1), rgba(59, 130, 246, 1));
-}
-
-/* ==========================================
-   🎬 HOVER EFFECTS 🎬
-   ========================================== */
-
-.hover-lift {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.hover-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-}
-
-.hover-scale {
-  transition: transform 0.2s ease;
-}
-
-.hover-scale:hover {
-  transform: scale(1.05);
-}
-
-.hover-scale-sm:hover {
-  transform: scale(1.02);
-}
-
-.hover-primary {
-  transition: color 0.2s ease;
-}
-
-.hover-primary:hover {
-  color: var(--primary);
-}
-
-.transition-smooth {
-  transition: all 0.2s ease;
-}
-
-.transition-fast {
-  transition: all 0.15s ease;
-}
-
-.transition-slow {
-  transition: all 0.3s ease;
-}
-
-/* ==========================================
-   📦 CONTAINER UTILITIES 📦
-   ========================================== */
-
-.container-sm {
-  max-width: 28rem;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-.container-md {
-  max-width: 48rem;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-.space-y-xs > * + * {
-  margin-top: 0.5rem;
-}
-
-.space-y-sm > * + * {
-  margin-top: 0.75rem;
-}
-
-.space-y-base > * + * {
-  margin-top: 1rem;
-}
-
-.space-y-lg > * + * {
-  margin-top: 1.5rem;
-}
-
-.space-y-xl > * + * {
-  margin-top: 2rem;
-}
-
-/* ==========================================
-   📱 TEXT UTILITIES 📱
-   ========================================== */
-
-.text-gradient-primary {
-  background: linear-gradient(to right, var(--primary), rgba(168, 85, 247, 1));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.text-gradient-sunset {
-  background: linear-gradient(to right, #f59e0b, #ef4444, #ec4899);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.text-truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* ==========================================
-   🎨 BADGE STYLES 🎨
-   ========================================== */
-
-.badge-success {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background: rgba(34, 197, 94, 0.1);
-  color: rgb(34, 197, 94);
-  border: 1px solid rgba(34, 197, 94, 0.2);
-}
-
-.badge-danger {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background: rgba(239, 68, 68, 0.1);
-  color: rgb(239, 68, 68);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-}
-
-.badge-warning {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background: rgba(245, 158, 11, 0.1);
-  color: rgb(245, 158, 11);
-  border: 1px solid rgba(245, 158, 11, 0.2);
-}
-
-.badge-info {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background: rgba(59, 130, 246, 0.1);
-  color: rgb(59, 130, 246);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-}
-
-.badge-primary {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background: rgba(49, 130, 246, 0.1);
-  color: var(--primary);
-  border: 1px solid rgba(49, 130, 246, 0.2);
-}
-
-/* ==========================================
-   🖼️ AVATAR UTILITIES 🖼️
-   ========================================== */
-
-.avatar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9999px;
-  background: var(--secondary);
-  overflow: hidden;
-}
-
-.avatar-sm {
-  width: 2rem;
-  height: 2rem;
-}
-
-.avatar-md {
-  width: 2.5rem;
-  height: 2.5rem;
-}
-
-.avatar-lg {
-  width: 3rem;
-  height: 3rem;
-}
-
-.avatar-xl {
-  width: 4rem;
-  height: 4rem;
-}
-
-/* ==========================================
-   🎯 POSITION UTILITIES 🎯
-   ========================================== */
-
-.absolute-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.absolute-top-right {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
-.absolute-top-left {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-.absolute-bottom-right {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-}
-
-.absolute-bottom-left {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-}
-
-/* ==========================================
-   ⚡ PERFORMANCE UTILITIES ⚡
-   ========================================== */
-
-.gpu-accelerated {
-  transform: translateZ(0);
-  will-change: transform;
-  backface-visibility: hidden;
-}
-
-/* ==========================================
-   📊 DATA VISUALIZATION 📊
-   ========================================== */
-
-.price-up {
-  color: rgb(34, 197, 94);
-}
-
-.price-down {
-  color: rgb(239, 68, 68);
-}
-
-.price-neutral {
-  color: var(--muted-foreground);
-}
-
-/* ==========================================
-   🌈 OVERLAY UTILITIES 🌈
-   ========================================== */
-
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  z-index: 50;
-}
-
-.overlay-light {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(2px);
-  z-index: 50;
-}
-
-.overlay-dark {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
-  z-index: 50;
-}
-
-/* ==========================================
-   🎪 LOADING ANIMATIONS 🎪
-   ========================================== */
-
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--muted) 0%,
-    var(--secondary) 50%,
-    var(--muted) 100%
-  );
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.5s ease-in-out infinite;
-  border-radius: var(--radius);
-}
-
-@keyframes skeleton-loading {
-  0% {
-    background-position: 200% 0;
+  /* Toss 스타일 Glass - 라이트 전용 */
+  .glass {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
   }
-  100% {
-    background-position: -200% 0;
+
+  .glass:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
   }
-}
 
-.pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
+  .glass-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
   }
-  50% {
-    opacity: 0.5;
+
+  .glass-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
   }
-}
 
-.spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
+  .glass-strong {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
   }
-  to {
-    transform: rotate(360deg);
+
+  .glass-strong:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
   }
-}
 
-/* ==========================================
-   📢 NOTIFICATION UTILITIES 📢
-   ========================================== */
-
-.notification-dot {
-  position: absolute;
-  top: -0.25rem;
-  right: -0.25rem;
-  width: 0.625rem;
-  height: 0.625rem;
-  background: rgb(239, 68, 68);
-  border-radius: 9999px;
-  box-shadow: 0 0 0 2px var(--card);
-}
-
-/* ==========================================
-   🔍 SEARCH UTILITIES 🔍
-   ========================================== */
-
-.search-icon-left {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--muted-foreground);
-  pointer-events: none;
-}
-
-/* ==========================================
-   📱 RESPONSIVE UTILITIES 📱
-   ========================================== */
-
-@media (max-width: 640px) {
-  .hide-mobile {
-    display: none;
+  .glass-subtle {
+    background: var(--secondary);
+    border-radius: calc(var(--radius) - 0.25rem);
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
   }
-}
 
-@media (min-width: 641px) {
-  .hide-desktop {
-    display: none;
+  .glass-subtle:hover {
+    background: var(--card);
+    border-color: var(--border);
   }
-}
 
-/* ==========================================
-   🎨 BORDER UTILITIES 🎨
-   ========================================== */
-
-.border-gradient {
-  border: 1px solid transparent;
-  background: linear-gradient(var(--card), var(--card)) padding-box,
-              linear-gradient(to right, var(--primary), rgba(168, 85, 247, 1)) border-box;
-  border-radius: var(--radius);
-}
-
-
-/* ==========================================
-   🎨 TOSS GLASS STYLES (LIGHT MODE) 🎨
-   ========================================== */
-
-/* Toss 스타일 - 깔끔한 카드 디자인 */
-.glass {
-  background: var(--card);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  border: 1px solid var(--border);
-  transition: all 0.2s ease;
-}
-
-.glass:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
-}
-
-.glass-card {
-  background: var(--card);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  border: 1px solid var(--border);
-  transition: all 0.2s ease;
-}
-
-.glass-card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
-}
-
-.glass-strong {
-  background: var(--card);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border);
-  transition: all 0.2s ease;
-}
-
-.glass-strong:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
-}
-
-.glass-subtle {
-  background: var(--secondary);
-  border-radius: calc(var(--radius) - 0.25rem);
-  border: 1px solid transparent;
-  transition: all 0.2s ease;
-}
-
-.glass-subtle:hover {
-  background: var(--card);
-  border-color: var(--border);
-}
-
-/* ==========================================
-   📝 TYPOGRAPHY 📝
-   ========================================== */
-@layer base {
-  :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
-    h1 {
-      font-size: 1.75rem;
-      font-weight: 700;
-      line-height: 1.3;
-      letter-spacing: -0.02em;
-    }
-
-    h2 {
-      font-size: 1.375rem;
-      font-weight: 700;
-      line-height: 1.4;
-      letter-spacing: -0.01em;
-    }
-
-    h3 {
-      font-size: 1.125rem;
-      font-weight: 600;
-      line-height: 1.5;
-    }
-
-    h4 {
-      font-size: 1rem;
-      font-weight: 600;
-      line-height: 1.5;
-    }
-
-    p {
-      font-size: 0.9375rem;
-      font-weight: 400;
-      line-height: 1.6;
-    }
-
-    label {
-      font-size: 0.875rem;
-      font-weight: 500;
-      line-height: 1.5;
-    }
-
-    button {
-      font-size: 0.9375rem;
-      font-weight: 600;
-      line-height: 1.5;
-    }
-
-    input {
-      font-size: 0.9375rem;
-      font-weight: 400;
-      line-height: 1.5;
-    }
+  .glass-frosted {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
   }
-}
 
-html {
-  font-size: var(--font-size);
-}
-
-/* ==========================================
-   🎰 SLOT MACHINE ANIMATIONS 🎰
-   ========================================== */
-
-/* 룰렛 컨테이너 */
-.slot-machine {
-  position: relative;
-  overflow: hidden;
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  -webkit-touch-callout: none;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: none;
-}
-
-/* 룰렛 스크롤 영역 */
-.slot-reel-interactive {
-  display: flex;
-  flex-direction: column;
-  height: auto;
-  animation-name: slot-scroll;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-/* 수직 스크롤 애니메이션 */
-@keyframes slot-scroll {
-  0% {
-    transform: translateY(0);
+  .glass-intense {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
   }
-  100% {
-    transform: translateY(-33.333%);
+
+  /* 스크롤바 - 라이트 전용 */
+  ::-webkit-scrollbar {
+    width: 4px;
   }
-}
 
-/* GPU 가속 최적화 */
-.slot-reel-interactive > div {
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-/* 호버 효과 - Light Mode */
-.slot-machine .cursor-pointer:hover {
-  background-color: var(--secondary);
-  transition: background-color 0.2s ease;
-}
-
-/* 일시정지 상태 */
-.slot-reel-interactive[style*="paused"] {
-  animation-play-state: paused !important;
-}
-
-/* 그라데이션 마스크 - Light Mode */
-.slot-machine::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 20px;
-  background: linear-gradient(to bottom, var(--background), transparent);
-  z-index: 10;
-  pointer-events: none;
-}
-
-.slot-machine::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 20px;
-  background: linear-gradient(to top, var(--background), transparent);
-  z-index: 10;
-  pointer-events: none;
-}
-
-/* 반응형 최적화 */
-@media (max-width: 768px) {
-  .slot-machine {
-    font-size: 0.875rem;
+  ::-webkit-scrollbar-track {
+    background: transparent;
   }
-  
-  .slot-reel-interactive > div {
-    padding: 0.5rem;
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
   }
-}
 
-/* 성능 최적화 - 폰트 렌더링 */
-.slot-machine * {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* 스크롤바 숨김 */
-.slot-machine::-webkit-scrollbar {
-  display: none;
-}
-
-.slot-machine {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* 터치 디바이스 최적화 */
-@media (hover: none) and (pointer: coarse) {
-  .slot-machine {
-    -webkit-overflow-scrolling: touch;
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--muted-foreground);
   }
-}
 
-/* ==========================================
-   📅 CALENDAR STYLES 📅
-   ========================================== */
+  /* 캘린더 - 라이트 전용 */
+  .calendar-grid {
+    background: var(--border);
+  }
 
-/* 기본 캘린더 그리드 */
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
-  background: var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-  padding: 1px;
-}
+  .calendar-day {
+    background: var(--card);
+  }
 
-.calendar-day {
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--card);
-  transition: all 0.2s ease;
-  cursor: pointer;
-  position: relative;
-}
+  .calendar-day:hover {
+    background: var(--secondary);
+  }
 
-.calendar-day:hover {
-  background: var(--secondary);
-  transform: scale(1.05);
-}
+  .calendar-day.has-event {
+    background: rgba(49, 130, 246, 0.1);
+  }
 
-.calendar-day.has-event {
-  background: rgba(49, 130, 246, 0.1);
-}
+  .calendar-day.has-event::after {
+    background: var(--primary);
+  }
 
-.calendar-day.has-event::after {
-  content: '';
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 4px;
-  height: 4px;
-  background: var(--primary);
-  border-radius: 50%;
-}
-
-/* Enhanced 캘린더 그리드 */
-.calendar-grid-enhanced {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 0px;
-  background: var(--border);
-  overflow: hidden;
-  padding: 0px;
-}
-
-/* Enhanced 캘린더 날짜 칸 */
-.calendar-day-enhanced {
-  height: 70px;
-  min-height: 70px;
-  display: flex;
-  flex-direction: column;
-  background: var(--card);
-  border: 1px solid var(--border);
-  transition: all 0.2s ease;
-  cursor: pointer;
-  position: relative;
-  padding: 2px;
-}
-
-.calendar-day-enhanced:active {
-  background: var(--secondary);
-  transform: scale(0.98);
-}
-
-.calendar-day-enhanced.has-event {
-  background: rgba(49, 130, 246, 0.05);
-}
-
-/* 날짜 숫자 스타일 */
-.calendar-date-number {
-  position: absolute;
-  top: 4px;
-  left: 8px;
-  font-weight: 600;
-  font-size: 12px;
-  line-height: 1;
-  z-index: 2;
-  color: var(--foreground);
-}
-
-/* 이벤트 컨테이너 */
-.calendar-events-container {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-top: 28px;
-  flex: 1;
-  overflow: hidden;
-  padding: 2px;
-}
-
-/* 이벤트 배지 스타일 - Light Mode */
-.event-badge {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 4px 6px;
-  border-radius: 4px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  border: 1px solid var(--primary);
-  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  min-height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--primary-foreground);
-  background: var(--primary);
-}
-
-.event-badge:active {
-  transform: scale(0.95);
-  z-index: 10;
-}
-
-/* 더 보기 배지 스타일 */
-.event-badge-more {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 2px 2px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  line-height: 1.2;
-  color: var(--primary);
-  background: var(--secondary);
-  border: 1px solid var(--primary);
-  border-radius: 4px;
-  min-height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.event-badge-more:active {
-  background: var(--accent);
-  transform: scale(0.95);
-}
-
-/* 반응형 조정 */
-@media (max-width: 768px) {
   .calendar-day-enhanced {
-    height: 140px;
-    min-height: 140px;
-    padding: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
   }
-  
+
+  .calendar-day-enhanced:active {
+    background: var(--secondary);
+  }
+
+  .calendar-day-enhanced.has-event {
+    background: rgba(49, 130, 246, 0.05);
+  }
+
   .calendar-date-number {
-    top: 8px;
-    left: 10px;
-    font-size: 16px;
-    font-weight: 700;
+    color: var(--foreground);
   }
-  
-  .calendar-events-container {
-    margin-top: 32px;
-    gap: 5px;
-  }
-  
+
   .event-badge {
-    font-size: 12px;
-    padding: 5px 5px;
-    min-height: 28px;
+    color: var(--primary-foreground);
+    background: var(--primary);
+    border: 1px solid var(--primary);
   }
-  
+
   .event-badge-more {
-    font-size: 14px;
-    padding: 5px 5px;
-    min-height: 28px;
+    color: var(--primary);
+    background: var(--secondary);
+    border: 1px solid var(--primary);
+  }
+
+  .event-badge-more:active {
+    background: var(--accent);
+  }
+
+  /* 슬롯 머신 - 라이트 전용 */
+  .slot-machine .cursor-pointer:hover {
+    background-color: var(--secondary);
+  }
+
+  .slot-machine::before {
+    background: linear-gradient(to bottom, var(--background), transparent);
+  }
+
+  .slot-machine::after {
+    background: linear-gradient(to top, var(--background), transparent);
+  }
+
+  /* 배지 - 라이트 전용 */
+  .badge-success {
+    background: rgba(34, 197, 94, 0.1);
+    color: rgb(34, 197, 94);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+  }
+
+  .badge-danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: rgb(239, 68, 68);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+  }
+
+  .badge-warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: rgb(245, 158, 11);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+  }
+
+  .badge-info {
+    background: rgba(59, 130, 246, 0.1);
+    color: rgb(59, 130, 246);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+  }
+
+  .badge-primary {
+    background: rgba(49, 130, 246, 0.1);
+    color: var(--primary);
+    border: 1px solid rgba(49, 130, 246, 0.2);
+  }
+
+  /* 뉴스 & 카테고리 배지 - 라이트 전용 */
+  .badge-news-sentiment {
+    background: rgba(49, 130, 246, 0.15);
+    color: #1e40af;
+    border: 1px solid rgba(49, 130, 246, 0.3);
+  }
+
+  .badge-news-financial {
+    background: rgba(16, 185, 129, 0.15);
+    color: #047857;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+
+  .badge-news-market {
+    background: rgba(249, 115, 22, 0.15);
+    color: #c2410c;
+    border: 1px solid rgba(249, 115, 22, 0.3);
+  }
+
+  .badge-news-default {
+    background: rgba(107, 114, 128, 0.15);
+    color: #374151;
+    border: 1px solid rgba(107, 114, 128, 0.3);
+  }
+
+  .badge-category-crypto {
+    background: rgba(249, 115, 22, 0.15);
+    color: #c2410c;
+    border: 1px solid rgba(249, 115, 22, 0.3);
+  }
+
+  .badge-category-forex {
+    background: rgba(16, 185, 129, 0.15);
+    color: #047857;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+
+  .badge-category-merger {
+    background: rgba(168, 85, 247, 0.15);
+    color: #7c3aed;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+  }
+
+  .badge-category-default {
+    background: rgba(49, 130, 246, 0.15);
+    color: #1e40af;
+    border: 1px solid rgba(49, 130, 246, 0.3);
+  }
+
+  /* 차트셋 배지 - 라이트 전용 */
+  .badge-cheatsheet-stock {
+    background: rgba(49, 130, 246, 0.15);
+    color: #1e40af;
+  }
+
+  .badge-cheatsheet-crypto {
+    background: rgba(249, 115, 22, 0.15);
+    color: #c2410c;
+  }
+
+  .badge-cheatsheet-etf {
+    background: rgba(16, 185, 129, 0.15);
+    color: #047857;
+  }
+
+  .badge-cheatsheet-economy {
+    background: rgba(168, 85, 247, 0.15);
+    color: #7c3aed;
+  }
+
+  .badge-cheatsheet-finance {
+    background: rgba(236, 72, 153, 0.15);
+    color: #be185d;
+  }
+
+  .badge-cheatsheet-app {
+    background: rgba(6, 182, 212, 0.15);
+    color: #0e7490;
+  }
+
+  /* 가격 표시 - 라이트 전용 */
+  .price-up {
+    color: rgb(34, 197, 94);
+  }
+
+  .price-down {
+    color: rgb(239, 68, 68);
+  }
+
+  /* 오버레이 - 라이트 전용 */
+  .overlay {
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  .overlay-light {
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  .overlay-dark {
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  /* 그라데이션 블러 - 라이트 전용 */
+  .gradient-blur-purple {
+    background: linear-gradient(to bottom right, rgba(168, 85, 247, 0.08), transparent);
+  }
+
+  .gradient-blur-blue {
+    background: linear-gradient(to bottom right, rgba(59, 130, 246, 0.08), transparent);
+  }
+
+  .gradient-blur-primary {
+    background: linear-gradient(to bottom right, rgba(49, 130, 246, 0.08), transparent);
+  }
+
+  .gradient-blur-orange {
+    background: linear-gradient(to bottom right, rgba(249, 115, 22, 0.08), transparent);
+  }
+
+  .gradient-blur-green {
+    background: linear-gradient(to top right, rgba(34, 197, 94, 0.08), transparent);
+  }
+
+  .gradient-blur-multi {
+    background: linear-gradient(to bottom right, rgba(168, 85, 247, 0.08), rgba(59, 130, 246, 0.08), transparent);
   }
 }
-
-@media (max-width: 640px) {
-  .calendar-day-enhanced {
-    height: 130px;
-    min-height: 130px;
-    padding: 2px;
-  }
-  
-  .calendar-date-number {
-    font-size: 14px;
-    top: 6px;
-    left: 8px;
-  }
-  
-  .calendar-events-container {
-    margin-top: 20px;
-    gap: 2px;
-  }
-  
-  .event-badge {
-    font-size: 11px;
-    padding: 5px 5px;
-    min-height: 22px;
-  }
-  
-  .event-badge-more {
-    font-size: 12px;
-    padding: 2px 2px;
-    min-height: 22px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .calendar-day-enhanced {
-    height: 110px;
-    min-height: 110px;
-  }
-  
-  .calendar-date-number {
-    font-size: 13px;
-  }
-  
-  .event-badge {
-    font-size: 10px;
-    padding: 5px 7px;
-    min-height: 22px;
-  }
-  
-  .event-badge-more {
-    font-size: 9px;
-    padding: 5px 7px;
-    min-height: 22px;
-  }
-}
-
-/* 접근성 개선 */
-.calendar-day-enhanced:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-
-.event-badge:focus-visible,
-.event-badge-more:focus-visible {
-  outline: 1px solid var(--primary);
-  outline-offset: 1px;
-}
-
-/* ==========================================
-   🎬 ANIMATIONS 🎬
-   ========================================== */
-
-/* Flip Animation */
-.flip-container {
-  perspective: 1000px;
-  height: 100%;
-}
-
-.flip-content {
-  position: relative;
-  transition: transform 0.6s;
-  transform-style: preserve-3d;
-  height: 100%;
-}
-
-.flip-container.flipping .flip-content {
-  transform: rotateX(180deg);
-}
-
-.flip-content > div {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden;
-}
-
-/* Conveyor Belt */
-@keyframes conveyor {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
-}
-
-.conveyor-container {
-  overflow: hidden;
-  white-space: nowrap;
-  position: relative;
-}
-
-.conveyor-content {
-  display: inline-flex;
-  animation: conveyor 60s linear infinite;
-  will-change: transform;
-}
-
-.conveyor-content:hover {
-  animation-play-state: paused;
-}
-
-/* ==========================================
-   🎨 SCROLLBAR STYLING 🎨
-   ========================================== */
-
-::-webkit-scrollbar {
-  width: 4px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 2px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-foreground);
-}
-
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
-/* ==========================================
-   🎯 LAYOUT UTILITIES 🎯
-   ========================================== */
-
-.flex-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.flex-between {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.flex-start {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.flex-end {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-.flex-col-center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-/* ==========================================
-   🔘 BUTTON UTILITIES 🔘
-   ========================================== */
-
-.btn-icon {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 9999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--card);
-  box-shadow: var(--shadow);
-  border: 1px solid var(--border);
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.btn-icon:hover {
-  box-shadow: var(--shadow-md);
-  transform: scale(1.05);
-}
-
-.btn-icon-lg {
-  width: 2.25rem;
-  height: 2.25rem;
-}
-
-.btn-icon-sm {
-  width: 1.75rem;
-  height: 1.75rem;
-}
-
-.btn-glass {
-  background: var(--card);
-  border-radius: var(--radius);
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  border: 1px solid var(--border);
-  transition: all 0.2s ease;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.btn-glass:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
-}
-
-.btn-primary {
-  background: var(--primary);
-  color: var(--primary-foreground);
-  border-radius: var(--radius);
-  padding: 0.625rem 1.25rem;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  border: none;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.btn-primary:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-lg);
-}
-
-.btn-primary:active {
-  transform: translateY(0);
-}
-
-/* ==========================================
-   🎨 CARD UTILITIES 🎨
-   ========================================== */
-
-.card-interactive {
-  background: var(--card);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  border: 1px solid var(--border);
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.card-interactive:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
-}
-
-.card-interactive:active {
-  transform: translateY(0);
-}
-
-.group:hover .group-hover-primary {
-  color: var(--primary);
-  transition: color 0.2s ease;
-}
-
-/* ==========================================
-   ✨ GRADIENT DECORATIONS ✨
-   ========================================== */
-
-.gradient-blur-purple {
-  position: absolute;
-  width: 8rem;
-  height: 8rem;
-  background: linear-gradient(to bottom right, rgba(168, 85, 247, 0.08), transparent);
-  border-radius: 9999px;
-  filter: blur(2rem);
-  pointer-events: none;
-}
-
-.gradient-blur-blue {
-  position: absolute;
-  width: 8rem;
-  height: 8rem;
-  background: linear-gradient(to bottom right, rgba(59, 130, 246, 0.08), transparent);
-  border-radius: 9999px;
-  filter: blur(2rem);
-  pointer-events: none;
-}
-
-.gradient-blur-primary {
-  position: absolute;
-  width: 8rem;
-  height: 8rem;
-  background: linear-gradient(to bottom right, rgba(49, 130, 246, 0.08), transparent);
-  border-radius: 9999px;
-  filter: blur(2rem);
-  pointer-events: none;
-}
-
-/* ==========================================
-   🎨 NEWS & CATEGORY BADGE STYLES (LIGHT MODE) 🎨
-   ========================================== */
-
-/* 뉴스 타입 배지 - Light Mode */
-.badge-news-sentiment {
-  background: rgba(49, 130, 246, 0.15);
-  color: #1e40af;
-  border: 1px solid rgba(49, 130, 246, 0.3);
-}
-
-.badge-news-financial {
-  background: rgba(16, 185, 129, 0.15);
-  color: #047857;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.badge-news-market {
-  background: rgba(249, 115, 22, 0.15);
-  color: #c2410c;
-  border: 1px solid rgba(249, 115, 22, 0.3);
-}
-
-.badge-news-default {
-  background: rgba(107, 114, 128, 0.15);
-  color: #374151;
-  border: 1px solid rgba(107, 114, 128, 0.3);
-}
-
-/* 카테고리 배지 - Light Mode */
-.badge-category-crypto {
-  background: rgba(249, 115, 22, 0.15);
-  color: #c2410c;
-  border: 1px solid rgba(249, 115, 22, 0.3);
-}
-
-.badge-category-forex {
-  background: rgba(16, 185, 129, 0.15);
-  color: #047857;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.badge-category-merger {
-  background: rgba(168, 85, 247, 0.15);
-  color: #7c3aed;
-  border: 1px solid rgba(168, 85, 247, 0.3);
-}
-
-.badge-category-default {
-  background: rgba(49, 130, 246, 0.15);
-  color: #1e40af;
-  border: 1px solid rgba(49, 130, 246, 0.3);
-}
-
-/* ==========================================
-   👤 AVATAR GRADIENT STYLES 👤
-   ========================================== */
-
-/* 아바타 그라데이션 - 특별 사용자 */
-.avatar-gradient-trump {
-  background: linear-gradient(to bottom right, rgb(239, 68, 68), rgb(185, 28, 28));
-}
-
-.avatar-gradient-elon {
-  background: linear-gradient(to bottom right, rgb(168, 85, 247), rgb(79, 70, 229));
-}
-
-.avatar-gradient-whitehouse {
-  background: linear-gradient(to bottom right, rgb(37, 99, 235), rgb(30, 64, 175));
-}
-
-.avatar-gradient-biden {
-  background: linear-gradient(to bottom right, rgb(59, 130, 246), rgb(29, 78, 216));
-}
-
-.avatar-gradient-pelosi {
-  background: linear-gradient(to bottom right, rgb(34, 197, 94), rgb(21, 128, 61));
-}
-
-/* 아바타 그라데이션 - 일반 (10가지 변형) */
-.avatar-gradient-1 {
-  background: linear-gradient(to bottom right, rgb(59, 130, 246), rgb(168, 85, 247));
-}
-
-.avatar-gradient-2 {
-  background: linear-gradient(to bottom right, rgb(34, 197, 94), rgb(20, 184, 166));
-}
-
-.avatar-gradient-3 {
-  background: linear-gradient(to bottom right, rgb(249, 115, 22), rgb(239, 68, 68));
-}
-
-.avatar-gradient-4 {
-  background: linear-gradient(to bottom right, rgb(236, 72, 153), rgb(244, 63, 94));
-}
-
-.avatar-gradient-5 {
-  background: linear-gradient(to bottom right, rgb(99, 102, 241), rgb(59, 130, 246));
-}
-
-.avatar-gradient-6 {
-  background: linear-gradient(to bottom right, rgb(168, 85, 247), rgb(236, 72, 153));
-}
-
-.avatar-gradient-7 {
-  background: linear-gradient(to bottom right, rgb(20, 184, 166), rgb(34, 197, 94));
-}
-
-.avatar-gradient-8 {
-  background: linear-gradient(to bottom right, rgb(234, 179, 8), rgb(249, 115, 22));
-}
-
-.avatar-gradient-9 {
-  background: linear-gradient(to bottom right, rgb(239, 68, 68), rgb(236, 72, 153));
-}
-
-.avatar-gradient-10 {
-  background: linear-gradient(to bottom right, rgb(6, 182, 212), rgb(59, 130, 246));
-}
-
-.avatar-gradient-default {
-  background: linear-gradient(to bottom right, rgb(107, 114, 128), rgb(75, 85, 99));
-}
-
-/* ==========================================
-   🎯 COMPONENT-SPECIFIC STYLES (LIGHT MODE) 🎯
-   ========================================== */
-
-/* SideMenu 배경 - Light Mode */
-.sidemenu-bg {
-  background-color: var(--sidemenu-bg);
-}
-
-/* IPO 이벤트 배경 */
-.ipo-event-bg {
-  background-color: var(--ipo-event-bg);
-}
-
-/* 차트셋 페이지 카테고리 배지 - Light Mode */
-.badge-cheatsheet-stock {
-  background: rgba(49, 130, 246, 0.15);
-  color: #1e40af;
-}
-
-.badge-cheatsheet-crypto {
-  background: rgba(249, 115, 22, 0.15);
-  color: #c2410c;
-}
-
-.badge-cheatsheet-etf {
-  background: rgba(16, 185, 129, 0.15);
-  color: #047857;
-}
-
-.badge-cheatsheet-economy {
-  background: rgba(168, 85, 247, 0.15);
-  color: #7c3aed;
-}
-
-.badge-cheatsheet-finance {
-  background: rgba(236, 72, 153, 0.15);
-  color: #be185d;
-}
-
-.badge-cheatsheet-app {
-  background: rgba(6, 182, 212, 0.15);
-  color: #0e7490;
-}
-
-} /* @layer base 종료 */
