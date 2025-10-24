@@ -8,6 +8,28 @@
     <link rel="shortcut icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>W.E Investing</title>
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('theme');
+          var preferred = saved || 'light';
+          var isDark = preferred === 'dark' || (preferred === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          var html = document.documentElement;
+          var body = document.body;
+          if (isDark) {
+            html.setAttribute('data-theme', 'dark');
+            body.setAttribute('data-theme', 'dark');
+            html.classList.add('dark');
+            html.classList.remove('light');
+          } else {
+            html.setAttribute('data-theme', 'light');
+            body.setAttribute('data-theme', 'light');
+            html.classList.add('light');
+            html.classList.remove('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

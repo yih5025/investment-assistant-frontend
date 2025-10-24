@@ -4,9 +4,9 @@ type Theme = "light" | "dark" | "system";
 
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(() => {
-    // localStorage에서 테마 불러오기 (기본값: dark)
+    // localStorage에서 테마 불러오기 (기본값: light)
     const saved = localStorage.getItem("theme") as Theme;
-    return saved || "dark";
+    return saved || "light";
   });
 
   useEffect(() => {
