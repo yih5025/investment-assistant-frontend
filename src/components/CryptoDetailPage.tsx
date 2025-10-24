@@ -597,18 +597,22 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
                     return dataPoint;
                   });
                 })()}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <CartesianGrid 
+                    strokeDasharray="3 3" 
+                    stroke="var(--chart-grid-stroke)"
+                    opacity={0.5}
+                  />
                   <XAxis 
                     dataKey="date" 
                     axisLine={false} 
                     tickLine={false}
-                    tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }}
+                    tick={{ fontSize: 10, fill: 'var(--chart-axis-text)' }}
                     tickFormatter={(value) => new Date(value).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
                   />
                   <YAxis 
                     axisLine={false} 
                     tickLine={false}
-                    tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }}
+                    tick={{ fontSize: 10, fill: 'var(--chart-axis-text)' }}
                     domain={['dataMin * 0.98', 'dataMax * 1.02']}
                     tickFormatter={(value) => formatCryptoCurrency(value)}
                   />

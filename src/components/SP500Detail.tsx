@@ -102,8 +102,8 @@ const StockChart = memo<StockChartProps>(({
             <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#60a5fa" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#60a5fa" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="var(--chart-line-primary)" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="var(--chart-line-primary)" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
@@ -111,29 +111,29 @@ const StockChart = memo<StockChartProps>(({
                 dataKey="timestamp" 
                 axisLine={false} 
                 tickLine={false}
-                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }}
+                tick={{ fontSize: 10, fill: 'var(--chart-axis-text)' }}
                 tickFormatter={(timestamp) => formatTimestampForChart(timestamp, selectedTimeframe)}
               />
               <YAxis 
                 axisLine={false} 
                 tickLine={false}
-                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }}
+                tick={{ fontSize: 10, fill: 'var(--chart-axis-text)' }}
                 domain={['dataMin - 0.5', 'dataMax + 0.5']}
               />
               <Tooltip 
                 formatter={(value) => [formatCurrency(Number(value)), '주가']}
                 labelFormatter={(label) => `시간: ${formatTimestampForChart(label, selectedTimeframe)}`}
                 contentStyle={{ 
-                  backgroundColor: 'rgba(0, 0, 0, 0.8)', 
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  backgroundColor: 'var(--chart-tooltip-bg)', 
+                  border: '1px solid var(--chart-tooltip-border)',
                   borderRadius: '8px',
-                  color: 'white'
+                  color: 'var(--chart-tooltip-text)'
                 }}
               />
               <Area 
                 type="monotone" 
                 dataKey="price" 
-                stroke="#60a5fa" 
+                stroke="var(--chart-line-primary)" 
                 strokeWidth={2}
                 fill="url(#priceGradient)" 
               />

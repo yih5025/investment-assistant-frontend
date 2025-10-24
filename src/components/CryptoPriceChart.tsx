@@ -171,15 +171,15 @@ export function CryptoPriceChart({ symbol, className = "" }: CryptoPriceChartPro
             }))}>
               <defs>
                 <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3182f6" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#3182f6" stopOpacity={0.05}/>
+                  <stop offset="5%" stopColor="var(--chart-line-primary)" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="var(--chart-line-primary)" stopOpacity={0.05}/>
                 </linearGradient>
               </defs>
               
               {/* ✨ 수정: 그리드 선 색상 - 라이트모드용 */}
               <CartesianGrid 
                 strokeDasharray="3 3" 
-                stroke="#e5e8eb" 
+                stroke="var(--chart-grid-stroke)" 
                 opacity={0.5}
               />
               
@@ -188,7 +188,7 @@ export function CryptoPriceChart({ symbol, className = "" }: CryptoPriceChartPro
                 dataKey="timestamp" 
                 axisLine={false} 
                 tickLine={false}
-                tick={{ fontSize: 10, fill: '#64748b' }}
+                tick={{ fontSize: 10, fill: 'var(--chart-axis-text)' }}
                 tickFormatter={(timestamp) => formatTimestampForChart(timestamp, selectedTimeframe)}
               />
               
@@ -196,7 +196,7 @@ export function CryptoPriceChart({ symbol, className = "" }: CryptoPriceChartPro
               <YAxis 
                 axisLine={false} 
                 tickLine={false}
-                tick={{ fontSize: 10, fill: '#64748b' }}
+                tick={{ fontSize: 10, fill: 'var(--chart-axis-text)' }}
                 domain={['dataMin * 0.98', 'dataMax * 1.02']}
                 tickFormatter={(value) => formatCurrencyKRW(value).replace('₩', '')}
               />
@@ -210,15 +210,15 @@ export function CryptoPriceChart({ symbol, className = "" }: CryptoPriceChartPro
                 }}
                 labelFormatter={(label) => `시간: ${formatTimestampForChart(label, selectedTimeframe)}`}
                 contentStyle={{ 
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #e5e8eb',
+                  backgroundColor: 'var(--chart-tooltip-bg)',
+                  border: '1px solid var(--chart-tooltip-border)',
                   borderRadius: '8px',
                   fontSize: '12px',
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                  color: '#334155'
+                  color: 'var(--chart-tooltip-text)'
                 }}
                 labelStyle={{
-                  color: '#334155',
+                  color: 'var(--chart-tooltip-text)',
                   fontWeight: 600
                 }}
               />
@@ -227,11 +227,11 @@ export function CryptoPriceChart({ symbol, className = "" }: CryptoPriceChartPro
               <Area 
                 type="monotone" 
                 dataKey="price" 
-                stroke="#3182f6" 
+                stroke="var(--chart-line-primary)" 
                 strokeWidth={2.5}
                 fill="url(#priceGradient)"
                 dot={false}
-                activeDot={{ r: 4, fill: '#3182f6', stroke: '#ffffff', strokeWidth: 2 }}
+                activeDot={{ r: 4, fill: 'var(--chart-line-primary)', stroke: 'var(--chart-tooltip-bg)', strokeWidth: 2 }}
               />
             </AreaChart>
           </ResponsiveContainer>

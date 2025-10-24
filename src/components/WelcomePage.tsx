@@ -108,7 +108,7 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
             <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-blue-600/20 animate-pulse"></div>
             <TrendingUp size={40} className="text-primary relative z-10 drop-shadow-lg" />
           </div>
-          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-white via-primary to-white bg-clip-text text-transparent drop-shadow-md">
+          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-white via-primary to-white bg-clip-text drop-shadow-md">
             W.E Investing
           </h1>
           <p className="text-lg text-foreground/80 font-medium tracking-wide">Wise & Easy Investing - Your Investment Cheatsheet</p>
@@ -178,7 +178,7 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
           <TrendingUp size={28} className="text-primary relative z-10 drop-shadow-md" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-white via-primary to-white bg-clip-text text-transparent drop-shadow-sm">
+          <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-white via-primary to-white bg-clip-text drop-shadow-sm">
             W.E Investing
           </h1>
           <p className="text-foreground/70 text-lg font-medium">Wise & Easy Investing - Your Investment Cheatsheet</p>

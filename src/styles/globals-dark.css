@@ -52,6 +52,16 @@ html.dark {
   --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
   --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+
+  /* 📊 CHART COLORS (Dark Mode) */
+  --chart-grid-stroke: rgba(255, 255, 255, 0.1);
+  --chart-axis-text: rgba(255, 255, 255, 0.7);
+  --chart-tooltip-bg: rgba(0, 0, 0, 0.9);
+  --chart-tooltip-border: rgba(255, 255, 255, 0.2);
+  --chart-tooltip-text: #ffffff;
+  --chart-line-primary: #60a5fa;
+  --chart-line-secondary: #10b981;
+  --chart-line-tertiary: #f59e0b;
 }
 
 .dark {

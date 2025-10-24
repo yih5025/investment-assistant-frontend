@@ -311,24 +311,24 @@ export default function OptimizedEconomicDashboard({
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid-stroke)" />
                   <XAxis 
                     dataKey="period" 
-                    stroke="rgba(255,255,255,0.6)"
+                    stroke="var(--chart-axis-text)"
                     fontSize={12}
                     tickFormatter={formatPeriodLabel}
                   />
                   <YAxis 
-                    stroke="rgba(255,255,255,0.6)"
+                    stroke="var(--chart-axis-text)"
                     fontSize={12}
                     tickFormatter={(value) => `${value}${currentIndicator?.unit || ""}`}
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "rgba(0,0,0,0.8)",
-                      border: "1px solid rgba(255,255,255,0.2)",
+                      backgroundColor: "var(--chart-tooltip-bg)",
+                      border: "1px solid var(--chart-tooltip-border)",
                       borderRadius: "8px",
-                      color: "white"
+                      color: "var(--chart-tooltip-text)"
                     }}
                     formatter={formatTooltipValue}
                     labelFormatter={(label) => formatPeriodLabel(label)}
@@ -336,10 +336,10 @@ export default function OptimizedEconomicDashboard({
                   <Line
                     type="monotone"
                     dataKey={selectedIndicator}
-                    stroke={currentIndicator?.color || "#3b82f6"}
+                    stroke={currentIndicator?.color || "var(--chart-line-primary)"}
                     strokeWidth={3}
                     dot={false}
-                    activeDot={{ r: 6, fill: currentIndicator?.color }}
+                    activeDot={{ r: 6, fill: currentIndicator?.color || "var(--chart-line-primary)" }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -412,30 +412,30 @@ export default function OptimizedEconomicDashboard({
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid-stroke)" />
                   <XAxis 
                     dataKey="period" 
-                    stroke="rgba(255,255,255,0.6)"
+                    stroke="var(--chart-axis-text)"
                     fontSize={12}
                     tickFormatter={formatPeriodLabel}
                   />
                   <YAxis 
-                    stroke="rgba(255,255,255,0.6)"
+                    stroke="var(--chart-axis-text)"
                     fontSize={12}
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "rgba(0,0,0,0.8)",
-                      border: "1px solid rgba(255,255,255,0.2)",
+                      backgroundColor: "var(--chart-tooltip-bg)",
+                      border: "1px solid var(--chart-tooltip-border)",
                       borderRadius: "8px",
-                      color: "white"
+                      color: "var(--chart-tooltip-text)"
                     }}
                     labelFormatter={formatPeriodLabel}
                   />
                   <Line
                     type="monotone"
                     dataKey={correlationPair.first}
-                    stroke={indicators.find(i => i.key === correlationPair.first)?.color || "#3b82f6"}
+                    stroke={indicators.find(i => i.key === correlationPair.first)?.color || "var(--chart-line-primary)"}
                     strokeWidth={3}
                     dot={false}
                     name={indicators.find(i => i.key === correlationPair.first)?.name}
@@ -443,7 +443,7 @@ export default function OptimizedEconomicDashboard({
                   <Line
                     type="monotone"
                     dataKey={correlationPair.second}
-                    stroke={indicators.find(i => i.key === correlationPair.second)?.color || "#10b981"}
+                    stroke={indicators.find(i => i.key === correlationPair.second)?.color || "var(--chart-line-tertiary)"}
                     strokeWidth={3}
                     dot={false}
                     name={indicators.find(i => i.key === correlationPair.second)?.name}

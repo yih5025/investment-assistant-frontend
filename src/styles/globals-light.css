@@ -89,6 +89,16 @@
   --category-forex: #10b981;
   --category-merger: #a855f7;
   --category-default: #3182f6;
+
+    /* 📊 CHART COLORS (Light Mode) */
+    --chart-grid-stroke: #e5e8eb;
+    --chart-axis-text: #64748b;
+    --chart-tooltip-bg: #ffffff;
+    --chart-tooltip-border: #e5e8eb;
+    --chart-tooltip-text: #334155;
+    --chart-line-primary: #3182f6;
+    --chart-line-secondary: #10b981;
+    --chart-line-tertiary: #f59e0b;
 }
 
 @theme inline {

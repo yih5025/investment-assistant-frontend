@@ -324,29 +324,29 @@ export function ETFDetailPage({ symbol, onBack }: ETFDetailPageProps) {
                       dataKey="time" 
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }}
+                      tick={{ fontSize: 10, fill: 'var(--chart-axis-text)' }}
                     />
                     <YAxis 
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }}
+                      tick={{ fontSize: 10, fill: 'var(--chart-axis-text)' }}
                       domain={['dataMin - 1', 'dataMax + 1']}
                     />
                     <Tooltip 
                       contentStyle={{
-                        backgroundColor: 'rgba(255,255,255,0.1)',
-                        border: '1px solid rgba(255,255,255,0.2)',
+                        backgroundColor: 'var(--chart-tooltip-bg)',
+                        border: '1px solid var(--chart-tooltip-border)',
                         borderRadius: '8px',
-                        color: 'white'
+                        color: 'var(--chart-tooltip-text)'
                       }}
                     />
                     <Line 
                       type="monotone" 
                       dataKey="price" 
-                      stroke="#60a5fa" 
+                      stroke="var(--chart-line-primary)" 
                       strokeWidth={2}
                       dot={false}
-                      activeDot={{ r: 4, fill: '#60a5fa' }}
+                      activeDot={{ r: 4, fill: 'var(--chart-line-primary)' }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -421,10 +421,10 @@ export function ETFDetailPage({ symbol, onBack }: ETFDetailPageProps) {
                         <Tooltip 
                           formatter={(value: any) => [`${value.toFixed(1)}%`, '비중']}
                           contentStyle={{
-                            backgroundColor: 'rgba(255,255,255,0.1)',
-                            border: '1px solid rgba(255,255,255,0.2)',
+                            backgroundColor: 'var(--chart-tooltip-bg)',
+                            border: '1px solid var(--chart-tooltip-border)',
                             borderRadius: '8px',
-                            color: 'white'
+                            color: 'var(--chart-tooltip-text)'
                           }}
                         />
                       </PieChart>
@@ -484,24 +484,24 @@ export function ETFDetailPage({ symbol, onBack }: ETFDetailPageProps) {
                         dataKey="symbol"
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }}
+                        tick={{ fontSize: 10, fill: 'var(--chart-axis-text)' }}
                       />
                       <YAxis 
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }}
+                        tick={{ fontSize: 10, fill: 'var(--chart-axis-text)' }}
                       />
                       <Tooltip 
                         formatter={(value: any) => [`${value.toFixed(2)}%`, '비중']}
                         labelFormatter={(label) => `${label}`}
                         contentStyle={{
-                          backgroundColor: 'rgba(255,255,255,0.1)',
-                          border: '1px solid rgba(255,255,255,0.2)',
+                          backgroundColor: 'var(--chart-tooltip-bg)',
+                          border: '1px solid var(--chart-tooltip-border)',
                           borderRadius: '8px',
-                          color: 'white'
+                          color: 'var(--chart-tooltip-text)'
                         }}
                       />
-                      <Bar dataKey="weight" fill="#60a5fa" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="weight" fill="var(--chart-line-primary)" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
