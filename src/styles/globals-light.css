@@ -8,17 +8,25 @@
   /* Toss Style Variables */
   --font-size: 15px;
   --background: #f9fafb;
-  --foreground: #191f28;
+  
+  /* ✨ 수정된 부분: foreground 색상을 파란색 계열로 변경 */
+  --foreground: #334155;  /* 변경: slate-700 (파란빛 회색) */
+  /* 기존: #191f28 (거의 검은색) */
+  
   --card: #ffffff;
-  --card-foreground: #191f28;
+  --card-foreground: #334155;  /* 변경: foreground와 동일하게 */
   --popover: #ffffff;
-  --popover-foreground: #191f28;
+  --popover-foreground: #334155;  /* 변경: foreground와 동일하게 */
   --primary: #3182f6;
   --primary-foreground: #ffffff;
   --secondary: #f2f4f6;
   --secondary-foreground: #4e5968;
+  
+  /* ✨ 수정된 부분: muted-foreground도 파란색 계열로 조정 */
   --muted: #f2f4f6;
-  --muted-foreground: #8b95a1;
+  --muted-foreground: #64748b;  /* 변경: slate-500 (더 연한 파란빛 회색) */
+  /* 기존: #8b95a1 */
+  
   --accent: #e5f4ff;
   --accent-foreground: #3182f6;
   --destructive: #f04452;
@@ -45,7 +53,7 @@
   
   /* Sidebar Variables */
   --sidebar: #ffffff;
-  --sidebar-foreground: #191f28;
+  --sidebar-foreground: #334155;  /* 변경: foreground와 동일하게 */
   --sidebar-primary: #3182f6;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #e5f4ff;
@@ -1093,7 +1101,7 @@ html {
 }
 
 .calendar-day.has-event {
-  background: rgba(49, 130, 246, 0.1);
+  background: var(--card);
 }
 
 .calendar-day.has-event::after {
@@ -1122,7 +1130,7 @@ html {
   display: flex;
   flex-direction: column;
   background: var(--card);
-  border: 1px solid var(--border);
+  border: 1px solid #6faaff91;
   transition: all 0.2s ease;
   cursor: pointer;
   position: relative;

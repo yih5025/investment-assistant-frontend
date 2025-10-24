@@ -697,7 +697,7 @@ const ETFMarketTab: React.FC<ETFMarketTabProps> = ({
         case 'price':
           return b.price - a.price;
         case 'change':
-          return Math.abs(b.change_percentage) - Math.abs(a.change_percentage);
+          return Math.abs(b.changePercent) - Math.abs(a.changePercent);
         case 'volume':
           const aVol = parseVolumeToNumber(a.volume);
           const bVol = parseVolumeToNumber(b.volume);
@@ -778,7 +778,7 @@ const ETFMarketTab: React.FC<ETFMarketTabProps> = ({
                   {etf.name || `${etf.symbol} ETF`}
                 </p>
                 <p className="text-xs text-foreground/50 mt-1">
-                  24h 거래량: {typeof etf.volume_24h === 'number' ? etf.volume_24h.toLocaleString() : (etf.volume_24h || 'N/A')}
+                  24h 거래량: {etf.volume || 'N/A'}
                 </p>
               </div>
 
@@ -787,14 +787,14 @@ const ETFMarketTab: React.FC<ETFMarketTabProps> = ({
                   ${etf.price?.toFixed(2) || '0.00'}
                 </div>
                 <div className={`flex items-center justify-end space-x-1 ${
-                  (etf.change_percentage || 0) >= 0 ? "text-green-400" : "text-red-400"
+                  (etf.changePercent || 0) >= 0 ? "text-green-400" : "text-red-400"
                 }`}>
-                  {(etf.change_percentage || 0) >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                  {(etf.changePercent || 0) >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
                   <span className="text-sm">
-                    {(etf.change_percentage || 0) >= 0 ? "+" : ""}{(etf.change_amount || 0).toFixed(2)}
+                    {(etf.changePercent || 0) >= 0 ? "+" : ""}{(etf.change || 0).toFixed(2)}
                   </span>
                   <span className="text-xs">
-                    ({(etf.change_percentage || 0) >= 0 ? "+" : ""}{(etf.change_percentage || 0).toFixed(2)}%)
+                    ({(etf.changePercent || 0) >= 0 ? "+" : ""}{(etf.changePercent || 0).toFixed(2)}%)
                   </span>
                 </div>
               </div>
