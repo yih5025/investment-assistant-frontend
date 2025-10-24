@@ -779,7 +779,7 @@ html {
 /* Recharts 배경 투명 처리 */
 .recharts-wrapper,
 .recharts-surface {
-  background: transparent !important;
+  background: #fff0;
 }
 
 /* ==========================================
