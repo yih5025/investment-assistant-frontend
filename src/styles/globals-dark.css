@@ -64,6 +64,14 @@ html.dark {
   --chart-line-tertiary: #f59e0b;
 }
 
+/* 다크모드 전용 Recharts 배경 투명 처리 */
+[data-theme="dark"] .recharts-wrapper,
+[data-theme="dark"] .recharts-surface,
+html.dark .recharts-wrapper,
+html.dark .recharts-surface {
+  background: #fff0 !important;
+}
+
 .dark {
   --foreground: #ffffff;
   --card: rgba(255, 255, 255, 0.03);
@@ -774,12 +782,6 @@ html {
 .event-badge-more:focus-visible {
   outline: 1px solid var(--primary);
   outline-offset: 1px;
-}
-
-/* Recharts 배경 투명 처리 */
-.recharts-wrapper,
-.recharts-surface {
-  background: #fff0;
 }
 
 /* ==========================================
