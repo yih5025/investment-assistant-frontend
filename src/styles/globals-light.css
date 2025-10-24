@@ -1130,7 +1130,7 @@ html {
   display: flex;
   flex-direction: column;
   background: var(--card);
-  border: 1px solid #6faaff91;
+  border: 1px solid #8c8c8c80;
   transition: all 0.2s ease;
   cursor: pointer;
   position: relative;
@@ -1143,7 +1143,7 @@ html {
 }
 
 .calendar-day-enhanced.has-event {
-  background: rgba(49, 130, 246, 0.05);
+  background: var(--card);
 }
 
 .calendar-date-number {
