@@ -10,7 +10,7 @@
   --background: #f9fafb;
   
   /* ✨ 수정된 부분: foreground 색상을 파란색 계열로 변경 */
-  --foreground: #599efd;  /* 변경: slate-700 (파란빛 회색) */
+  --foreground: #0550b9;  /* 변경: slate-700 (파란빛 회색) */
   /* 기존: #191f28 (거의 검은색) */
   
   --card: #fafbfc;  /* 변경: 매우 연한 회색 (기존: #ffffff 순수 흰색) */
@@ -25,7 +25,7 @@
   
   /* ✨ 수정된 부분: muted-foreground도 파란색 계열로 조정 */
   --muted: #f2f4f6;
-  --muted-foreground: #599efd;  /* 변경: slate-500 (더 연한 파란빛 회색) */
+  --muted-foreground: #0550b981;  /* 변경: slate-500 (더 연한 파란빛 회색) */
   /* 기존: #8b95a1 */
   
   --accent: #e5f4ff;
@@ -54,7 +54,7 @@
   
   /* Sidebar Variables */
   --sidebar: #ffffff;
-  --sidebar-foreground: #599efd;  /* 변경: foreground와 동일하게 */
+  --sidebar-foreground: #0550b9;  /* 변경: foreground와 동일하게 */
   --sidebar-primary: #3182f6;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #e5f4ff;
