@@ -170,14 +170,6 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
 
   return (
     <div className="min-h-screen px-6 py-8 space-y-8 animate-in fade-in duration-700 relative">
-      {/* 건너뛰기 버튼 */}
-      <button
-        onClick={onSkip}
-        className="absolute top-6 right-6 glass-card rounded-full p-3 hover:glass-strong transition-all duration-300 group z-10"
-        aria-label="건너뛰기"
-      >
-        <X size={20} className="text-primary group-hover:text-white transition-colors" />
-      </button>
 
       {/* 헤더 */}
       <div className="text-center space-y-6 pt-8">
