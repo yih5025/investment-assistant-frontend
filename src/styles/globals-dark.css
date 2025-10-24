@@ -776,6 +776,12 @@ html {
   outline-offset: 1px;
 }
 
+/* Recharts 배경 투명 처리 */
+.recharts-wrapper,
+.recharts-surface {
+  background: transparent !important;
+}
+
 /* ==========================================
    🎯 COMMON LAYOUT UTILITIES 🎯
    ========================================== */

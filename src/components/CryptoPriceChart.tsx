@@ -130,7 +130,7 @@ export function CryptoPriceChart({ symbol, className = "" }: CryptoPriceChartPro
       </div>
 
       {/* 차트 영역 */}
-      <div className="h-48 relative bg-muted/30 rounded-lg p-2">
+      <div className="h-48 relative bg-transparent rounded-lg p-2">
         {priceChartLoading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -253,7 +253,7 @@ export function CryptoPriceChart({ symbol, className = "" }: CryptoPriceChartPro
       
       {/* 차트 정보 */}
       {priceChartData && (
-        <div className="mt-3 grid grid-cols-3 gap-2 text-xs bg-muted/30 rounded-lg p-3">
+        <div className="mt-3 grid grid-cols-3 gap-2 text-xs bg-transparent rounded-lg p-3">
           <div className="text-center">
             <div className="text-foreground/60 mb-1">데이터 포인트</div>
             <div className="font-semibold text-foreground">
