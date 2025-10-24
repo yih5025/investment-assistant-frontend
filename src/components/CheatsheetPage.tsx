@@ -1206,7 +1206,7 @@ export function CheatsheetPage({ onBack }: CheatsheetPageProps) {
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-md mx-auto glass-card rounded-t-3xl p-6 max-h-[85vh] overflow-y-auto shadow-2xl"
+              className="w-full max-w-md mx-auto card rounded-t-3xl p-6 max-h-[85vh] overflow-y-auto shadow-2xl"
             >
 
               {/* 카테고리 배지 */}
@@ -1228,7 +1228,7 @@ export function CheatsheetPage({ onBack }: CheatsheetPageProps) {
               {selectedItem.formula && (
                 <div className="glass-card rounded-xl p-4 mb-4">
                   <h3 className="text-sm font-medium text-green-400 mb-2">📐 공식</h3>
-                  <code className="text-sm font-mono bg-black/30 px-3 py-2 rounded-lg block">
+                  <code className="text-sm font-mono px-3 py-2 rounded-lg block glass-card">
                     {selectedItem.formula}
                   </code>
                 </div>
