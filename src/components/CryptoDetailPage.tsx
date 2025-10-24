@@ -620,10 +620,16 @@ export function CryptoDetailPage({ symbol, onBack }: CryptoDetailPageProps) {
                     formatter={(value: any, name: any) => [formatCryptoCurrency(value), name]}
                     labelFormatter={(label) => `날짜: ${new Date(label).toLocaleDateString('ko-KR')}`}
                     contentStyle={{ 
-                      backgroundColor: 'rgba(0, 0, 0, 0.8)', 
-                      border: '1px solid rgba(255,255,255,0.2)',
+                      backgroundColor: 'var(--chart-tooltip-bg)',
+                      border: '1px solid var(--chart-tooltip-border)',
                       borderRadius: '8px',
-                      fontSize: '12px'
+                      fontSize: '12px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                      color: 'var(--chart-tooltip-text)'
+                    }}
+                    labelStyle={{
+                      color: 'var(--chart-tooltip-text)',
+                      fontWeight: 600
                     }}
                   />
                   

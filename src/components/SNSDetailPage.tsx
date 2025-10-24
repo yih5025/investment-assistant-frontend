@@ -516,11 +516,11 @@ function GeneralAnalysisCard({
                 data={bollingerBandData} 
                 margin={{ top: 10, right: 5, left: 5, bottom: 50 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid-stroke)" />
                 
                 <XAxis 
                   dataKey="timestamp" 
-                  tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
+                  tick={{ fontSize: 10, fill: 'var(--chart-axis-text)' }}
                   tickFormatter={(value) => {
                     const date = new Date(value);
                     const day = date.getDate();
@@ -535,7 +535,7 @@ function GeneralAnalysisCard({
                 />
                 
                 <YAxis 
-                  tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
+                  tick={{ fontSize: 10, fill: 'var(--chart-axis-text)' }}
                   tickFormatter={(value) => {
                     // 간결한 포맷
                     if (value >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(1)}B`;
@@ -549,11 +549,12 @@ function GeneralAnalysisCard({
                 
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: 'rgba(0,0,0,0.95)', 
-                    border: '1px solid rgba(255,255,255,0.4)',
+                    backgroundColor: 'var(--chart-tooltip-bg)', 
+                    border: '1px solid var(--chart-tooltip-border)',
                     borderRadius: '6px',
                     padding: '8px',
-                    fontSize: '11px'
+                    fontSize: '11px',
+                    color: 'var(--chart-tooltip-text)'
                   }}
                   formatter={(value: any) => formatPrice(value, symbol)}
                   labelFormatter={(label) => {
@@ -566,7 +567,7 @@ function GeneralAnalysisCard({
                 <Line 
                   type="monotone" 
                   dataKey="upper" 
-                  stroke="#ef4444" 
+                  stroke="var(--chart-line-primary)" 
                   strokeWidth={1}
                   dot={false}
                   strokeDasharray="3 3"
@@ -576,7 +577,7 @@ function GeneralAnalysisCard({
                 <Line 
                   type="monotone" 
                   dataKey="middle" 
-                  stroke="#60a5fa" 
+                  stroke="var(--chart-line-primary)" 
                   strokeWidth={1.5}
                   dot={false}
                 />
@@ -585,7 +586,7 @@ function GeneralAnalysisCard({
                 <Line 
                   type="monotone" 
                   dataKey="lower" 
-                  stroke="#ef4444" 
+                  stroke="var(--chart-line-primary)" 
                   strokeWidth={1}
                   dot={false}
                   strokeDasharray="3 3"
@@ -595,7 +596,7 @@ function GeneralAnalysisCard({
                 <Line 
                 type="monotone" 
                 dataKey="close" 
-                stroke="#10b981" 
+                stroke="var(--chart-line-primary)" 
                 strokeWidth={2}
                 dot={(props: any) => {
                   const { cx, cy, payload } = props;
@@ -608,14 +609,14 @@ function GeneralAnalysisCard({
                           cx={cx} 
                           cy={cy} 
                           r={8} 
-                          fill="rgba(245, 158, 11, 0.2)"
+                          fill="var(--chart-line-primary)"
                         />
                         <circle 
                           cx={cx} 
                           cy={cy} 
                           r={5} 
-                          fill="#f59e0b" 
-                          stroke="#fff"
+                          fill="var(--chart-tooltip-bg)" 
+                          stroke="var(--chart-tooltip-text)"
                           strokeWidth={2}
                         />
                       </g>
@@ -648,11 +649,11 @@ function GeneralAnalysisCard({
                 data={dualAxisData} 
                 margin={{ top: 10, right: 45, left: 5, bottom: 50 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid-stroke)" />
                 
                 <XAxis 
                   dataKey="timestamp"
-                  tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
+                  tick={{ fontSize: 10, fill: 'var(--chart-axis-text)' }}
                   tickFormatter={(value) => {
                     const date = new Date(value);
                     const day = date.getDate();
@@ -669,7 +670,7 @@ function GeneralAnalysisCard({
                 {/* 왼쪽 Y축 - 가격 */}
                 <YAxis 
                   yAxisId="left"
-                  tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
+                  tick={{ fontSize: 10, fill: 'var(--chart-axis-text)' }}
                   tickFormatter={(value) => {
                     if (value >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(1)}B`;
                     if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
@@ -684,7 +685,7 @@ function GeneralAnalysisCard({
                 <YAxis 
                   yAxisId="right"
                   orientation="right"
-                  tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.8)' }}
+                  tick={{ fontSize: 10, fill: 'var(--chart-axis-text)' }}
                   tickFormatter={(value) => {
                     if (value >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(1)}B`;
                     if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
@@ -696,11 +697,12 @@ function GeneralAnalysisCard({
                 
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: 'rgba(0,0,0,0.95)', 
-                    border: '1px solid rgba(255,255,255,0.4)',
+                    backgroundColor: 'var(--chart-tooltip-bg)', 
+                    border: '1px solid var(--chart-tooltip-border)',
                     borderRadius: '6px',
                     padding: '8px',
-                    fontSize: '11px'
+                    fontSize: '11px',
+                    color: 'var(--chart-tooltip-text)'
                   }}
                   labelFormatter={(label) => new Date(label).toLocaleTimeString('ko-KR')}
                 />
@@ -710,7 +712,7 @@ function GeneralAnalysisCard({
                 yAxisId="left"
                 type="monotone"
                 dataKey="price"
-                stroke="#60a5fa"
+                stroke="var(--chart-line-primary)"
                 fill="rgba(96,165,250,0.15)"
                 strokeWidth={2}
                 dot={(props: any) => {
@@ -720,7 +722,7 @@ function GeneralAnalysisCard({
                   if (payload.isPostTime) {
                     return (
                       <g>
-                        <circle cx={cx} cy={cy} r={8} fill="rgba(245, 158, 11, 0.2)" />
+                        <circle cx={cx} cy={cy} r={8} fill="var(--chart-tooltip-bg)" />
                         <circle cx={cx} cy={cy} r={5} fill="#f59e0b" stroke="#fff" strokeWidth={2} />
                       </g>
                     );
