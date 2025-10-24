@@ -650,6 +650,63 @@
 }
 
 /* ==========================================
+   📊 RECHARTS LIGHT THEME STYLES (improve readability)
+   ========================================== */
+
+/* Chart background containers */
+.recharts-wrapper,
+.recharts-surface {
+  background: var(--secondary) !important;
+}
+
+/* Optional chart container helper */
+.chart-container {
+  background: var(--secondary);
+  border-radius: var(--radius);
+  padding: 1rem;
+  border: 1px solid var(--border);
+}
+
+/* Grid lines */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: var(--border) !important;
+}
+
+/* Axis lines and ticks */
+.recharts-cartesian-axis-line,
+.recharts-cartesian-axis-tick-line {
+  stroke: var(--border) !important;
+}
+
+/* Axis tick labels */
+.recharts-cartesian-axis-tick-value,
+.recharts-xAxis .recharts-cartesian-axis-tick-value,
+.recharts-yAxis .recharts-cartesian-axis-tick-value {
+  fill: var(--foreground) !important;
+}
+
+/* Legend */
+.recharts-legend-item-text {
+  color: var(--foreground) !important;
+  fill: var(--foreground) !important;
+}
+
+/* Tooltip */
+.recharts-tooltip-wrapper {
+  color: var(--foreground) !important;
+}
+.recharts-default-tooltip {
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--foreground) !important;
+}
+.recharts-default-tooltip .recharts-tooltip-label,
+.recharts-default-tooltip .recharts-tooltip-item {
+  color: var(--foreground) !important;
+}
+
+/* ==========================================
    🌈 OVERLAY UTILITIES 🌈
    ========================================== */
 
@@ -1089,7 +1146,7 @@ html {
   font-size: 12px;
   line-height: 1;
   z-index: 2;
-  color: var(--foreground);
+  color: var(--primary);
 }
 
 .calendar-events-container {
