@@ -721,7 +721,7 @@ function AppContent() {
     return (
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-white/80 bg-clip-textss">
             W.E Investing
           </h1>
           <p className="text-xs text-foreground/70">

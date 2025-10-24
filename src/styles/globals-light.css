@@ -1,14 +1,11 @@
-/* globals-light.css - Toss Style Light Theme */
+/* globals.css - Toss Style Theme */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@custom-variant dark (&:is(.dark *));
-
-[data-theme="light"],
-html.light {
-  /* Toss Style Variables - Light Theme */
+:root {
+  /* Toss Style Variables */
   --font-size: 15px;
   --background: #f9fafb;
   --foreground: #191f28;
@@ -56,11 +53,11 @@ html.light {
   --sidebar-border: #e5e8eb;
   --sidebar-ring: #3182f6;
   
-  /* 컴포넌트별 색상 변수 - Light Mode */
+  /* Component Specific Colors */
   --sidemenu-bg: #ffffff;
   --ipo-event-bg: #10b981;
   
-  /* 차트 색상 */
+  /* Chart Colors */
   --chart-orange: #f59e0b;
   --chart-orange-light: rgba(245, 158, 11, 0.2);
   --chart-red: #ef4444;
@@ -72,55 +69,17 @@ html.light {
   --chart-indigo: #6366f1;
   --chart-teal: #14b8a6;
   
-  /* 뉴스 타입 색상 */
+  /* News Type Colors */
   --news-sentiment: #3182f6;
   --news-financial: #10b981;
   --news-market: #f97316;
   --news-default: #6b7280;
   
-  /* 카테고리 색상 */
+  /* Category Colors */
   --category-crypto: #f97316;
   --category-forex: #10b981;
   --category-merger: #a855f7;
   --category-default: #3182f6;
-}
-
-.dark {
-  /* Toss Style Variables - Dark Theme (fallback) */
-  --background: #17171c;
-  --foreground: #ffffff;
-  --card: #1e1e23;
-  --card-foreground: #ffffff;
-  --popover: #1e1e23;
-  --popover-foreground: #ffffff;
-  --primary: #4593fc;
-  --primary-foreground: #ffffff;
-  --secondary: #2c2c35;
-  --secondary-foreground: #b8bfc8;
-  --muted: #2c2c35;
-  --muted-foreground: #6b7684;
-  --accent: #1e3a5f;
-  --accent-foreground: #4593fc;
-  --destructive: #f04452;
-  --destructive-foreground: #ffffff;
-  --border: #333740;
-  --input: #2c2c35;
-  --input-background: #2c2c35;
-  --switch-background: #4e5968;
-  --ring: #4593fc;
-  --chart-1: #4593fc;
-  --chart-2: #67e8f9;
-  --chart-3: #c4b5fd;
-  --chart-4: #6ee7b7;
-  --chart-5: #fde047;
-  --sidebar: #1e1e23;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #4593fc;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1e3a5f;
-  --sidebar-accent-foreground: #4593fc;
-  --sidebar-border: #333740;
-  --sidebar-ring: #4593fc;
 }
 
 @theme inline {
@@ -170,18 +129,16 @@ html.light {
 
   html, body {
     color: var(--foreground);
+    background: var(--background);
     min-height: 100vh;
     min-height: 100dvh;
     position: relative;
     overflow-x: hidden;
   }
 
-  /* 깨끗한 라이트 배경 - Toss 스타일 (라이트 모드 전용) */
-  [data-theme="light"] body,
-  html.light body {
-    background: var(--background);
-    background-attachment: fixed;
-  }
+/* ==========================================
+   ✨ GRADIENT DECORATIONS ✨
+   ========================================== */
 
 .gradient-blur-orange {
   position: absolute;
@@ -210,6 +167,36 @@ html.light {
   background: linear-gradient(to bottom right, rgba(168, 85, 247, 0.08), rgba(59, 130, 246, 0.08), transparent);
   border-radius: 9999px;
   filter: blur(3rem);
+  pointer-events: none;
+}
+
+.gradient-blur-purple {
+  position: absolute;
+  width: 8rem;
+  height: 8rem;
+  background: linear-gradient(to bottom right, rgba(168, 85, 247, 0.08), transparent);
+  border-radius: 9999px;
+  filter: blur(2rem);
+  pointer-events: none;
+}
+
+.gradient-blur-blue {
+  position: absolute;
+  width: 8rem;
+  height: 8rem;
+  background: linear-gradient(to bottom right, rgba(59, 130, 246, 0.08), transparent);
+  border-radius: 9999px;
+  filter: blur(2rem);
+  pointer-events: none;
+}
+
+.gradient-blur-primary {
+  position: absolute;
+  width: 8rem;
+  height: 8rem;
+  background: linear-gradient(to bottom right, rgba(49, 130, 246, 0.08), transparent);
+  border-radius: 9999px;
+  filter: blur(2rem);
   pointer-events: none;
 }
 
@@ -421,6 +408,87 @@ html.light {
   border: 1px solid rgba(49, 130, 246, 0.2);
 }
 
+/* News Type Badges */
+.badge-news-sentiment {
+  background: rgba(49, 130, 246, 0.15);
+  color: #1e40af;
+  border: 1px solid rgba(49, 130, 246, 0.3);
+}
+
+.badge-news-financial {
+  background: rgba(16, 185, 129, 0.15);
+  color: #047857;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-news-market {
+  background: rgba(249, 115, 22, 0.15);
+  color: #c2410c;
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.badge-news-default {
+  background: rgba(107, 114, 128, 0.15);
+  color: #374151;
+  border: 1px solid rgba(107, 114, 128, 0.3);
+}
+
+/* Category Badges */
+.badge-category-crypto {
+  background: rgba(249, 115, 22, 0.15);
+  color: #c2410c;
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.badge-category-forex {
+  background: rgba(16, 185, 129, 0.15);
+  color: #047857;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-category-merger {
+  background: rgba(168, 85, 247, 0.15);
+  color: #7c3aed;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.badge-category-default {
+  background: rgba(49, 130, 246, 0.15);
+  color: #1e40af;
+  border: 1px solid rgba(49, 130, 246, 0.3);
+}
+
+/* Cheatsheet Category Badges */
+.badge-cheatsheet-stock {
+  background: rgba(49, 130, 246, 0.15);
+  color: #1e40af;
+}
+
+.badge-cheatsheet-crypto {
+  background: rgba(249, 115, 22, 0.15);
+  color: #c2410c;
+}
+
+.badge-cheatsheet-etf {
+  background: rgba(16, 185, 129, 0.15);
+  color: #047857;
+}
+
+.badge-cheatsheet-economy {
+  background: rgba(168, 85, 247, 0.15);
+  color: #7c3aed;
+}
+
+.badge-cheatsheet-finance {
+  background: rgba(236, 72, 153, 0.15);
+  color: #be185d;
+}
+
+.badge-cheatsheet-app {
+  background: rgba(6, 182, 212, 0.15);
+  color: #0e7490;
+}
+
 /* ==========================================
    🖼️ AVATAR UTILITIES 🖼️
    ========================================== */
@@ -452,6 +520,72 @@ html.light {
 .avatar-xl {
   width: 4rem;
   height: 4rem;
+}
+
+/* Avatar Gradients - Special Users */
+.avatar-gradient-trump {
+  background: linear-gradient(to bottom right, rgb(239, 68, 68), rgb(185, 28, 28));
+}
+
+.avatar-gradient-elon {
+  background: linear-gradient(to bottom right, rgb(168, 85, 247), rgb(79, 70, 229));
+}
+
+.avatar-gradient-whitehouse {
+  background: linear-gradient(to bottom right, rgb(37, 99, 235), rgb(30, 64, 175));
+}
+
+.avatar-gradient-biden {
+  background: linear-gradient(to bottom right, rgb(59, 130, 246), rgb(29, 78, 216));
+}
+
+.avatar-gradient-pelosi {
+  background: linear-gradient(to bottom right, rgb(34, 197, 94), rgb(21, 128, 61));
+}
+
+/* Avatar Gradients - General (10 Variants) */
+.avatar-gradient-1 {
+  background: linear-gradient(to bottom right, rgb(59, 130, 246), rgb(168, 85, 247));
+}
+
+.avatar-gradient-2 {
+  background: linear-gradient(to bottom right, rgb(34, 197, 94), rgb(20, 184, 166));
+}
+
+.avatar-gradient-3 {
+  background: linear-gradient(to bottom right, rgb(249, 115, 22), rgb(239, 68, 68));
+}
+
+.avatar-gradient-4 {
+  background: linear-gradient(to bottom right, rgb(236, 72, 153), rgb(244, 63, 94));
+}
+
+.avatar-gradient-5 {
+  background: linear-gradient(to bottom right, rgb(99, 102, 241), rgb(59, 130, 246));
+}
+
+.avatar-gradient-6 {
+  background: linear-gradient(to bottom right, rgb(168, 85, 247), rgb(236, 72, 153));
+}
+
+.avatar-gradient-7 {
+  background: linear-gradient(to bottom right, rgb(20, 184, 166), rgb(34, 197, 94));
+}
+
+.avatar-gradient-8 {
+  background: linear-gradient(to bottom right, rgb(234, 179, 8), rgb(249, 115, 22));
+}
+
+.avatar-gradient-9 {
+  background: linear-gradient(to bottom right, rgb(239, 68, 68), rgb(236, 72, 153));
+}
+
+.avatar-gradient-10 {
+  background: linear-gradient(to bottom right, rgb(6, 182, 212), rgb(59, 130, 246));
+}
+
+.avatar-gradient-default {
+  background: linear-gradient(to bottom right, rgb(107, 114, 128), rgb(75, 85, 99));
 }
 
 /* ==========================================
@@ -649,12 +783,10 @@ html.light {
   border-radius: var(--radius);
 }
 
-
 /* ==========================================
-   🎨 TOSS GLASS STYLES (LIGHT MODE) 🎨
+   🎨 TOSS CARD STYLES 🎨
    ========================================== */
 
-/* Toss 스타일 - 깔끔한 카드 디자인 */
 .glass {
   background: var(--card);
   border-radius: var(--radius);
@@ -709,57 +841,56 @@ html.light {
 /* ==========================================
    📝 TYPOGRAPHY 📝
    ========================================== */
-@layer base {
-  :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
-    h1 {
-      font-size: 1.75rem;
-      font-weight: 700;
-      line-height: 1.3;
-      letter-spacing: -0.02em;
-    }
 
-    h2 {
-      font-size: 1.375rem;
-      font-weight: 700;
-      line-height: 1.4;
-      letter-spacing: -0.01em;
-    }
+:where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+  }
 
-    h3 {
-      font-size: 1.125rem;
-      font-weight: 600;
-      line-height: 1.5;
-    }
+  h2 {
+    font-size: 1.375rem;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+  }
 
-    h4 {
-      font-size: 1rem;
-      font-weight: 600;
-      line-height: 1.5;
-    }
+  h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.5;
+  }
 
-    p {
-      font-size: 0.9375rem;
-      font-weight: 400;
-      line-height: 1.6;
-    }
+  h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.5;
+  }
 
-    label {
-      font-size: 0.875rem;
-      font-weight: 500;
-      line-height: 1.5;
-    }
+  p {
+    font-size: 0.9375rem;
+    font-weight: 400;
+    line-height: 1.6;
+  }
 
-    button {
-      font-size: 0.9375rem;
-      font-weight: 600;
-      line-height: 1.5;
-    }
+  label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.5;
+  }
 
-    input {
-      font-size: 0.9375rem;
-      font-weight: 400;
-      line-height: 1.5;
-    }
+  button {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  input {
+    font-size: 0.9375rem;
+    font-weight: 400;
+    line-height: 1.5;
   }
 }
 
@@ -771,7 +902,6 @@ html {
    🎰 SLOT MACHINE ANIMATIONS 🎰
    ========================================== */
 
-/* 룰렛 컨테이너 */
 .slot-machine {
   position: relative;
   overflow: hidden;
@@ -784,7 +914,6 @@ html {
   touch-action: none;
 }
 
-/* 룰렛 스크롤 영역 */
 .slot-reel-interactive {
   display: flex;
   flex-direction: column;
@@ -797,7 +926,6 @@ html {
   -webkit-backface-visibility: hidden;
 }
 
-/* 수직 스크롤 애니메이션 */
 @keyframes slot-scroll {
   0% {
     transform: translateY(0);
@@ -807,7 +935,6 @@ html {
   }
 }
 
-/* GPU 가속 최적화 */
 .slot-reel-interactive > div {
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
@@ -815,18 +942,15 @@ html {
   -webkit-backface-visibility: hidden;
 }
 
-/* 호버 효과 - Light Mode */
 .slot-machine .cursor-pointer:hover {
   background-color: var(--secondary);
   transition: background-color 0.2s ease;
 }
 
-/* 일시정지 상태 */
 .slot-reel-interactive[style*="paused"] {
   animation-play-state: paused !important;
 }
 
-/* 그라데이션 마스크 - Light Mode */
 .slot-machine::before {
   content: '';
   position: absolute;
@@ -851,7 +975,6 @@ html {
   pointer-events: none;
 }
 
-/* 반응형 최적화 */
 @media (max-width: 768px) {
   .slot-machine {
     font-size: 0.875rem;
@@ -862,13 +985,11 @@ html {
   }
 }
 
-/* 성능 최적화 - 폰트 렌더링 */
 .slot-machine * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* 스크롤바 숨김 */
 .slot-machine::-webkit-scrollbar {
   display: none;
 }
@@ -878,7 +999,6 @@ html {
   scrollbar-width: none;
 }
 
-/* 터치 디바이스 최적화 */
 @media (hover: none) and (pointer: coarse) {
   .slot-machine {
     -webkit-overflow-scrolling: touch;
@@ -889,7 +1009,6 @@ html {
    📅 CALENDAR STYLES 📅
    ========================================== */
 
-/* 기본 캘린더 그리드 */
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -931,7 +1050,6 @@ html {
   border-radius: 50%;
 }
 
-/* Enhanced 캘린더 그리드 */
 .calendar-grid-enhanced {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -941,7 +1059,6 @@ html {
   padding: 0px;
 }
 
-/* Enhanced 캘린더 날짜 칸 */
 .calendar-day-enhanced {
   height: 70px;
   min-height: 70px;
@@ -964,7 +1081,6 @@ html {
   background: rgba(49, 130, 246, 0.05);
 }
 
-/* 날짜 숫자 스타일 */
 .calendar-date-number {
   position: absolute;
   top: 4px;
@@ -976,7 +1092,6 @@ html {
   color: var(--foreground);
 }
 
-/* 이벤트 컨테이너 */
 .calendar-events-container {
   display: flex;
   flex-direction: column;
@@ -987,7 +1102,6 @@ html {
   padding: 2px;
 }
 
-/* 이벤트 배지 스타일 - Light Mode */
 .event-badge {
   font-size: 10px;
   font-weight: 600;
@@ -1015,7 +1129,6 @@ html {
   z-index: 10;
 }
 
-/* 더 보기 배지 스타일 */
 .event-badge-more {
   font-size: 12px;
   font-weight: 600;
@@ -1039,7 +1152,6 @@ html {
   transform: scale(0.95);
 }
 
-/* 반응형 조정 */
 @media (max-width: 768px) {
   .calendar-day-enhanced {
     height: 140px;
@@ -1126,7 +1238,6 @@ html {
   }
 }
 
-/* 접근성 개선 */
 .calendar-day-enhanced:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
@@ -1142,7 +1253,6 @@ html {
    🎬 ANIMATIONS 🎬
    ========================================== */
 
-/* Flip Animation */
 .flip-container {
   perspective: 1000px;
   height: 100%;
@@ -1166,7 +1276,6 @@ html {
   backface-visibility: hidden;
 }
 
-/* Conveyor Belt */
 @keyframes conveyor {
   0% {
     transform: translateX(0);
@@ -1363,206 +1472,15 @@ html {
 }
 
 /* ==========================================
-   ✨ GRADIENT DECORATIONS ✨
+   🎯 COMPONENT-SPECIFIC STYLES 🎯
    ========================================== */
 
-.gradient-blur-purple {
-  position: absolute;
-  width: 8rem;
-  height: 8rem;
-  background: linear-gradient(to bottom right, rgba(168, 85, 247, 0.08), transparent);
-  border-radius: 9999px;
-  filter: blur(2rem);
-  pointer-events: none;
-}
-
-.gradient-blur-blue {
-  position: absolute;
-  width: 8rem;
-  height: 8rem;
-  background: linear-gradient(to bottom right, rgba(59, 130, 246, 0.08), transparent);
-  border-radius: 9999px;
-  filter: blur(2rem);
-  pointer-events: none;
-}
-
-.gradient-blur-primary {
-  position: absolute;
-  width: 8rem;
-  height: 8rem;
-  background: linear-gradient(to bottom right, rgba(49, 130, 246, 0.08), transparent);
-  border-radius: 9999px;
-  filter: blur(2rem);
-  pointer-events: none;
-}
-
-/* ==========================================
-   🎨 NEWS & CATEGORY BADGE STYLES (LIGHT MODE) 🎨
-   ========================================== */
-
-/* 뉴스 타입 배지 - Light Mode */
-.badge-news-sentiment {
-  background: rgba(49, 130, 246, 0.15);
-  color: #1e40af;
-  border: 1px solid rgba(49, 130, 246, 0.3);
-}
-
-.badge-news-financial {
-  background: rgba(16, 185, 129, 0.15);
-  color: #047857;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.badge-news-market {
-  background: rgba(249, 115, 22, 0.15);
-  color: #c2410c;
-  border: 1px solid rgba(249, 115, 22, 0.3);
-}
-
-.badge-news-default {
-  background: rgba(107, 114, 128, 0.15);
-  color: #374151;
-  border: 1px solid rgba(107, 114, 128, 0.3);
-}
-
-/* 카테고리 배지 - Light Mode */
-.badge-category-crypto {
-  background: rgba(249, 115, 22, 0.15);
-  color: #c2410c;
-  border: 1px solid rgba(249, 115, 22, 0.3);
-}
-
-.badge-category-forex {
-  background: rgba(16, 185, 129, 0.15);
-  color: #047857;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.badge-category-merger {
-  background: rgba(168, 85, 247, 0.15);
-  color: #7c3aed;
-  border: 1px solid rgba(168, 85, 247, 0.3);
-}
-
-.badge-category-default {
-  background: rgba(49, 130, 246, 0.15);
-  color: #1e40af;
-  border: 1px solid rgba(49, 130, 246, 0.3);
-}
-
-/* ==========================================
-   👤 AVATAR GRADIENT STYLES 👤
-   ========================================== */
-
-/* 아바타 그라데이션 - 특별 사용자 */
-.avatar-gradient-trump {
-  background: linear-gradient(to bottom right, rgb(239, 68, 68), rgb(185, 28, 28));
-}
-
-.avatar-gradient-elon {
-  background: linear-gradient(to bottom right, rgb(168, 85, 247), rgb(79, 70, 229));
-}
-
-.avatar-gradient-whitehouse {
-  background: linear-gradient(to bottom right, rgb(37, 99, 235), rgb(30, 64, 175));
-}
-
-.avatar-gradient-biden {
-  background: linear-gradient(to bottom right, rgb(59, 130, 246), rgb(29, 78, 216));
-}
-
-.avatar-gradient-pelosi {
-  background: linear-gradient(to bottom right, rgb(34, 197, 94), rgb(21, 128, 61));
-}
-
-/* 아바타 그라데이션 - 일반 (10가지 변형) */
-.avatar-gradient-1 {
-  background: linear-gradient(to bottom right, rgb(59, 130, 246), rgb(168, 85, 247));
-}
-
-.avatar-gradient-2 {
-  background: linear-gradient(to bottom right, rgb(34, 197, 94), rgb(20, 184, 166));
-}
-
-.avatar-gradient-3 {
-  background: linear-gradient(to bottom right, rgb(249, 115, 22), rgb(239, 68, 68));
-}
-
-.avatar-gradient-4 {
-  background: linear-gradient(to bottom right, rgb(236, 72, 153), rgb(244, 63, 94));
-}
-
-.avatar-gradient-5 {
-  background: linear-gradient(to bottom right, rgb(99, 102, 241), rgb(59, 130, 246));
-}
-
-.avatar-gradient-6 {
-  background: linear-gradient(to bottom right, rgb(168, 85, 247), rgb(236, 72, 153));
-}
-
-.avatar-gradient-7 {
-  background: linear-gradient(to bottom right, rgb(20, 184, 166), rgb(34, 197, 94));
-}
-
-.avatar-gradient-8 {
-  background: linear-gradient(to bottom right, rgb(234, 179, 8), rgb(249, 115, 22));
-}
-
-.avatar-gradient-9 {
-  background: linear-gradient(to bottom right, rgb(239, 68, 68), rgb(236, 72, 153));
-}
-
-.avatar-gradient-10 {
-  background: linear-gradient(to bottom right, rgb(6, 182, 212), rgb(59, 130, 246));
-}
-
-.avatar-gradient-default {
-  background: linear-gradient(to bottom right, rgb(107, 114, 128), rgb(75, 85, 99));
-}
-
-/* ==========================================
-   🎯 COMPONENT-SPECIFIC STYLES (LIGHT MODE) 🎯
-   ========================================== */
-
-/* SideMenu 배경 - Light Mode */
 .sidemenu-bg {
   background-color: var(--sidemenu-bg);
 }
 
-/* IPO 이벤트 배경 */
 .ipo-event-bg {
   background-color: var(--ipo-event-bg);
 }
 
-/* 차트셋 페이지 카테고리 배지 - Light Mode */
-.badge-cheatsheet-stock {
-  background: rgba(49, 130, 246, 0.15);
-  color: #1e40af;
-}
-
-.badge-cheatsheet-crypto {
-  background: rgba(249, 115, 22, 0.15);
-  color: #c2410c;
-}
-
-.badge-cheatsheet-etf {
-  background: rgba(16, 185, 129, 0.15);
-  color: #047857;
-}
-
-.badge-cheatsheet-economy {
-  background: rgba(168, 85, 247, 0.15);
-  color: #7c3aed;
-}
-
-.badge-cheatsheet-finance {
-  background: rgba(236, 72, 153, 0.15);
-  color: #be185d;
-}
-
-.badge-cheatsheet-app {
-  background: rgba(6, 182, 212, 0.15);
-  color: #0e7490;
-}
-
-} /* @layer base 종료 */
+} /* @layer base end */
