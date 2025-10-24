@@ -1197,7 +1197,7 @@ export function CheatsheetPage({ onBack }: CheatsheetPageProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end"
+            className="fixed inset-0 backdrop-blur-sm z-50 flex items-end"
             onClick={() => setSelectedItem(null)}
           >
             <motion.div
@@ -1206,10 +1206,8 @@ export function CheatsheetPage({ onBack }: CheatsheetPageProps) {
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-md mx-auto bg-background rounded-t-3xl p-6 max-h-[85vh] overflow-y-auto"
+              className="w-full max-w-md mx-auto glass-card rounded-t-3xl p-6 max-h-[85vh] overflow-y-auto shadow-2xl"
             >
-              {/* 핸들 바 */}
-              <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-6" />
 
               {/* 카테고리 배지 */}
               <Badge className={`${CATEGORIES.find(c => c.id === selectedItem.category)?.color} mb-3`}>
@@ -1246,9 +1244,9 @@ export function CheatsheetPage({ onBack }: CheatsheetPageProps) {
 
               {/* 팁 */}
               {selectedItem.tip && (
-                <div className="glass-card rounded-xl p-4 border border-orange-500/30 bg-orange-500/5">
-                  <h3 className="text-sm font-medium text-orange-400 mb-2">💡 활용 팁</h3>
-                  <p className="text-sm leading-relaxed">{selectedItem.tip}</p>
+                <div className="glass-strong rounded-xl p-4">
+                  <h3 className="text-sm font-medium text-primary mb-2">💡 활용 팁</h3>
+                  <p className="text-sm leading-relaxed text-foreground/90">{selectedItem.tip}</p>
                 </div>
               )}
 

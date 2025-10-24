@@ -7,7 +7,7 @@
 :root {
   /* Toss Style Variables */
   --font-size: 15px;
-  --background: #e7e7e752;
+  --background: #daedff30;
   
   /* ✨ 수정된 부분: foreground 색상을 파란색 계열로 변경 */
   --foreground: #0550b9;  /* 변경: slate-700 (파란빛 회색) */
