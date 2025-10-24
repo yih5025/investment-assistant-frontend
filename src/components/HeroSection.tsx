@@ -53,7 +53,7 @@ export function HeroSection({ onCheatsheetClick }: HeroSectionProps) {
             <div>
               <div className="text-sm text-foreground/60 mb-1">{formatDate(currentTime)}</div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-white via-white to-white/80 bg-clip-text">
-                투자자님 안녕하세요,
+                안녕하세요,
               </h1>
               <p className="text-foreground/70 mt-1 text-sm">오늘도 현명한 투자 되세요</p>
             </div>

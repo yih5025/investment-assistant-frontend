@@ -7,13 +7,13 @@
 :root {
   /* Toss Style Variables */
   --font-size: 15px;
-  --background: #f9fafb;
+  --background: #e7e7e752;
   
   /* ✨ 수정된 부분: foreground 색상을 파란색 계열로 변경 */
   --foreground: #0550b9;  /* 변경: slate-700 (파란빛 회색) */
   /* 기존: #191f28 (거의 검은색) */
   
-  --card: #fafbfc;  /* 변경: 매우 연한 회색 (기존: #ffffff 순수 흰색) */
+  --card: #fbfbfbd4;
   --card-elevated: #ffffff;  /* 추가: 강조가 필요한 카드용 순수 흰색 */
   --card-foreground: #599efd;  /* 변경: foreground와 동일하게 */
   --popover: #ffffff;
@@ -48,7 +48,7 @@
   
   /* Shadow Variables */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
   
@@ -897,6 +897,7 @@
   border-radius: calc(var(--radius) - 0.25rem);
   border: 1px solid transparent;
   transition: all 0.2s ease;
+  box-shadow: var(--shadow);
 }
 
 .glass-subtle:hover {
