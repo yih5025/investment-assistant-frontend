@@ -454,7 +454,7 @@ const StockMarketTab: React.FC<StockMarketTabProps> = ({
               <div className="flex-1">
                 <div className="flex items-center space-x-2 mb-1">
                   <span className="font-semibold text-lg">{stock.symbol}</span>
-                  <span className="text-xs px-2 py-1 rounded-md bg-blue-500/20 text-blue-300">
+                  <span className="text-xs px-2 py-1 rounded-md bg-blue-500/30 text-blue-400">
                     주식
                   </span>
                 </div>
@@ -619,7 +619,7 @@ const CryptoMarketTab: React.FC<CryptoMarketTabProps> = ({
               <div className="flex-1">
                 <div className="flex items-center space-x-2 mb-1">
                   <span className="font-semibold text-lg">{crypto.symbol}</span>
-                  <span className="text-xs px-2 py-1 rounded-md bg-orange-500/20 text-orange-300">
+                  <span className="text-xs px-2 py-1 rounded-md bg-orange-500/30 text-orange-400">
                     코인
                   </span>
                 </div>
@@ -770,7 +770,7 @@ const ETFMarketTab: React.FC<ETFMarketTabProps> = ({
               <div className="flex-1">
                 <div className="flex items-center space-x-2 mb-1">
                   <span className="font-semibold text-lg">{etf.symbol}</span>
-                  <span className="text-xs px-2 py-1 rounded-md bg-green-500/20 text-green-300">
+                  <span className="text-xs px-2 py-1 rounded-md bg-green-500/30 text-green-400">
                     ETF
                   </span>
                 </div>

@@ -1,3 +1,6 @@
+// components/CryptoPriceChart.tsx
+// 코인 가격 차트 컴포넌트 (라이트모드 최적화)
+
 import React, { useEffect, useState } from 'react';
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -77,18 +80,18 @@ export function CryptoPriceChart({ symbol, className = "" }: CryptoPriceChartPro
   // 차트가 아직 보이지 않으면 placeholder 렌더링
   if (!isVisible) {
     return (
-      <Card className={`glass-card p-4 ${className}`}>
-        <h3 className="font-bold mb-3 flex items-center">
+      <Card className={`glass-card p-4 border border-border ${className}`}>
+        <h3 className="font-bold mb-3 flex items-center text-foreground">
           <BarChart3 size={16} className="mr-2" />
           가격 차트
-          <Badge className="ml-2 bg-blue-500/20 text-blue-400 border-0 text-xs">
+          <Badge className="ml-2 bg-blue-500/20 text-blue-600 border-0 text-xs">
             빗썸
           </Badge>
         </h3>
         
         <div className="h-48 flex items-center justify-center">
           <div className="text-center">
-            <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-2">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
               <BarChart3 size={24} className="text-primary/40" />
             </div>
             <p className="text-sm text-foreground/50">차트 로딩 준비 중...</p>
@@ -99,11 +102,11 @@ export function CryptoPriceChart({ symbol, className = "" }: CryptoPriceChartPro
   }
 
   return (
-    <Card className={`glass-card p-4 ${className}`}>
-      <h3 className="font-bold mb-3 flex items-center">
+    <Card className={`glass-card p-4 border border-border ${className}`}>
+      <h3 className="font-bold mb-3 flex items-center text-foreground">
         <BarChart3 size={16} className="mr-2" />
         가격 차트
-        <Badge className="ml-2 bg-blue-500/20 text-blue-400 border-0 text-xs">
+        <Badge className="ml-2 bg-blue-500/20 text-blue-600 border-0 text-xs">
           빗썸
         </Badge>
       </h3>
@@ -115,10 +118,10 @@ export function CryptoPriceChart({ symbol, className = "" }: CryptoPriceChartPro
             key={timeframe}
             onClick={() => changeTimeframe(timeframe)}
             disabled={priceChartLoading}
-            className={`px-3 py-1 rounded-lg text-xs transition-all ${
+            className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
               selectedTimeframe === timeframe 
-                ? 'glass-strong text-primary' 
-                : 'glass-subtle hover:glass'
+                ? 'bg-primary/10 text-primary border border-primary/30' 
+                : 'bg-muted text-foreground/70 hover:bg-muted/80 border border-transparent'
             } ${priceChartLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {timeframe === '1MO' ? '30D' : timeframe}
@@ -127,7 +130,7 @@ export function CryptoPriceChart({ symbol, className = "" }: CryptoPriceChartPro
       </div>
 
       {/* 차트 영역 */}
-      <div className="h-48 relative">
+      <div className="h-48 relative bg-muted/30 rounded-lg p-2">
         {priceChartLoading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -145,8 +148,8 @@ export function CryptoPriceChart({ symbol, className = "" }: CryptoPriceChartPro
         ) : priceChartError ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <AlertTriangle className="h-8 w-8 text-red-400 mx-auto mb-2" />
-              <p className="text-sm text-red-400">{priceChartError}</p>
+              <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+              <p className="text-sm text-red-500">{priceChartError}</p>
               <button 
                 onClick={() => refreshTimeframe(selectedTimeframe)}
                 className="mt-2 text-xs text-primary hover:underline"
@@ -168,25 +171,37 @@ export function CryptoPriceChart({ symbol, className = "" }: CryptoPriceChartPro
             }))}>
               <defs>
                 <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#3182f6" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#3182f6" stopOpacity={0.05}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+              
+              {/* ✨ 수정: 그리드 선 색상 - 라이트모드용 */}
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                stroke="#e5e8eb" 
+                opacity={0.5}
+              />
+              
+              {/* ✨ 수정: X축 텍스트 색상 - 라이트모드용 */}
               <XAxis 
                 dataKey="timestamp" 
                 axisLine={false} 
                 tickLine={false}
-                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }}
+                tick={{ fontSize: 10, fill: '#64748b' }}
                 tickFormatter={(timestamp) => formatTimestampForChart(timestamp, selectedTimeframe)}
               />
+              
+              {/* ✨ 수정: Y축 텍스트 색상 - 라이트모드용 */}
               <YAxis 
                 axisLine={false} 
                 tickLine={false}
-                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.7)' }}
+                tick={{ fontSize: 10, fill: '#64748b' }}
                 domain={['dataMin * 0.98', 'dataMax * 1.02']}
                 tickFormatter={(value) => formatCurrencyKRW(value).replace('₩', '')}
               />
+              
+              {/* ✨ 수정: 툴팁 스타일 - 라이트모드용 */}
               <Tooltip 
                 formatter={(value: any, name: any) => {
                   if (name === 'price') return [formatCurrencyKRW(value), '가격'];
@@ -195,25 +210,35 @@ export function CryptoPriceChart({ symbol, className = "" }: CryptoPriceChartPro
                 }}
                 labelFormatter={(label) => `시간: ${formatTimestampForChart(label, selectedTimeframe)}`}
                 contentStyle={{ 
-                  backgroundColor: 'rgba(0, 0, 0, 0.8)', 
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #e5e8eb',
                   borderRadius: '8px',
-                  fontSize: '12px'
+                  fontSize: '12px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                  color: '#334155'
+                }}
+                labelStyle={{
+                  color: '#334155',
+                  fontWeight: 600
                 }}
               />
+              
+              {/* ✨ 수정: 차트 선 색상 - 더 진하게 */}
               <Area 
                 type="monotone" 
                 dataKey="price" 
-                stroke="#3B82F6" 
-                strokeWidth={2}
-                fill="url(#priceGradient)" 
+                stroke="#3182f6" 
+                strokeWidth={2.5}
+                fill="url(#priceGradient)"
+                dot={false}
+                activeDot={{ r: 4, fill: '#3182f6', stroke: '#ffffff', strokeWidth: 2 }}
               />
             </AreaChart>
           </ResponsiveContainer>
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <Info className="h-8 w-8 text-yellow-400 mx-auto mb-2" />
+              <Info className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
               <p className="text-sm text-foreground/70">차트 데이터를 불러올 수 없습니다.</p>
               <button 
                 onClick={() => refreshTimeframe(selectedTimeframe)}
@@ -228,25 +253,25 @@ export function CryptoPriceChart({ symbol, className = "" }: CryptoPriceChartPro
       
       {/* 차트 정보 */}
       {priceChartData && (
-        <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+        <div className="mt-3 grid grid-cols-3 gap-2 text-xs bg-muted/30 rounded-lg p-3">
           <div className="text-center">
-            <div className="text-foreground/70">데이터 포인트</div>
-            <div className="font-medium">
+            <div className="text-foreground/60 mb-1">데이터 포인트</div>
+            <div className="font-semibold text-foreground">
               {priceChartData.data_points}개
               {selectedTimeframe === '1MO' && (
-                <span className="text-green-400 ml-1">(최적화됨)</span>
+                <span className="text-green-600 ml-1">(최적화)</span>
               )}
             </div>
           </div>
           <div className="text-center">
-            <div className="text-foreground/70">최저 - 최고</div>
-            <div className="font-medium">
+            <div className="text-foreground/60 mb-1">최저 - 최고</div>
+            <div className="font-semibold text-foreground text-[10px]">
               {formatCurrencyKRW(priceChartData.price_range.min)} - {formatCurrencyKRW(priceChartData.price_range.max)}
             </div>
           </div>
           <div className="text-center">
-            <div className="text-foreground/70">마켓</div>
-            <div className="font-medium">{priceChartData.market_code}</div>
+            <div className="text-foreground/60 mb-1">마켓</div>
+            <div className="font-semibold text-foreground">{priceChartData.market_code}</div>
           </div>
         </div>
       )}

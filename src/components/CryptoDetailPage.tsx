@@ -1,3 +1,5 @@
+// components/CryptoDetailPage.tsx
+// 코인 상세 페이지 컴포넌트
 import { useState, useEffect } from "react";
 import { 
   ArrowLeft, Star, TrendingUp, TrendingDown, AlertTriangle, DollarSign, 
