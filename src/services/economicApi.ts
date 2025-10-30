@@ -90,7 +90,7 @@ export interface FederalFundsRateData {
       if (typeof window !== 'undefined') {
         const envApiBase = (import.meta as any)?.env?.VITE_API_BASE_URL;
         if (envApiBase) {
-          console.log("🌐 환경변수에서 API URL 사용:", envApiBase);
+          // console.log("🌐 환경변수에서 API URL 사용:", envApiBase);
           return envApiBase;
         }
       }
@@ -99,29 +99,29 @@ export interface FederalFundsRateData {
       if (typeof window !== 'undefined') {
         const hostname = window.location.hostname;
         
-        console.log("🔍 현재 환경 분석:", { hostname });
+        // console.log("🔍 현재 환경 분석:", { hostname });
   
         // Vercel 배포 환경
         if (hostname.includes('vercel.app')) {
-          console.log("🌐 Vercel 환경 감지 → 외부 API 사용");
+          // console.log("🌐 Vercel 환경 감지 → 외부 API 사용");
           return 'https://api.investment-assistant.site/api/v1';
         }
         
         // 로컬 개발 환경
         if (hostname === 'localhost' || hostname === '127.0.0.1') {
-          console.log("🌐 로컬 환경 감지 → 로컬 API 사용");
+          // console.log("🌐 로컬 환경 감지 → 로컬 API 사용");
           return 'http://localhost:8888/api/v1';
         }
         
         // K8s 내부 환경
         if (hostname.includes('192.168.') || hostname.includes('10.') || hostname.includes('172.')) {
-          console.log("🌐 K8s 환경 감지 → 내부 프록시 사용");
+          // console.log("🌐 K8s 환경 감지 → 내부 프록시 사용");
           return '/api/v1';
         }
       }
   
       // 기본값: HTTPS 사용
-      console.log("🌐 기본 HTTPS API URL 사용: https://api.investment-assistant.site/api/v1");
+      // console.log("🌐 기본 HTTPS API URL 사용: https://api.investment-assistant.site/api/v1");
       return 'https://api.investment-assistant.site/api/v1';
     }
   
@@ -146,7 +146,7 @@ export interface FederalFundsRateData {
         return null;
       }
   
-      console.log(`📦 캐시에서 데이터 반환: ${key}`);
+      // console.log(`📦 캐시에서 데이터 반환: ${key}`);
       return cached.data;
     }
   
@@ -156,7 +156,7 @@ export interface FederalFundsRateData {
         timestamp: Date.now(),
         ttl: ttlMs
       });
-      console.log(`💾 캐시에 데이터 저장: ${key} (TTL: ${ttlMs}ms)`);
+      // console.log(`💾 캐시에 데이터 저장: ${key} (TTL: ${ttlMs}ms)`);
     }
   
     // =========================================================================
@@ -176,7 +176,7 @@ export interface FederalFundsRateData {
   
       // 중복 요청 방지
       if (this.pendingRequests.has(cacheKey)) {
-        console.log(`⏳ 중복 요청 대기 중: ${endpoint}`);
+        // console.log(`⏳ 중복 요청 대기 중: ${endpoint}`);
         return this.pendingRequests.get(cacheKey);
       }
   
@@ -215,7 +215,7 @@ export interface FederalFundsRateData {
         const baseUrlWithSlash = `${this.baseUrl}${endpoint}${endpoint.endsWith('/') ? '' : '/'}`;
         const finalUrl = `${baseUrlWithSlash}${queryString ? `?${queryString}` : ''}`;
         
-        console.log(`🚀 경제 API 요청: ${finalUrl}`);
+        // console.log(`🚀 경제 API 요청: ${finalUrl}`);
   
         const response = await fetch(finalUrl, {
           signal: controller.signal,
@@ -234,7 +234,7 @@ export interface FederalFundsRateData {
         // 캐시에 저장
         this.setCache(cacheKey, data, cacheTtl);
         
-        console.log(`✅ 경제 API 응답 성공: ${endpoint}`);
+        // console.log(`✅ 경제 API 응답 성공: ${endpoint}`);
         return data;
   
       } catch (error) {
@@ -384,11 +384,11 @@ export interface FederalFundsRateData {
     // =========================================================================
   
     async fetchEconomicData(): Promise<EconomicDataResponse> {
-      console.log('🚀 경제 데이터 통합 로딩 시작...');
+      // console.log('🚀 경제 데이터 통합 로딩 시작...');
   
       try {
         // 병렬로 모든 API 호출
-        console.log('📡 4개 경제 API 병렬 호출 중...');
+        // console.log('📡 4개 경제 API 병렬 호출 중...');
         const [fedData, inflationData, cpiData, treasuryData] = await Promise.all([
           this.fetchFederalFundsRate(),
           this.fetchInflationData(),
@@ -396,7 +396,7 @@ export interface FederalFundsRateData {
           this.fetchTreasuryYieldData()
         ]);
   
-        console.log(`✅ 병렬 로딩 완료: Fed(${fedData.length}) + Inflation(${inflationData.length}) + CPI(${cpiData.length}) + Treasury(${treasuryData.length})`);
+        // console.log(`✅ 병렬 로딩 완료: Fed(${fedData.length}) + Inflation(${inflationData.length}) + CPI(${cpiData.length}) + Treasury(${treasuryData.length})`);
   
         // 데이터 결합
         const combinedData = this.combineEconomicData(fedData, inflationData, cpiData, treasuryData);
@@ -419,7 +419,7 @@ export interface FederalFundsRateData {
         // 소스 목록
         const sources = ['Federal Reserve', 'Bureau of Labor Statistics', 'Treasury Department'];
   
-        console.log(`📊 최종 결과: ${stats.totalDataPoints}개 데이터 포인트`);
+        // console.log(`📊 최종 결과: ${stats.totalDataPoints}개 데이터 포인트`);
   
         return {
           data: combinedData,
@@ -492,7 +492,7 @@ export interface FederalFundsRateData {
     clearCache(): void {
       this.cache.clear();
       this.pendingRequests.clear();
-      console.log('🗑️ 경제 데이터 캐시 초기화 완료');
+      // console.log('🗑️ 경제 데이터 캐시 초기화 완료');
     }
   
     getCacheStats() {

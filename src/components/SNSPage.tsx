@@ -121,22 +121,22 @@ export function SNSPage({ onPostClick }: SNSPageProps) {
   });
 
   // 디버깅용 로그
-  console.log('📊 SNSPage State:', {
-    posts: posts.length,
-    loading,
-    error,
-    params,
-    filter,
-    hasMore,
-    totalLoaded,
-    isLoadingMore
-  });
+  // console.log('📊 SNSPage State:', {
+  //   posts: posts.length,
+  //   loading,
+  //   error,
+  //   params,
+  //   filter,
+  //   hasMore,
+  //   totalLoaded,
+  //   isLoadingMore
+  // });
 
   useEffect(() => {
     const apiParams = toApiParams();
     
     if (apiParams.post_source !== params.post_source) {
-      console.log('🎯 필터 변경 감지:', apiParams);
+      // console.log('🎯 필터 변경 감지:', apiParams);
       updateFilter(apiParams);
     }
   }, [filter.platform]);

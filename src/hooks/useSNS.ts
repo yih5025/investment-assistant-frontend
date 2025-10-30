@@ -42,7 +42,7 @@ export function useSNSList(options: UseSNSListOptions = {}) {
   } = useSWRApi(
     swrKey,
     async () => {
-      console.log('🚀 SWR fetcher:', params.post_source);
+      // console.log('🚀 SWR fetcher:', params.post_source);
       const result = await snsApiService.getPosts({ 
         skip: 0, 
         limit: 20,
@@ -59,14 +59,14 @@ export function useSNSList(options: UseSNSListOptions = {}) {
         console.error('❌ SWR error:', error);
       },
       onSuccess: (data) => {
-        console.log('✅ SWR success:', data);
+        // console.log('✅ SWR success:', data);
       }
     }
   );
 
   useEffect(() => {
     if (!isInitialLoading && firstPagePosts) {
-      console.log('✅ 첫 페이지 데이터 설정:', firstPagePosts.length);
+      // console.log('✅ 첫 페이지 데이터 설정:', firstPagePosts.length);
       setAllPosts(firstPagePosts);
       setLoadedPages(new Set([0]));
       setIsLoadingMore(false);
@@ -74,11 +74,11 @@ export function useSNSList(options: UseSNSListOptions = {}) {
   }, [firstPagePosts, isInitialLoading]);
 
   const updateFilter = useCallback((newParams: Partial<SNSListParams>) => {
-    console.log('🔄 필터 업데이트:', newParams);
+    // console.log('🔄 필터 업데이트:', newParams);
     
     setParams(prev => {
       if (prev.post_source === newParams.post_source) {
-        console.log('⚠️ 동일한 필터 - 업데이트 스킵');
+        // console.log('⚠️ 동일한 필터 - 업데이트 스킵');
         return prev;
       }
       
@@ -121,7 +121,7 @@ export function useSNSList(options: UseSNSListOptions = {}) {
   }, [allPosts.length, loadedPages, isLoadingMore, params.post_source]);
   
   const refresh = useCallback(() => {
-    console.log('🔄 새로고침');
+    // console.log('🔄 새로고침');
     setAllPosts([]);
     setLoadedPages(new Set());
     setIsLoadingMore(false);
@@ -259,7 +259,7 @@ export function useSNSFilter(initialFilter: Partial<SNSFilter> = {}) {
       post_source: filter.platform === 'all' ? 'all' : filter.platform,
       // TODO: 검색과 정렬은 백엔드 API에서 지원할 때 추가
     };
-    console.log('🔄 Converting filter to API params:', { filter, apiParams });
+    // console.log('🔄 Converting filter to API params:', { filter, apiParams });
     return apiParams;
   }, [filter.platform]); // 필요한 속성만 의존성으로 설정
 

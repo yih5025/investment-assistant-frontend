@@ -110,14 +110,14 @@ const MarketPage: React.FC<MarketPageProps> = ({ onStockClick, onCryptoClick, on
 
   // 페이지 마운트 시 연결 상태 확인 (재연결 방지)
   useEffect(() => {
-    console.log('📊 MarketPage 마운트 - 연결 상태 확인');
+    // console.log('📊 MarketPage 마운트 - 연결 상태 확인');
     
     // WebSocket 서비스가 초기화되지 않은 경우에만 새로고침
     const status = overallStatus;
     const hasData = !isEmpty;
     
     if (status === 'disconnected' || (!hasData && status !== 'connecting')) {
-      console.log('🔄 연결 또는 데이터 없음 - 새로고침 필요');
+      // console.log('🔄 연결 또는 데이터 없음 - 새로고침 필요');
       refreshData();
     }
   }, []); // 🎯 빈 의존성 배열로 변경 - 마운트 시 한번만 실행

@@ -102,7 +102,7 @@ export function useETFDetail(initialSymbol?: string): UseETFDetailReturn {
       return;
     }
 
-    console.log(`ETF 상세 정보 조회 시작: ${symbol} (차트 제외)`);
+    // console.log(`ETF 상세 정보 조회 시작: ${symbol} (차트 제외)`);
     
     setState(prev => ({ 
       ...prev, 
@@ -164,7 +164,7 @@ export function useETFDetail(initialSymbol?: string): UseETFDetailReturn {
         error: null
       }));
 
-      console.log(`ETF 상세 정보 조회 성공: ${symbol} (차트 제외)`, etfDetailData);
+      // console.log(`ETF 상세 정보 조회 성공: ${symbol} (차트 제외)`, etfDetailData);
       
       // 상세 정보 로드 완료 후 별도로 차트 데이터 로드
       if (timeframe) {
@@ -192,7 +192,7 @@ export function useETFDetail(initialSymbol?: string): UseETFDetailReturn {
       return;
     }
 
-    console.log(`ETF 차트 데이터 조회: ${symbolToUse} (${timeframe})`);
+    // console.log(`ETF 차트 데이터 조회: ${symbolToUse} (${timeframe})`);
     
     setState(prev => ({ ...prev, chartLoading: true }));
     setCurrentTimeframe(timeframe);
@@ -227,7 +227,7 @@ export function useETFDetail(initialSymbol?: string): UseETFDetailReturn {
         chartLoading: false
       }));
 
-      console.log(`ETF 차트 데이터 업데이트 완료: ${symbolToUse} (${timeframe})`, chartResult.chart_data?.length || 0, '개 포인트');
+      // console.log(`ETF 차트 데이터 업데이트 완료: ${symbolToUse} (${timeframe})`, chartResult.chart_data?.length || 0, '개 포인트');
       
     } catch (error) {
       console.error(`ETF 차트 데이터 조회 실패:`, error);
@@ -243,7 +243,7 @@ export function useETFDetail(initialSymbol?: string): UseETFDetailReturn {
   // 데이터 새로고침
   const refreshData = useCallback(async () => {
     if (currentSymbol) {
-      console.log(`ETF 데이터 새로고침: ${currentSymbol}`);
+      // console.log(`ETF 데이터 새로고침: ${currentSymbol}`);
       await fetchETFDetail(currentSymbol, currentTimeframe);
     }
   }, [currentSymbol, currentTimeframe, fetchETFDetail]);
@@ -251,7 +251,7 @@ export function useETFDetail(initialSymbol?: string): UseETFDetailReturn {
   // 초기 데이터 로드
   useEffect(() => {
     if (initialSymbol) {
-      console.log(`ETF Detail 훅 초기화: ${initialSymbol}`);
+      // console.log(`ETF Detail 훅 초기화: ${initialSymbol}`);
       fetchETFDetail(initialSymbol);
     }
   }, [initialSymbol, fetchETFDetail]);
@@ -280,7 +280,7 @@ export function useETFSearch() {
       return;
     }
 
-    console.log(`ETF 검색: "${query}"`);
+    // console.log(`ETF 검색: "${query}"`);
     setSearchLoading(true);
     setSearchError(null);
 
@@ -300,7 +300,7 @@ export function useETFSearch() {
       }
 
       setSearchResults(result.results || []);
-      console.log(`ETF 검색 완료: ${result.results?.length || 0}개 결과`);
+      // console.log(`ETF 검색 완료: ${result.results?.length || 0}개 결과`);
       
     } catch (error) {
       console.error('ETF 검색 실패:', error);
@@ -334,7 +334,7 @@ export function useETFBasicInfo() {
   const fetchBasicInfo = useCallback(async (symbol: string) => {
     if (!symbol) return;
 
-    console.log(`ETF 기본 정보 조회: ${symbol}`);
+    // console.log(`ETF 기본 정보 조회: ${symbol}`);
     setLoading(true);
     setError(null);
 
@@ -353,7 +353,7 @@ export function useETFBasicInfo() {
       }
 
       setBasicInfo(result);
-      console.log(`ETF 기본 정보 조회 성공: ${symbol}`);
+      // console.log(`ETF 기본 정보 조회 성공: ${symbol}`);
       
     } catch (error) {
       console.error(`ETF 기본 정보 조회 실패 (${symbol}):`, error);

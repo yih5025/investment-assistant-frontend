@@ -168,7 +168,7 @@ export const useNews = (options: UseNewsOptions = {}): UseNewsReturn => {
       console.error('🚨 뉴스 로딩 에러:', error);
     },
     onSuccess: (data) => {
-      console.log('✅ 뉴스 로딩 성공:', {
+      // console.log('✅ 뉴스 로딩 성공:', {
         pages: data.pages.length,
         totalItems: data.pages.reduce((acc, page) => acc + page.items.length, 0)
       });

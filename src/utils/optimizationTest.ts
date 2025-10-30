@@ -31,7 +31,7 @@ export class OptimizationTester {
     };
     this.lastRequestTimes = {};
 
-    console.log('🧪 최적화 테스트 시작');
+    // console.log('🧪 최적화 테스트 시작');
     
     // 각 서비스의 업데이트 이벤트 모니터링
     webSocketManager.subscribe('sp500_update', () => {
@@ -52,7 +52,7 @@ export class OptimizationTester {
     this.requestCounts[service] = (this.requestCounts[service] || 0) + 1;
     this.lastRequestTimes[service] = now;
     
-    console.log(`📊 ${service} 요청 #${this.requestCounts[service]}`);
+    // console.log(`📊 ${service} 요청 #${this.requestCounts[service]}`);
   }
 
   public getTestResults(): OptimizationTestResult {
@@ -96,23 +96,23 @@ export class OptimizationTester {
   public logOptimizationSummary(): void {
     const results = this.getTestResults();
     
-    console.log('🎯 최적화 테스트 결과:');
-    console.log(`총 요청 수: ${results.totalRequests}회`);
-    console.log(`시간당 요청 수: ${Math.round(results.requestsPerHour)}회`);
-    console.log(`평균 요청 간격: ${Math.round(results.averageInterval / 1000)}초`);
-    console.log(`예상 요청 감소율: ${Math.round(results.estimatedReduction)}%`);
+    // console.log('🎯 최적화 테스트 결과:');
+    // console.log(`총 요청 수: ${results.totalRequests}회`);
+    // console.log(`시간당 요청 수: ${Math.round(results.requestsPerHour)}회`);
+    // console.log(`평균 요청 간격: ${Math.round(results.averageInterval / 1000)}초`);
+    // console.log(`예상 요청 감소율: ${Math.round(results.estimatedReduction)}%`);
     
-    console.log('\n📋 서비스별 상세:');
+    // console.log('\n📋 서비스별 상세:');
     Object.entries(results.services).forEach(([service, data]) => {
-      console.log(`${service}: ${Math.round(data.requestsPerHour)}회/시간, ${Math.round(data.interval / 1000)}초 간격`);
+      // console.log(`${service}: ${Math.round(data.requestsPerHour)}회/시간, ${Math.round(data.interval / 1000)}초 간격`);
     });
 
     if (results.estimatedReduction > 80) {
-      console.log('✅ 최적화 목표 달성! (80% 이상 요청 감소)');
+      // console.log('✅ 최적화 목표 달성! (80% 이상 요청 감소)');
     } else if (results.estimatedReduction > 50) {
-      console.log('🟡 최적화 부분 성공 (50% 이상 요청 감소)');
+      // console.log('🟡 최적화 부분 성공 (50% 이상 요청 감소)');
     } else {
-      console.log('❌ 최적화 목표 미달성 (50% 미만 요청 감소)');
+      // console.log('❌ 최적화 목표 미달성 (50% 미만 요청 감소)');
     }
   }
 

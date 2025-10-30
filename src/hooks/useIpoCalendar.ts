@@ -46,14 +46,14 @@ export function useIPOCalendar() {
     setError(null);
     
     try {
-      console.log('📅 Fetching IPO data');
+      // console.log('📅 Fetching IPO data');
       
       const response = await ipoCalendarService.getIPOCalendar();
       
       setIPOData(response.items);
       setLastFetchTime(Date.now());
       
-      console.log(`✅ IPO data loaded: ${response.items.length} events`);
+      // console.log(`✅ IPO data loaded: ${response.items.length} events`);
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
@@ -69,10 +69,10 @@ export function useIPOCalendar() {
    */
   const fetchStatistics = useCallback(async () => {
     try {
-      console.log('📊 Fetching IPO statistics');
+      // console.log('📊 Fetching IPO statistics');
       const stats = await ipoCalendarService.getStatistics();
       setStatistics(stats);
-      console.log('✅ IPO statistics loaded:', stats);
+      // console.log('✅ IPO statistics loaded:', stats);
     } catch (err) {
       console.error('❌ IPO statistics fetch failed:', err);
       // 통계는 선택적이므로 에러를 전체 상태에 반영하지 않음

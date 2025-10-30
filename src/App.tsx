@@ -219,14 +219,14 @@ function AppContent() {
   // ============================================================================
   
   useEffect(() => {
-    console.log('🚀 App 시작 - WebSocket 서비스 앱 수준 초기화');
+    // console.log('🚀 App 시작 - WebSocket 서비스 앱 수준 초기화');
     
     // 서비스가 아직 초기화되지 않은 경우에만 초기화
     if (!webSocketManager.getStatus().initialized) {
       //console.log('🔧 WebSocket 서비스 초기화 중...');
       webSocketManager.initialize();
     } else {
-      console.log('✅ WebSocket 서비스 이미 초기화됨 - 기존 연결 활용');
+      // console.log('✅ WebSocket 서비스 이미 초기화됨 - 기존 연결 활용');
     }
 
     // 연결 상태 모니터링 (선택사항)
@@ -319,13 +319,13 @@ function AppContent() {
   }, []);
 
   const handleLogin = (email: string, password: string) => {
-    console.log("로그인:", email, password);
+    // console.log("로그인:", email, password);
     setAuthState("authenticated");
     setViewState("main");
   };
 
   const handleSignup = (userData: any) => {
-    console.log("회원가입:", userData);
+    // console.log("회원가입:", userData);
     setAuthState("authenticated");
     setViewState("main");
   };

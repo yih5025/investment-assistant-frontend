@@ -164,14 +164,14 @@ export function useEarningsCalendar() {
         limit: 2000
       };
       
-      console.log('📅 Fetching earnings calendar data:', params);
+      // console.log('📅 Fetching earnings calendar data:', params);
       
       const response: EarningsCalendarResponse = await earningsCalendarService.getEarningsCalendar(params);
       
       setCalendarData(response.items);
       setLastFetchTime(Date.now());
       
-      console.log(`✅ Earnings calendar loaded: ${response.items.length} events`);
+      // console.log(`✅ Earnings calendar loaded: ${response.items.length} events`);
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -188,13 +188,13 @@ export function useEarningsCalendar() {
    */
   const fetchIPOData = useCallback(async () => {
     try {
-      console.log('📅 Fetching IPO data');
+      // console.log('📅 Fetching IPO data');
       
       const response = await ipoCalendarService.getIPOCalendar();
       
       setIPOData(response.items);
       
-      console.log(`✅ IPO data loaded: ${response.items.length} events`);
+      // console.log(`✅ IPO data loaded: ${response.items.length} events`);
       
     } catch (error) {
       console.error('❌ IPO data fetch failed:', error);
@@ -210,13 +210,13 @@ export function useEarningsCalendar() {
     updateError('weekly', null);
     
     try {
-      console.log('📰 Fetching weekly earnings news');
+      // console.log('📰 Fetching weekly earnings news');
       
       const response: WeeklyEarningsNewsResponse = await earningsCalendarService.getWeeklyEarningsNews();
       
       setWeeklyNewsData(response);
       
-      console.log(`✅ Weekly news loaded: ${response.earnings_with_news.length} companies`);
+      // console.log(`✅ Weekly news loaded: ${response.earnings_with_news.length} companies`);
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -235,13 +235,13 @@ export function useEarningsCalendar() {
     updateError('news', null);
     
     try {
-      console.log('📰 Fetching news for event:', eventId);
+      // console.log('📰 Fetching news for event:', eventId);
       
       const response: EarningsNewsResponse = await earningsCalendarService.getEarningsNews(eventId);
       
       setSelectedEventNews(response);
       
-      console.log(`✅ Event news loaded: ${response.forecast_news.length} forecast`);
+      // console.log(`✅ Event news loaded: ${response.forecast_news.length} forecast`);
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -350,11 +350,11 @@ export function useEarningsCalendar() {
   useEffect(() => {
     // React Strict Mode에서 두 번 실행되는 것을 방지
     if (hasInitialized.current) {
-      console.log('⏭️  초기화 스킵 (이미 실행됨)');
+      // console.log('⏭️  초기화 스킵 (이미 실행됨)');
       return;
     }
     
-    console.log('🚀 초기 데이터 로드 시작');
+    // console.log('🚀 초기 데이터 로드 시작');
     hasInitialized.current = true;
     
     fetchCalendarData();

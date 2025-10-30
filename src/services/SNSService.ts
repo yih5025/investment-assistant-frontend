@@ -178,23 +178,23 @@ class SNSApiService {
     const endpoint = `/sns/analysis/posts${queryString}`;
     const fullUrl = `${API_BASE_URL}${endpoint}`;
     
-    console.log('🔍 SNS Posts Request:', { 
-      endpoint, 
-      fullUrl, 
-      params,
-      queryString 
-    });
+    // console.log('🔍 SNS Posts Request:', { 
+    //   endpoint, 
+    //   fullUrl, 
+    //   params,
+    //   queryString 
+    // });
     
     try {
       const response = await apiRequest<SNSPost[]>(endpoint);
       
-      console.log('✅ SNS Posts Response:', { 
-        type: typeof response,
-        isArray: Array.isArray(response),
-        count: Array.isArray(response) ? response.length : 'Not an array',
-        firstItem: Array.isArray(response) && response.length > 0 ? response[0] : null,
-        rawResponse: response
-      });
+      // console.log('✅ SNS Posts Response:', { 
+      //   type: typeof response,
+      //   isArray: Array.isArray(response),
+      //   count: Array.isArray(response) ? response.length : 'Not an array',
+      //   firstItem: Array.isArray(response) && response.length > 0 ? response[0] : null,
+      //   rawResponse: response
+      // });
       
       // 응답이 배열이 아닌 경우 처리
       if (!Array.isArray(response)) {
@@ -220,14 +220,14 @@ class SNSApiService {
   async getPostDetail(postSource: string, postId: string): Promise<SNSPost> {
     const endpoint = `/sns/analysis/posts/${postSource}/${postId}`;
     
-    console.log('Fetching SNS post detail:', { postSource, postId });
+    // console.log('Fetching SNS post detail:', { postSource, postId });
     
     const response = await apiRequest<SNSPost>(endpoint);
     
-    console.log('SNS post detail response:', {
-      postId: response.analysis.post_id,
-      source: response.analysis.post_source
-    });
+    // console.log('SNS post detail response:', {
+    //   postId: response.analysis.post_id,
+    //   source: response.analysis.post_source
+    // });
     
     return response;
   }

@@ -858,7 +858,7 @@ function AdvancedAnalysisCard({ post, symbol, formatPrice }: AdvancedAnalysisCar
       
       console.group(`📊 ${symbol} 가격 변화 분석`);
       
-      console.log('1. OHLCV 데이터 샘플:');
+      // console.log('1. OHLCV 데이터 샘플:');
       const sampleData = [];
       if (ohlcvData[0]) sampleData.push({ label: '첫번째', ...ohlcvData[0] });
       if (ohlcvData.length > 1) {
@@ -872,17 +872,17 @@ function AdvancedAnalysisCard({ post, symbol, formatPrice }: AdvancedAnalysisCar
         console.table(sampleData);
       }
       
-      console.log('2. 게시 시점 정보:');
+      // console.log('2. 게시 시점 정보:');
       const postIndex = ohlcvData.findIndex(p => 
         Math.abs(new Date(p.timestamp).getTime() - new Date(post.analysis.post_timestamp).getTime()) < 60000
       );
-      console.log({
+      // console.log({
         postTimestamp: post.analysis.post_timestamp,
         postIndex: postIndex,
         postData: postIndex >= 0 ? ohlcvData[postIndex] : 'NOT FOUND'
       });
       
-      console.log('3. 가격 변화 요약:');
+      // console.log('3. 가격 변화 요약:');
       console.table({
         '게시가': priceChangeSummary.postPrice,
         '최고가': priceChangeSummary.maxPrice,
@@ -894,8 +894,8 @@ function AdvancedAnalysisCard({ post, symbol, formatPrice }: AdvancedAnalysisCar
       });
       
       if (volatilityData) {
-        console.log('4. 변동폭 분석:');
-        console.log({
+        // console.log('4. 변동폭 분석:');
+        // console.log({
           '게시전평균': volatilityData.avgBefore.toFixed(2) + '%',
           '게시후평균': volatilityData.avgAfter.toFixed(2) + '%',
           '게시전샘플': volatilityData.before.length,
@@ -903,13 +903,13 @@ function AdvancedAnalysisCard({ post, symbol, formatPrice }: AdvancedAnalysisCar
         });
         
         if (volatilityData.after.length > 0) {
-          console.log('게시 후 변동폭 처음 5개:');
+          // console.log('게시 후 변동폭 처음 5개:');
           console.table(volatilityData.after.slice(0, 5));
         }
       }
       
       if (volumeChangeSummary) {
-        console.log('5. 거래량 분석:');
+        // console.log('5. 거래량 분석:');
         console.table({
           '게시전평균': volumeChangeSummary.avgVolumeBefore.toFixed(2),
           '게시후평균': volumeChangeSummary.avgVolumeAfter.toFixed(2),

@@ -20,7 +20,7 @@ import {
     async getIPOCalendar(): Promise<IPOCalendarResponse> {
       const url = `${this.baseURL}/ipo-calendar/`;
       
-      console.log('🚀 IPO Calendar API 호출:', url);
+      // console.log('🚀 IPO Calendar API 호출:', url);
       
       const response = await fetch(url);
       

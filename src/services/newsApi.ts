@@ -111,13 +111,13 @@ class NewsApiClient {
     if (typeof window !== 'undefined') {
       const envApiBase = (import.meta as any)?.env?.VITE_API_BASE_URL;
       if (envApiBase) {
-        console.log("🌐 환경변수에서 API URL 사용:", envApiBase);
+        // console.log("🌐 환경변수에서 API URL 사용:", envApiBase);
         return envApiBase;
       }
     }
 
     // 🔒 HTTPS 사용 (SSL 인증서 발급 완료)
-    console.log("🔒 HTTPS API URL 사용: https://api.investment-assistant.site/api/v1");
+    // console.log("🔒 HTTPS API URL 사용: https://api.investment-assistant.site/api/v1");
     return 'https://api.investment-assistant.site/api/v1';
   }
 
@@ -142,7 +142,7 @@ class NewsApiClient {
       return null;
     }
 
-    console.log(`📦 캐시에서 데이터 반환: ${key}`);
+    // console.log(`📦 캐시에서 데이터 반환: ${key}`);
     return cached.data;
   }
 
@@ -152,7 +152,7 @@ class NewsApiClient {
       timestamp: Date.now(),
       ttl: ttlMs
     });
-    console.log(`💾 캐시에 데이터 저장: ${key} (TTL: ${ttlMs}ms)`);
+    // console.log(`💾 캐시에 데이터 저장: ${key} (TTL: ${ttlMs}ms)`);
   }
 
   // =========================================================================
@@ -171,7 +171,7 @@ class NewsApiClient {
 
     
     if (this.pendingRequests.has(cacheKey)) {
-      console.log(`⏳ 중복 요청 대기 중: ${endpoint}`);
+      // console.log(`⏳ 중복 요청 대기 중: ${endpoint}`);
       return this.pendingRequests.get(cacheKey);
     }
 
@@ -210,7 +210,7 @@ class NewsApiClient {
       const baseUrlWithSlash = `${this.baseUrl}${endpoint}${endpoint.endsWith('/') ? '' : '/'}`;
       const finalUrl = `${baseUrlWithSlash}${queryString ? `?${queryString}` : ''}`;
       
-      console.log(`🚀 API 요청: ${finalUrl}`);
+      // console.log(`🚀 API 요청: ${finalUrl}`);
 
       const response = await fetch(finalUrl, {
         signal: controller.signal,
@@ -230,7 +230,7 @@ class NewsApiClient {
       // 캐시에 저장
       this.setCache(cacheKey, data, cacheTtl);
       
-      console.log(`✅ API 응답 성공: ${endpoint}`);
+      // console.log(`✅ API 응답 성공: ${endpoint}`);
       return data;
 
     } catch (error) {
@@ -294,7 +294,7 @@ class NewsApiClient {
         type: "market" as const
       }));
     
-    console.log(`📰 Market News: ${items.length}개 → ${filtered.length}개 (내용 있는 뉴스만)`);
+    // console.log(`📰 Market News: ${items.length}개 → ${filtered.length}개 (내용 있는 뉴스만)`);
     return filtered;
   }
 
@@ -331,7 +331,7 @@ class NewsApiClient {
         type: "financial" as const
       }));
     
-    console.log(`💼 Financial News: ${items.length}개 → ${filtered.length}개 (내용 있는 뉴스만)`);
+    // console.log(`💼 Financial News: ${items.length}개 → ${filtered.length}개 (내용 있는 뉴스만)`);
     return filtered;
   }
 
@@ -361,7 +361,7 @@ class NewsApiClient {
         type: "sentiment" as const
       }));
     
-    console.log(`📊 Sentiment News: ${news.length}개 → ${filtered.length}개 (내용 있는 뉴스만)`);
+    // console.log(`📊 Sentiment News: ${news.length}개 → ${filtered.length}개 (내용 있는 뉴스만)`);
     return filtered;
   }
 
@@ -373,14 +373,14 @@ class NewsApiClient {
     filters: NewsFilters,
     pagination: PaginationParams
   ): Promise<NewsResponse> {
-    console.log('🚀 통합 뉴스 로딩 시작...', { filters, pagination });
+    // console.log('🚀 통합 뉴스 로딩 시작...', { filters, pagination });
 
     try {
       let results: NewsItem[] = [];
 
       if (filters.selectedApi === "all") {
         // 병렬로 모든 API 호출
-        console.log('📡 모든 API 병렬 호출 중...');
+        // console.log('📡 모든 API 병렬 호출 중...');
         const [marketNews, financialNews, sentimentNews] = await Promise.all([
           this.fetchMarketNews(filters, pagination),
           this.fetchFinancialNews(filters, pagination),
@@ -388,10 +388,10 @@ class NewsApiClient {
         ]);
 
         results = [...marketNews, ...financialNews, ...sentimentNews];
-        console.log(`✅ 병렬 로딩 완료 (내용 있는 뉴스만): Market(${marketNews.length}) + Financial(${financialNews.length}) + Sentiment(${sentimentNews.length})`);
+        // console.log(`✅ 병렬 로딩 완료 (내용 있는 뉴스만): Market(${marketNews.length}) + Financial(${financialNews.length}) + Sentiment(${sentimentNews.length})`);
       } else {
         // 특정 API만 호출
-        console.log(`📡 ${filters.selectedApi} API 호출 중...`);
+        // console.log(`📡 ${filters.selectedApi} API 호출 중...`);
         switch (filters.selectedApi) {
           case "market":
             results = await this.fetchMarketNews(filters, pagination);
@@ -403,7 +403,7 @@ class NewsApiClient {
             results = await this.fetchSentimentNews(pagination);
             break;
         }
-        console.log(`✅ ${filters.selectedApi} 로딩 완료 (내용 있는 뉴스만): ${results.length}개`);
+        // console.log(`✅ ${filters.selectedApi} 로딩 완료 (내용 있는 뉴스만): ${results.length}개`);
       }
 
       // 통계 계산
@@ -421,7 +421,7 @@ class NewsApiClient {
           .filter(Boolean)
       )];
 
-      console.log(`📊 최종 결과: ${stats.total}개 뉴스, ${sources.length}개 소스`);
+      // console.log(`📊 최종 결과: ${stats.total}개 뉴스, ${sources.length}개 소스`);
 
       return {
         items: results,
@@ -447,7 +447,7 @@ class NewsApiClient {
   clearCache(): void {
     this.cache.clear();
     this.pendingRequests.clear();
-    console.log('🗑️ 캐시 초기화 완료');
+    // console.log('🗑️ 캐시 초기화 완료');
   }
 
   getCacheStats() {

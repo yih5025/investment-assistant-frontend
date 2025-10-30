@@ -70,7 +70,7 @@ export function useHeroStats() {
           (sentimentNewsStats.status === 'fulfilled' ? sentimentNewsStats.value?.total_count || 0 : 0)
         );
 
-        console.log('📰 뉴스 통계:', {
+        // console.log('📰 뉴스 통계:', {
           market: marketNewsStats.status === 'fulfilled' ? marketNewsStats.value?.total_count : 0,
           financial: financialNewsStats.status === 'fulfilled' ? financialNewsStats.value?.total_count : 0,
           sentiment: sentimentNewsStats.status === 'fulfilled' ? sentimentNewsStats.value?.total_count : 0,
@@ -89,7 +89,7 @@ export function useHeroStats() {
           snsCount: snsStats.status === 'fulfilled' ? snsStats.value?.total_posts || snsStats.value?.total_count || 0 : 0
         });
 
-        console.log('✅ Hero stats loaded successfully');
+        // console.log('✅ Hero stats loaded successfully');
       } catch (err) {
         console.error('❌ Failed to load hero stats:', err);
         setError(err instanceof Error ? err.message : 'Failed to load statistics');

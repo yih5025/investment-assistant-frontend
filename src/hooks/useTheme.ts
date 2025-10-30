@@ -22,7 +22,7 @@ export function useTheme() {
         finalTheme = selectedTheme;
       }
 
-      console.log('🎨 테마 변경:', selectedTheme, '→', finalTheme);
+      // console.log('🎨 테마 변경:', selectedTheme, '→', finalTheme);
 
       const html = document.documentElement;
       const body = document.body;
@@ -43,7 +43,7 @@ export function useTheme() {
       // localStorage에 저장
       localStorage.setItem("theme", selectedTheme);
       
-      console.log('✅ 테마 적용 완료:', finalTheme, 'HTML classes:', html.className);
+      // console.log('✅ 테마 적용 완료:', finalTheme, 'HTML classes:', html.className);
     };
 
     // 테마 적용

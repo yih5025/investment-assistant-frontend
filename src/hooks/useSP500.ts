@@ -178,7 +178,7 @@ export function useSP500Data() {
   const [allSP500Data, setAllSP500Data] = useState<SP500Item[]>(() => {
     const cachedData = webSocketManager.getLastCachedData('sp500');
     if (cachedData && cachedData.length > 0) {
-      console.log('💾 SP500 초기 캐시 데이터 로드:', cachedData.length, '개 항목');
+      // console.log('💾 SP500 초기 캐시 데이터 로드:', cachedData.length, '개 항목');
       return transformSP500Data(cachedData);
     }
     return [];
@@ -216,7 +216,7 @@ export function useSP500Data() {
 
   useEffect(() => {
     const unsubscribe = webSocketManager.subscribe('sp500_update', (data: SP500Data[]) => {
-      console.log('📊 SP500 데이터 수신:', data.length, '개 항목');
+      // console.log('📊 SP500 데이터 수신:', data.length, '개 항목');
       
       const transformedData = transformSP500Data(data);
       setAllSP500Data(transformedData);
@@ -229,13 +229,13 @@ export function useSP500Data() {
         isStale: false
       });
       
-      console.log('✅ SP500 데이터 업데이트 완료:', transformedData.length, '개 항목');
+      // console.log('✅ SP500 데이터 업데이트 완료:', transformedData.length, '개 항목');
     });
 
     // 백그라운드 로딩 진행 상황 모니터링
     const backgroundUnsubscribe = webSocketManager.subscribe('background_loading_complete', ({ service }) => {
       if (service === 'sp500') {
-        console.log('🎉 SP500 백그라운드 로딩 완료!');
+        // console.log('🎉 SP500 백그라운드 로딩 완료!');
         // 최신 캐시 데이터 다시 로드
         const latestCachedData = webSocketManager.getLastCachedData('sp500');
         if (latestCachedData && latestCachedData.length > 0) {
@@ -553,7 +553,7 @@ export function useSP500Performance() {
         setAverageUpdateInterval(avgInterval);
       }
 
-      console.log(`SP500 성능 - 업데이트 ${updateCount + 1}회, 데이터 ${data.length}개, 간격 ${averageUpdateInterval}ms`);
+      // console.log(`SP500 성능 - 업데이트 ${updateCount + 1}회, 데이터 ${data.length}개, 간격 ${averageUpdateInterval}ms`);
     });
 
     return unsubscribe;
@@ -814,7 +814,7 @@ export function useSP500Debug() {
   }, []);
 
   const logServiceStatus = useCallback(() => {
-    console.log('SP500 Service Status:', getServiceStatus());
+    // console.log('SP500 Service Status:', getServiceStatus());
   }, [getServiceStatus]);
 
   const toggleDebugMode = useCallback(() => {
@@ -823,7 +823,7 @@ export function useSP500Debug() {
 
   const logDataSample = useCallback((data: SP500Item[]) => {
     if (isDebugMode && data.length > 0) {
-      console.log('SP500 데이터 샘플:', {
+      // console.log('SP500 데이터 샘플:', {
         totalCount: data.length,
         firstItem: data[0],
         lastItem: data[data.length - 1],

@@ -110,11 +110,11 @@ import {
       const queryString = params ? buildQueryParams(params) : '';
       const endpoint = `/sp500-earnings-calendar/${queryString}`;
       
-      console.log('Fetching earnings calendar:', { endpoint, params });
+      // console.log('Fetching earnings calendar:', { endpoint, params });
       
       const response = await apiRequest<EarningsCalendarResponse>(endpoint);
       
-      console.log('Earnings calendar response:', {
+      // console.log('Earnings calendar response:', {
         total: response.total_count,
         items: response.items.length
       });
@@ -128,11 +128,11 @@ import {
     async getWeeklyEarnings(): Promise<WeeklyEarningsResponse> {
       const endpoint = '/sp500-earnings-calendar/weekly';
       
-      console.log('Fetching weekly earnings');
+      // console.log('Fetching weekly earnings');
       
       const response = await apiRequest<WeeklyEarningsResponse>(endpoint);
       
-      console.log('Weekly earnings response:', {
+      // console.log('Weekly earnings response:', {
         week: `${response.week_start} ~ ${response.week_end}`,
         count: response.events.length
       });
@@ -146,11 +146,11 @@ import {
     async getWeeklyEarningsNews(): Promise<WeeklyEarningsNewsResponse> {
       const endpoint = '/sp500-earnings-news/weekly';
       
-      console.log('Fetching weekly earnings news');
+      // console.log('Fetching weekly earnings news');
       
       const response = await apiRequest<WeeklyEarningsNewsResponse>(endpoint);
       
-      console.log('Weekly earnings news response:', {
+      // console.log('Weekly earnings news response:', {
         week: `${response.week_start} ~ ${response.week_end}`,
         earnings_count: response.total_earnings_count,
         news_count: response.total_news_count
@@ -165,11 +165,11 @@ import {
     async getEarningsNews(calendarId: number): Promise<EarningsNewsResponse> {
       const endpoint = `/sp500-earnings-news/calendar/${calendarId}`;
       
-      console.log('Fetching earnings news for:', calendarId);
+      // console.log('Fetching earnings news for:', calendarId);
       
       const response = await apiRequest<EarningsNewsResponse>(endpoint);
       
-      console.log('Earnings news response:', {
+      // console.log('Earnings news response:', {
         symbol: response.calendar_info.symbol,
         forecast_news: response.forecast_news.length,
         reaction_news: response.reaction_news?.length || 0
@@ -184,11 +184,11 @@ import {
     async getUpcomingEarnings(days: number = 30): Promise<EarningsEvent[]> {
       const endpoint = `/sp500-earnings-calendar/upcoming?days=${days}`;
       
-      console.log('Fetching upcoming earnings for days:', days);
+      // console.log('Fetching upcoming earnings for days:', days);
       
       const response = await apiRequest<EarningsEvent[]>(endpoint);
       
-      console.log('Upcoming earnings response:', { count: response.length });
+      // console.log('Upcoming earnings response:', { count: response.length });
       
       return response;
     }
@@ -205,11 +205,11 @@ import {
       const queryString = buildQueryParams(params);
       const endpoint = `/sp500-earnings-calendar/search${queryString}`;
       
-      console.log('Searching earnings:', { query, limit });
+      // console.log('Searching earnings:', { query, limit });
       
       const response = await apiRequest<EarningsEvent[]>(endpoint);
       
-      console.log('Search earnings response:', { count: response.length });
+      // console.log('Search earnings response:', { count: response.length });
       
       return response;
     }

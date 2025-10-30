@@ -121,7 +121,7 @@ export abstract class BaseService {
         status, 
         mode: this.getDataMode() 
       });
-      console.log(`🔄 ${this.getServiceName()} 상태: ${previousStatus} → ${status}`);
+      // console.log(`🔄 ${this.getServiceName()} 상태: ${previousStatus} → ${status}`);
     }
   }
 

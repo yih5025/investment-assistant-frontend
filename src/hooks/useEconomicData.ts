@@ -200,7 +200,7 @@ export const useEconomicData = (options: UseEconomicDataOptions = {}): UseEconom
       console.error('🚨 경제 데이터 로딩 에러:', error);
     },
     onSuccess: (data) => {
-      console.log('✅ 경제 데이터 로딩 성공:', {
+      // console.log('✅ 경제 데이터 로딩 성공:', {
         dataPoints: data.data.length,
         dateRange: data.stats.dateRange
       });

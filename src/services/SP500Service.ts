@@ -21,39 +21,39 @@ export class SP500Service extends BaseService {
 
   public initialize(): void {
     if (this.isInitialized) {
-      console.log('✅ SP500Service 이미 초기화됨 - 기존 연결 유지');
+      // console.log('✅ SP500Service 이미 초기화됨 - 기존 연결 유지');
       return;
     }
 
     if (this.isShutdown) {
-      console.log('⚠️ SP500Service가 종료된 상태입니다. 재시작이 필요합니다.');
+      // console.log('⚠️ SP500Service가 종료된 상태입니다. 재시작이 필요합니다.');
       return;
     }
 
-    console.log('🚀 SP500Service 초기화 시작 (WebSocket Push)');
+    // console.log('🚀 SP500Service 초기화 시작 (WebSocket Push)');
     this.connectWebSocket();
     this.isInitialized = true;
-    console.log('✅ SP500Service 초기화 완료');
+    // console.log('✅ SP500Service 초기화 완료');
   }
 
   public reconnect(): void {
-    console.log('🔄 SP500Service 수동 재연결 시도');
+    // console.log('🔄 SP500Service 수동 재연결 시도');
     this.reconnectAttempts = 0;
     this.connectWebSocket();
   }
 
   public shutdown(): void {
     if (this.isShutdown) {
-      console.log('⚠️ SP500Service 이미 종료된 상태입니다.');
+      // console.log('⚠️ SP500Service 이미 종료된 상태입니다.');
       return;
     }
 
-    console.log('🛑 SP500Service 종료 시작');
+    // console.log('🛑 SP500Service 종료 시작');
     this.isShutdown = true;
 
     // WebSocket 연결 종료
     if (this.connection) {
-      console.log('🔌 SP500 WebSocket 연결 종료');
+      // console.log('🔌 SP500 WebSocket 연결 종료');
       this.connection.close(1000, 'Service shutdown');
       this.connection = null;
     }
@@ -73,13 +73,13 @@ export class SP500Service extends BaseService {
     this.lastDataCache = [];
     this.isInitialized = false;
 
-    console.log('✅ SP500Service 종료 완료');
+    // console.log('✅ SP500Service 종료 완료');
   }
 
   private connectWebSocket(): void {
     const existingWs = this.connection;
     if (existingWs && existingWs.readyState === WebSocket.OPEN) {
-      console.log('✅ SP500 WebSocket 이미 연결되어 있음 - 재연결 중단');
+      // console.log('✅ SP500 WebSocket 이미 연결되어 있음 - 재연결 중단');
       return;
     }
 
@@ -87,7 +87,7 @@ export class SP500Service extends BaseService {
     this.disconnectWebSocket();
 
     const url = this.buildWebSocketUrl();
-    console.log(`🔄 SP500 WebSocket 연결 시도: ${url}`);
+    // console.log(`🔄 SP500 WebSocket 연결 시도: ${url}`);
 
     try {
       this.setConnectionStatus('connecting');
@@ -96,7 +96,7 @@ export class SP500Service extends BaseService {
       this.connection = ws;
 
       ws.onopen = () => {
-        console.log('🟢 SP500 WebSocket 연결 성공');
+        // console.log('🟢 SP500 WebSocket 연결 성공');
         this.setConnectionStatus('connected');
         this.reconnectAttempts = 0;
         this.startHeartbeat();
@@ -107,7 +107,7 @@ export class SP500Service extends BaseService {
       };
 
       ws.onclose = (event) => {
-        console.log('🔴 SP500 WebSocket 연결 종료:', event.code, event.reason);
+        // console.log('🔴 SP500 WebSocket 연결 종료:', event.code, event.reason);
         this.handleConnectionClose();
       };
 
@@ -158,12 +158,12 @@ export class SP500Service extends BaseService {
 
     const timeSinceLastReconnect = Date.now() - this.lastReconnectTime;
     if (timeSinceLastReconnect < 10000) {
-      console.log('⚠️ SP500 너무 빠른 재연결 시도 - 10초 대기');
+      // console.log('⚠️ SP500 너무 빠른 재연결 시도 - 10초 대기');
       return;
     }
 
     if (currentStatus === 'reconnecting' || currentStatus === 'connecting' || currentStatus === 'connected') {
-      console.log(`⚠️ SP500 이미 ${currentStatus} 상태 - 재연결 중단`);
+      // console.log(`⚠️ SP500 이미 ${currentStatus} 상태 - 재연결 중단`);
       return;
     }
     
@@ -174,7 +174,7 @@ export class SP500Service extends BaseService {
     }
 
     const delay = Math.min(this.config.baseReconnectDelay * Math.pow(2, this.reconnectAttempts), 30000);
-    console.log(`⏰ SP500 ${delay}ms 후 재연결 시도 (${this.reconnectAttempts + 1}/${this.config.maxReconnectAttempts})`);
+    // console.log(`⏰ SP500 ${delay}ms 후 재연결 시도 (${this.reconnectAttempts + 1}/${this.config.maxReconnectAttempts})`);
 
     this.reconnectAttempts++;
     this.setConnectionStatus('reconnecting');
@@ -182,16 +182,16 @@ export class SP500Service extends BaseService {
     this.reconnectTimeout = setTimeout(() => {
       const currentStatus = this.connectionStatus;
       if (currentStatus === 'connected') {
-        console.log('⏭️ SP500 이미 연결됨 - 재연결 중단');
+        // console.log('⏭️ SP500 이미 연결됨 - 재연결 중단');
         return;
       }
       
       if (currentStatus !== 'reconnecting') {
-        console.log(`🚫 SP500 재연결 취소 - 현재 상태: ${currentStatus}`);
+        // console.log(`🚫 SP500 재연결 취소 - 현재 상태: ${currentStatus}`);
         return;
       }
       
-      console.log('🔄 SP500 WebSocket 재연결 시도');
+      // console.log('🔄 SP500 WebSocket 재연결 시도');
       this.connectWebSocket();
     }, delay);
   }
@@ -208,7 +208,7 @@ export class SP500Service extends BaseService {
           this.handleConnectionClose();
         }
       } else {
-        console.log('💔 SP500 WebSocket 연결 상태 이상');
+        // console.log('💔 SP500 WebSocket 연결 상태 이상');
         this.stopHeartbeat();
         this.handleConnectionClose();
       }
@@ -231,7 +231,7 @@ export class SP500Service extends BaseService {
       }
 
       if (message.type === 'status') {
-        console.log('📊 SP500 상태:', message);
+        // console.log('📊 SP500 상태:', message);
         return;
       }
 
@@ -241,11 +241,11 @@ export class SP500Service extends BaseService {
             const transformedData = this.transformWebSocketData(message.data);
             this.updateCache(transformedData);
             this.emitEvent('sp500_update', transformedData);
-            console.log(`📊 SP500 push 데이터 수신: ${transformedData.length}개`);
+            // console.log(`📊 SP500 push 데이터 수신: ${transformedData.length}개`);
           }
           break;
         default:
-          console.log('📨 SP500 알 수 없는 메시지 타입:', message.type);
+          // console.log('📨 SP500 알 수 없는 메시지 타입:', message.type);
       }
 
     } catch (error) {
@@ -273,7 +273,7 @@ export class SP500Service extends BaseService {
 
   // 데이터 수동 새로고침 (WebSocket 재연결)
   public refreshData(): void {
-    console.log('🔄 SP500 데이터 수동 새로고침 (WebSocket 재연결)');
+    // console.log('🔄 SP500 데이터 수동 새로고침 (WebSocket 재연결)');
     this.reconnect();
   }
 }

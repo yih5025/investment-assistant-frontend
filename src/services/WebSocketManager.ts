@@ -62,7 +62,7 @@ export class WebSocketManager {
     this.etfService = new ETFService(optimizedConfig);
 
     this.setupEventForwarding();
-    console.log('🚀 WebSocketManager 초기화: WebSocket Push 방식');
+    // console.log('🚀 WebSocketManager 초기화: WebSocket Push 방식');
   }
 
   // ============================================================================
@@ -71,31 +71,31 @@ export class WebSocketManager {
 
   public initialize(): void {
     if (this.isInitialized) {
-      console.log('✅ WebSocketManager 이미 초기화됨 - 기존 연결 유지');
+      // console.log('✅ WebSocketManager 이미 초기화됨 - 기존 연결 유지');
       return;
     }
 
     if (this.isShutdown) {
-      console.log('⚠️ WebSocketManager가 종료된 상태입니다. 재시작이 필요합니다.');
+      // console.log('⚠️ WebSocketManager가 종료된 상태입니다. 재시작이 필요합니다.');
       return;
     }
 
-    console.log('🚀 WebSocketManager 초기화 시작 (WebSocket Push)');
+    // console.log('🚀 WebSocketManager 초기화 시작 (WebSocket Push)');
     
     this.startMarketStatusMonitoring();
     this.initializeServices();
 
     this.isInitialized = true;
-    console.log('✅ WebSocketManager 초기화 완료 - 모든 WebSocket 실행 중');
+    // console.log('✅ WebSocketManager 초기화 완료 - 모든 WebSocket 실행 중');
   }
 
   public shutdown(): void {
     if (this.isShutdown) {
-      console.log('⚠️ WebSocketManager 이미 종료된 상태입니다.');
+      // console.log('⚠️ WebSocketManager 이미 종료된 상태입니다.');
       return;
     }
 
-    console.log('🛑 WebSocketManager 종료 시작');
+    // console.log('🛑 WebSocketManager 종료 시작');
     this.isShutdown = true;
 
     // 모든 서비스 종료
@@ -107,11 +107,11 @@ export class WebSocketManager {
     this.subscribers.clear();
 
     this.isInitialized = false;
-    console.log('✅ WebSocketManager 종료 완료');
+    // console.log('✅ WebSocketManager 종료 완료');
   }
 
   private async initializeServices(): Promise<void> {
-    console.log('🔄 WebSocket 서비스 초기화 시작');
+    // console.log('🔄 WebSocket 서비스 초기화 시작');
     
     // 백그라운드 로딩 상태 초기화
     this.backgroundLoadingState = {
@@ -133,14 +133,14 @@ export class WebSocketManager {
     };
     
     // 1. Crypto WebSocket
-    console.log('🚀 1순위: Crypto WebSocket 연결 시작');
+    // console.log('🚀 1순위: Crypto WebSocket 연결 시작');
     const cryptoStart = Date.now();
     this.cryptoService.initialize();
     this.completeBackgroundLoading('crypto', Date.now() - cryptoStart);
     
     // 2. SP500 WebSocket
     setTimeout(() => {
-      console.log('🚀 2순위: SP500 WebSocket 연결 시작');
+      // console.log('🚀 2순위: SP500 WebSocket 연결 시작');
       const sp500Start = Date.now();
       this.sp500Service.initialize();
       this.completeBackgroundLoading('sp500', Date.now() - sp500Start);
@@ -148,13 +148,13 @@ export class WebSocketManager {
     
     // 3. ETF WebSocket
     setTimeout(() => {
-      console.log('🚀 3순위: ETF WebSocket 연결 시작');
+      // console.log('🚀 3순위: ETF WebSocket 연결 시작');
       const etfStart = Date.now();
       this.etfService.initialize();
       this.completeBackgroundLoading('etf', Date.now() - etfStart);
     }, delays.etf);
     
-    console.log('✅ WebSocket 연결 스케줄 완료 - 순차적 초기화 진행 중');
+    // console.log('✅ WebSocket 연결 스케줄 완료 - 순차적 초기화 진행 중');
   }
   
   private completeBackgroundLoading(service: WebSocketType, duration: number): void {
@@ -166,11 +166,11 @@ export class WebSocketManager {
       total: this.backgroundLoadingState.total
     });
     
-    console.log(`✅ ${service} 초기화 완료 (${duration}ms) - ${this.backgroundLoadingState.completed}/${this.backgroundLoadingState.total}`);
+    // console.log(`✅ ${service} 초기화 완료 (${duration}ms) - ${this.backgroundLoadingState.completed}/${this.backgroundLoadingState.total}`);
     
     if (this.backgroundLoadingState.completed >= this.backgroundLoadingState.total) {
       this.backgroundLoadingState.isActive = false;
-      console.log('🎉 모든 WebSocket 초기화 완료!');
+      // console.log('🎉 모든 WebSocket 초기화 완료!');
     }
   }
 
@@ -190,7 +190,7 @@ export class WebSocketManager {
       const previousStatus = this.lastMarketStatus;
 
       if (!previousStatus || previousStatus.isOpen !== currentStatus.isOpen) {
-        console.log(`🕐 시장 상태 변경: ${currentStatus.status}`);
+        // console.log(`🕐 시장 상태 변경: ${currentStatus.status}`);
         
         this.lastMarketStatus = currentStatus;
         this.emitEvent('market_status_change', {
@@ -290,7 +290,7 @@ export class WebSocketManager {
 
   // 재연결
   public reconnect(type: WebSocketType): void {
-    console.log(`🔄 ${type} 수동 재연결 시도`);
+    // console.log(`🔄 ${type} 수동 재연결 시도`);
     
     switch (type) {
       case 'crypto':
@@ -306,7 +306,7 @@ export class WebSocketManager {
   }
 
   public reconnectAll(): void {
-    console.log('🔄 전체 연결 상태 점검 및 복구');
+    // console.log('🔄 전체 연결 상태 점검 및 복구');
     
     const statuses = this.getAllConnectionStatuses();
     
@@ -314,26 +314,26 @@ export class WebSocketManager {
       const wsType = type as WebSocketType;
       
       if (statusInfo.status === 'disconnected') {
-        console.log(`🔄 ${type} 재연결 필요`);
+        // console.log(`🔄 ${type} 재연결 필요`);
         this.reconnect(wsType);
       } else {
-        console.log(`✅ ${type} 정상 동작 중 (${statusInfo.status})`);
+        // console.log(`✅ ${type} 정상 동작 중 (${statusInfo.status})`);
       }
     });
   }
 
   // 데이터 새로고침 (WebSocket 재연결)
   public refreshData(): void {
-    console.log('🔄 데이터 새로고침 (WebSocket 재연결)');
+    // console.log('🔄 데이터 새로고침 (WebSocket 재연결)');
     
     this.sp500Service.refreshData();
     this.etfService.refreshData();
     
     const cryptoStatus = this.cryptoService.getConnectionStatus();
     if (cryptoStatus === 'connected') {
-      console.log('✅ crypto WebSocket 연결 유지 - 실시간 데이터 수신 중');
+      // console.log('✅ crypto WebSocket 연결 유지 - 실시간 데이터 수신 중');
     } else if (cryptoStatus === 'disconnected') {
-      console.log('🔄 crypto WebSocket 재연결 시도');
+      // console.log('🔄 crypto WebSocket 재연결 시도');
       this.cryptoService.reconnect();
     }
   }

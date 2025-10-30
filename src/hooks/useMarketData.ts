@@ -70,10 +70,10 @@ export function useWebSocketConnection() {
   useEffect(() => {
     // 🎯 서비스가 아직 초기화되지 않은 경우에만 초기화
     if (!webSocketManager.getStatus().initialized) {
-      console.log('🚀 앱 수준에서 WebSocketManager 초기화 중...');
+      // console.log('🚀 앱 수준에서 WebSocketManager 초기화 중...');
       webSocketManager.initialize();
     } else {
-      console.log('✅ WebSocketManager 이미 초기화됨 - 기존 연결 활용');
+      // console.log('✅ WebSocketManager 이미 초기화됨 - 기존 연결 활용');
     }
 
     // 현재 연결 상태 동기화
@@ -89,18 +89,18 @@ export function useWebSocketConnection() {
     // 🎯 컴포넌트 언마운트 시 연결을 끊지 않음 - 앱 수준에서 관리
     return () => {
       unsubscribe();
-      console.log('📦 useWebSocketConnection 언마운트 - 연결 유지');
+      // console.log('📦 useWebSocketConnection 언마운트 - 연결 유지');
       // webSocketManager.shutdown() 호출하지 않음!
     };
   }, []); // 🎯 빈 의존성 배열 - 한 번만 실행
 
   const reconnect = useCallback((type: WebSocketType) => {
-    console.log(`🔄 사용자 요청: ${type} 재연결`);
+    // console.log(`🔄 사용자 요청: ${type} 재연결`);
     webSocketManager.reconnect(type);
   }, []);
 
   const reconnectAll = useCallback(() => {
-    console.log('🔄 사용자 요청: 전체 재연결');
+    // console.log('🔄 사용자 요청: 전체 재연결');
     webSocketManager.reconnectAll();
   }, []);
 
@@ -145,7 +145,7 @@ export function useCryptoData() {
   const [cryptoData, setCryptoData] = useState<MarketItem[]>(() => {
     const cachedData = webSocketManager.getLastCachedData('crypto');
     if (cachedData && cachedData.length > 0) {
-      console.log('📦 Crypto 캐시된 데이터로 즉시 초기화:', cachedData.length, '개');
+      // console.log('📦 Crypto 캐시된 데이터로 즉시 초기화:', cachedData.length, '개');
       return cachedData.map(crypto => {
         const marketCode = (crypto as any).market_code || crypto.market || '';
         const symbol = (crypto as any).symbol || marketCode.replace('KRW-', '');
@@ -211,7 +211,7 @@ export function useSP500Data() {
   const [sp500Data, setSP500Data] = useState<MarketItem[]>(() => {
     const cachedData = webSocketManager.getLastCachedData('sp500');
     if (cachedData && cachedData.length > 0) {
-      console.log('📦 SP500 캐시된 데이터로 즉시 초기화:', cachedData.length, '개');
+      // console.log('📦 SP500 캐시된 데이터로 즉시 초기화:', cachedData.length, '개');
       return cachedData.map(stock => {
         const name = stock.company_name || `${stock.symbol} Inc.`;
         const currentPrice = stock.current_price || stock.price || 0;
@@ -275,7 +275,7 @@ export function useETFData() {
   const [etfData, setETFData] = useState<MarketItem[]>(() => {
     const cachedData = webSocketManager.getLastCachedData('etf');
     if (cachedData && cachedData.length > 0) {
-      console.log('📦 ETF 캐시된 데이터로 즉시 초기화:', cachedData.length, '개');
+      // console.log('📦 ETF 캐시된 데이터로 즉시 초기화:', cachedData.length, '개');
       return cachedData.map(etf => {
         const name = etf.name || etf.etf_name || `${etf.symbol} ETF`;
         const currentPrice = etf.current_price || etf.price || 0;
@@ -323,7 +323,7 @@ export function useETFData() {
       setETFData(items);
       setLastUpdated(new Date());
       
-      console.log('🏦 ETF 데이터 업데이트:', items.length, '개');
+      // console.log('🏦 ETF 데이터 업데이트:', items.length, '개');
     });
 
     return unsubscribe;
@@ -367,7 +367,7 @@ export function useMarketData() {
 
   // 🎯 최적화된 새로고침 - 연결 끊지 않고 데이터만 갱신
   const refreshData = useCallback(() => {
-    console.log('🔄 데이터 수동 새로고침 - 기존 연결 유지');
+    // console.log('🔄 데이터 수동 새로고침 - 기존 연결 유지');
     webSocketManager.refreshData();
   }, []);
 

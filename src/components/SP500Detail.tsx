@@ -186,7 +186,7 @@ export function MarketDetailPage({ symbol, onBack }: MarketDetailPageProps) {
   } = useMarketDetail(symbol);
 
   // 데이터 상태 디버깅
-  console.log('데이터 상태:', dataCase.replace('_', ' '));
+  // console.log('데이터 상태:', dataCase.replace('_', ' '));
 
   // 유틸리티 함수들 (useCallback으로 최적화)
   const formatBillion = useCallback((value: number | null | undefined) => {

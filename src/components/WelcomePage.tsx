@@ -30,7 +30,7 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
   useEffect(() => {
     // 백그라운드 로딩 상태 모니터링
     const backgroundStartUnsubscribe = webSocketManager.subscribe('background_loading_start', ({ services }) => {
-      console.log('🚀 백그라운드 로딩 시작:', services);
+      // console.log('🚀 백그라운드 로딩 시작:', services);
       setBackgroundLoading({
         isActive: true,
         completed: 0,
@@ -40,7 +40,7 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
     });
 
     const backgroundCompleteUnsubscribe = webSocketManager.subscribe('background_loading_complete', ({ service }) => {
-      console.log('✅ 백그라운드 로딩 완료:', service);
+      // console.log('✅ 백그라운드 로딩 완료:', service);
       setBackgroundLoading(prev => ({
         ...prev,
         completed: prev.completed + 1,
@@ -63,7 +63,7 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
     // 폴백: 백그라운드 로딩이 시작되지 않으면 기본 로딩
     const fallbackTimeout = setTimeout(() => {
       if (!backgroundLoading.isActive) {
-        console.log('🔄 폴백 로딩 시작');
+        // console.log('🔄 폴백 로딩 시작');
         const totalTime = 3000;
         const stepTime = totalTime / loadingSteps.length;
         
