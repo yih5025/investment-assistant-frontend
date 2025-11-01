@@ -71,11 +71,11 @@ export function useHeroStats() {
         );
 
         // console.log('📰 뉴스 통계:', {
-          market: marketNewsStats.status === 'fulfilled' ? marketNewsStats.value?.total_count : 0,
-          financial: financialNewsStats.status === 'fulfilled' ? financialNewsStats.value?.total_count : 0,
-          sentiment: sentimentNewsStats.status === 'fulfilled' ? sentimentNewsStats.value?.total_count : 0,
-          total: totalNewsCount
-        });
+        //   market: marketNewsStats.status === 'fulfilled' ? marketNewsStats.value?.total_count : 0,
+        //   financial: financialNewsStats.status === 'fulfilled' ? financialNewsStats.value?.total_count : 0,
+        //   sentiment: sentimentNewsStats.status === 'fulfilled' ? sentimentNewsStats.value?.total_count : 0,
+        //   total: totalNewsCount
+        // });
 
         setStats({
           stockCount: sp500Stats.status === 'fulfilled' ? sp500Stats.value?.total_count || 0 : 0,

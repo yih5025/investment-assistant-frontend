@@ -201,9 +201,9 @@ export const useEconomicData = (options: UseEconomicDataOptions = {}): UseEconom
     },
     onSuccess: (data) => {
       // console.log('✅ 경제 데이터 로딩 성공:', {
-        dataPoints: data.data.length,
-        dateRange: data.stats.dateRange
-      });
+      //   dataPoints: data.data.length,
+      //   dateRange: data.stats.dateRange
+      // });
     }
   });
 

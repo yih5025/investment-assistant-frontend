@@ -169,9 +169,9 @@ export const useNews = (options: UseNewsOptions = {}): UseNewsReturn => {
     },
     onSuccess: (data) => {
       // console.log('✅ 뉴스 로딩 성공:', {
-        pages: data.pages.length,
-        totalItems: data.pages.reduce((acc, page) => acc + page.items.length, 0)
-      });
+      //   pages: data.pages.length,
+      //   totalItems: data.pages.reduce((acc, page) => acc + page.items.length, 0)
+      // });
     }
   });
 

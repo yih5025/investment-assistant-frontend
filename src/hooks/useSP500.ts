@@ -824,18 +824,18 @@ export function useSP500Debug() {
   const logDataSample = useCallback((data: SP500Item[]) => {
     if (isDebugMode && data.length > 0) {
       // console.log('SP500 데이터 샘플:', {
-        totalCount: data.length,
-        firstItem: data[0],
-        lastItem: data[data.length - 1],
-        priceRange: {
-          min: Math.min(...data.map(item => item.price)),
-          max: Math.max(...data.map(item => item.price))
-        },
-        changeRange: {
-          min: Math.min(...data.map(item => item.change_percent)),
-          max: Math.max(...data.map(item => item.change_percent))
-        }
-      });
+      //   totalCount: data.length,
+      //   firstItem: data[0],
+      //   lastItem: data[data.length - 1],
+      //   priceRange: {
+      //     min: Math.min(...data.map(item => item.price)),
+      //     max: Math.max(...data.map(item => item.price))
+      //   },
+      //   changeRange: {
+      //     min: Math.min(...data.map(item => item.change_percent)),
+      //     max: Math.max(...data.map(item => item.change_percent))
+      //   }
+      // });
     }
   }, [isDebugMode]);
 

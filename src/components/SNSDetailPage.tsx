@@ -877,10 +877,10 @@ function AdvancedAnalysisCard({ post, symbol, formatPrice }: AdvancedAnalysisCar
         Math.abs(new Date(p.timestamp).getTime() - new Date(post.analysis.post_timestamp).getTime()) < 60000
       );
       // console.log({
-        postTimestamp: post.analysis.post_timestamp,
-        postIndex: postIndex,
-        postData: postIndex >= 0 ? ohlcvData[postIndex] : 'NOT FOUND'
-      });
+      //   postTimestamp: post.analysis.post_timestamp,
+      //   postIndex: postIndex,
+      //   postData: postIndex >= 0 ? ohlcvData[postIndex] : 'NOT FOUND'
+      // });
       
       // console.log('3. 가격 변화 요약:');
       console.table({
@@ -896,11 +896,11 @@ function AdvancedAnalysisCard({ post, symbol, formatPrice }: AdvancedAnalysisCar
       if (volatilityData) {
         // console.log('4. 변동폭 분석:');
         // console.log({
-          '게시전평균': volatilityData.avgBefore.toFixed(2) + '%',
-          '게시후평균': volatilityData.avgAfter.toFixed(2) + '%',
-          '게시전샘플': volatilityData.before.length,
-          '게시후샘플': volatilityData.after.length
-        });
+        //   '게시전평균': volatilityData.avgBefore.toFixed(2) + '%',
+        //   '게시후평균': volatilityData.avgAfter.toFixed(2) + '%',
+        //   '게시전샘플': volatilityData.before.length,
+        //   '게시후샘플': volatilityData.after.length
+        // });
         
         if (volatilityData.after.length > 0) {
           // console.log('게시 후 변동폭 처음 5개:');

@@ -115,9 +115,9 @@ import {
       const response = await apiRequest<EarningsCalendarResponse>(endpoint);
       
       // console.log('Earnings calendar response:', {
-        total: response.total_count,
-        items: response.items.length
-      });
+      //   total: response.total_count,
+      //   items: response.items.length
+      // });
       
       return response;
     }
@@ -133,9 +133,9 @@ import {
       const response = await apiRequest<WeeklyEarningsResponse>(endpoint);
       
       // console.log('Weekly earnings response:', {
-        week: `${response.week_start} ~ ${response.week_end}`,
-        count: response.events.length
-      });
+      //   week: `${response.week_start} ~ ${response.week_end}`,
+      //   count: response.events.length
+      // });
       
       return response;
     }
@@ -151,10 +151,10 @@ import {
       const response = await apiRequest<WeeklyEarningsNewsResponse>(endpoint);
       
       // console.log('Weekly earnings news response:', {
-        week: `${response.week_start} ~ ${response.week_end}`,
-        earnings_count: response.total_earnings_count,
-        news_count: response.total_news_count
-      });
+      //   week: `${response.week_start} ~ ${response.week_end}`,
+      //   earnings_count: response.total_earnings_count,
+      //   news_count: response.total_news_count
+      // });
       
       return response;
     }
@@ -170,10 +170,10 @@ import {
       const response = await apiRequest<EarningsNewsResponse>(endpoint);
       
       // console.log('Earnings news response:', {
-        symbol: response.calendar_info.symbol,
-        forecast_news: response.forecast_news.length,
-        reaction_news: response.reaction_news?.length || 0
-      });
+      //   symbol: response.calendar_info.symbol,
+      //   forecast_news: response.forecast_news.length,
+      //   reaction_news: response.reaction_news?.length || 0
+      // });
       
       return response;
     }
