@@ -18,7 +18,7 @@ export function useSNSList(options: UseSNSListOptions = {}) {
   
   const [params, setParams] = useState<SNSListParams>({
     skip: 0,
-    limit: 20,
+    limit: 50,
     post_source: 'all',
     ...initialParams
   });
@@ -45,7 +45,7 @@ export function useSNSList(options: UseSNSListOptions = {}) {
       // console.log('🚀 SWR fetcher:', params.post_source);
       const result = await snsApiService.getPosts({ 
         skip: 0, 
-        limit: 20,
+        limit: 50,
         post_source: params.post_source 
       });
       return result;
@@ -67,8 +67,21 @@ export function useSNSList(options: UseSNSListOptions = {}) {
   useEffect(() => {
     if (!isInitialLoading && firstPagePosts) {
       // console.log('✅ 첫 페이지 데이터 설정:', firstPagePosts.length);
-      setAllPosts(firstPagePosts);
-      setLoadedPages(new Set([0]));
+      // 첫 페이지만 로드된 상태일 때만 리셋 (추가 페이지가 로드되지 않았을 때)
+      setAllPosts(prev => {
+        // 이미 추가 데이터가 로드되어 있으면 첫 페이지만 교체
+        if (prev.length > firstPagePosts.length) {
+          return prev;
+        }
+        return firstPagePosts;
+      });
+      setLoadedPages(prev => {
+        // 이미 추가 페이지가 로드되어 있으면 리셋하지 않음
+        if (prev.size > 1) {
+          return prev;
+        }
+        return new Set([0]);
+      });
       setIsLoadingMore(false);
     }
   }, [firstPagePosts, isInitialLoading]);
@@ -97,7 +110,7 @@ export function useSNSList(options: UseSNSListOptions = {}) {
   const loadMore = useCallback(async () => {
     if (isLoadingMore) return;
     
-    const nextPage = Math.floor(allPosts.length / 20);
+    const nextPage = Math.floor(allPosts.length / 50);
     if (loadedPages.has(nextPage)) return;
     
     setIsLoadingMore(true);
@@ -105,8 +118,8 @@ export function useSNSList(options: UseSNSListOptions = {}) {
     try {
       const nextPagePosts = await snsApiService.getPosts({
         ...params,
-        skip: nextPage * 20,
-        limit: 20
+        skip: nextPage * 50,
+        limit: 50
       });
       
       if (nextPagePosts && nextPagePosts.length > 0) {
@@ -144,7 +157,7 @@ export function useSNSList(options: UseSNSListOptions = {}) {
     refetch,
     
     // 계산된 값
-    hasMore: allPosts.length > 0 && allPosts.length % 20 === 0, // 20의 배수일 때 더 있을 가능성
+    hasMore: allPosts.length > 0 && allPosts.length % 50 === 0, // 50의 배수일 때 더 있을 가능성
     totalLoaded: allPosts.length,
     isLoadingMore
   };
