@@ -1096,13 +1096,6 @@ function EmailSubscriptionSection() {
             </button>
           </form>
         )}
-
-        {/* 안내 문구 */}
-        <p className="mt-2 text-[10px] text-foreground/40 text-center">
-          {showUnsubscribe 
-            ? '등록된 이메일로 구독을 취소할 수 있습니다'
-            : 'S&P 500 주요 기업의 실적 발표 일정을 매주 받아보세요'}
-        </p>
       </div>
     </div>
   );
