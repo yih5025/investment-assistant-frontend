@@ -156,12 +156,12 @@ export function useEarningsCalendar() {
       startDate.setMonth(startDate.getMonth() - 1);
       
       const endDate = new Date();
-      endDate.setMonth(endDate.getMonth() + 3);
+      endDate.setMonth(endDate.getMonth() + 12); // 1년 후까지 조회 (기존 3달 → 12달로 확장)
       
       const params = {
         start_date: CalendarDateUtils.formatForApi(startDate),
         end_date: CalendarDateUtils.formatForApi(endDate),
-        limit: 2000
+        limit: 5000 // 더 많은 데이터 조회를 위해 limit도 확장
       };
       
       // console.log('📅 Fetching earnings calendar data:', params);
