@@ -1054,7 +1054,7 @@ function EmailSubscriptionSection() {
             <button
               type="submit"
               disabled={loading || !email.trim()}
-              className="px-3 py-2 rounded-lg bg-primary hover:bg-primary/90 disabled:bg-primary/50 disabled:cursor-not-allowed text-white font-medium text-xs flex items-center space-x-1"
+              className="px-3 py-2 rounded-lg bg-primary/10 hover:bg-primary/20 border border-primary/30 disabled:opacity-50 disabled:cursor-not-allowed text-primary font-medium text-xs flex items-center space-x-1"
             >
               {loading ? (
                 <Loader2 size={12} className="animate-spin" />
@@ -1080,15 +1080,12 @@ function EmailSubscriptionSection() {
             <button
               type="submit"
               disabled={loading || !email.trim()}
-              className="px-3 py-2 rounded-lg bg-red-500/80 hover:bg-red-500 disabled:bg-red-500/40 disabled:cursor-not-allowed text-white font-medium text-xs flex items-center space-x-1"
+              className="px-3 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed text-red-500 font-medium text-xs flex items-center space-x-1"
             >
               {loading ? (
                 <Loader2 size={12} className="animate-spin" />
               ) : (
-                <>
-                  <X size={12} />
-                  <span>취소</span>
-                </>
+                <span>취소하기</span>
               )}
             </button>
           </form>
