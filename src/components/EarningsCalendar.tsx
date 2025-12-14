@@ -1059,10 +1059,7 @@ function EmailSubscriptionSection() {
               {loading ? (
                 <Loader2 size={12} className="animate-spin" />
               ) : (
-                <>
-                  <Bell size={12} />
-                  <span>구독</span>
-                </>
+                <span>구독하기</span>
               )}
             </button>
           </form>
