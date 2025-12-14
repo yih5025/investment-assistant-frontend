@@ -23,7 +23,7 @@ interface UseEmailSubscriptionState {
 
 interface UseEmailSubscriptionReturn extends UseEmailSubscriptionState {
   // 액션
-  subscribe: (email: string, scope?: SubscriptionScope) => Promise<boolean>;
+  subscribe: (email: string, scope?: SubscriptionScope, agreed?: boolean) => Promise<boolean>;
   unsubscribe: (email: string, scope?: SubscriptionScope) => Promise<boolean>;
   checkStatus: (email: string, scope?: SubscriptionScope) => Promise<boolean>;
   clearState: () => void;
@@ -40,20 +40,25 @@ export function useEmailSubscription(): UseEmailSubscriptionReturn {
   });
 
   /**
-   * 이메일 구독 신청
+   * 이메일 구독 신청 (Double Opt-in)
+   * @param email 구독할 이메일 주소
+   * @param scope 구독 범위
+   * @param agreed 개인정보 수집/이용 동의 여부
    */
-  const subscribe = useCallback(async (email: string, scope: SubscriptionScope = 'SP500'): Promise<boolean> => {
+  const subscribe = useCallback(async (email: string, scope: SubscriptionScope = 'SP500', agreed: boolean = true): Promise<boolean> => {
     setState(prev => ({ ...prev, loading: true, error: null, success: false, message: null }));
     
     try {
-      const response = await emailSubscriptionService.subscribe(email, scope);
+      const response = await emailSubscriptionService.subscribe(email, scope, agreed);
       
+      // Double Opt-in: requires_verification이 true면 인증 메일 발송됨
       setState(prev => ({
         ...prev,
         loading: false,
         success: response.success,
         message: response.message,
-        isSubscribed: response.success,
+        // 인증 대기 상태는 아직 완전한 구독이 아님
+        isSubscribed: response.success && !response.requires_verification,
         subscribedEmail: response.success ? email : prev.subscribedEmail,
         error: response.success ? null : response.message,
       }));

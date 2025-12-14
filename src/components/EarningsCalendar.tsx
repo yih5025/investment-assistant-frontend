@@ -954,6 +954,7 @@ function EarningsNewsSection({
 
 function EmailSubscriptionSection() {
   const [email, setEmail] = useState('');
+  const [agreed, setAgreed] = useState(false);
   const [showUnsubscribe, setShowUnsubscribe] = useState(false);
   
   const {
@@ -968,8 +969,8 @@ function EmailSubscriptionSection() {
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
-    await subscribe(email.trim());
+    if (!email.trim() || !agreed) return;
+    await subscribe(email.trim(), 'SP500', agreed);
   };
 
   const handleUnsubscribe = async (e: React.FormEvent) => {
@@ -985,6 +986,7 @@ function EmailSubscriptionSection() {
 
   const resetForm = () => {
     setEmail('');
+    setAgreed(false);
     clearState();
   };
 
@@ -1038,30 +1040,44 @@ function EmailSubscriptionSection() {
 
         {/* 구독 폼 */}
         {!showUnsubscribe ? (
-          <form onSubmit={handleSubscribe} className="flex gap-2">
-            <div className="relative flex-1">
-              <Mail size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-foreground/40" />
-              <input
-                type="email"
-                value={email}
-                onChange={handleEmailChange}
-                placeholder="이메일 주소를 입력하세요"
-                className="w-full pl-7 pr-2 py-2 rounded-lg bg-background/50 border border-foreground/10 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/20 text-xs placeholder:text-foreground/40"
-                required
-                disabled={loading}
-              />
+          <form onSubmit={handleSubscribe} className="space-y-2">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Mail size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-foreground/40" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={handleEmailChange}
+                  placeholder="이메일 주소를 입력하세요"
+                  className="w-full pl-7 pr-2 py-2 rounded-lg bg-background/50 border border-foreground/10 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/20 text-xs placeholder:text-foreground/40"
+                  required
+                  disabled={loading}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading || !email.trim() || !agreed}
+                className="px-3 py-2 rounded-lg bg-primary/10 hover:bg-primary/20 border border-primary/30 disabled:opacity-50 disabled:cursor-not-allowed text-primary font-medium text-xs flex items-center space-x-1"
+              >
+                {loading ? (
+                  <Loader2 size={12} className="animate-spin" />
+                ) : (
+                  <span>구독하기</span>
+                )}
+              </button>
             </div>
-            <button
-              type="submit"
-              disabled={loading || !email.trim()}
-              className="px-3 py-2 rounded-lg bg-primary/10 hover:bg-primary/20 border border-primary/30 disabled:opacity-50 disabled:cursor-not-allowed text-primary font-medium text-xs flex items-center space-x-1"
-            >
-              {loading ? (
-                <Loader2 size={12} className="animate-spin" />
-              ) : (
-                <span>구독하기</span>
-              )}
-            </button>
+            {/* 개인정보 동의 체크박스 */}
+            <label className="flex items-start space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="mt-0.5 rounded border-foreground/30 text-primary focus:ring-primary/30"
+              />
+              <span className="text-[10px] text-foreground/60 leading-tight">
+                <span className="text-foreground/80">[필수]</span> 이메일 주소 수집 및 주간 알림 발송에 동의합니다
+              </span>
+            </label>
           </form>
         ) : (
           <form onSubmit={handleUnsubscribe} className="flex gap-2">

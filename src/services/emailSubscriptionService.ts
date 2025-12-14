@@ -8,6 +8,7 @@ export interface SubscriptionResponse {
   message: string;
   email?: string;
   scope?: string;
+  requires_verification?: boolean;
 }
 
 export interface SubscriptionStatusResponse {
@@ -31,9 +32,12 @@ class EmailSubscriptionService {
   }
 
   /**
-   * 이메일 구독 신청
+   * 이메일 구독 신청 (Double Opt-in)
+   * @param email 구독할 이메일 주소
+   * @param scope 구독 범위
+   * @param agreed 개인정보 수집/이용 동의 여부
    */
-  async subscribe(email: string, scope: SubscriptionScope = 'SP500'): Promise<SubscriptionResponse> {
+  async subscribe(email: string, scope: SubscriptionScope = 'SP500', agreed: boolean = true): Promise<SubscriptionResponse> {
     const url = `${this.baseURL}/email-subscription/subscribe`;
     
     const response = await fetch(url, {
@@ -41,7 +45,7 @@ class EmailSubscriptionService {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, scope }),
+      body: JSON.stringify({ email, scope, agreed }),
     });
     
     if (!response.ok) {
