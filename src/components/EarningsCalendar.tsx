@@ -12,11 +12,16 @@ import {
   ExternalLink,
   Loader2,
   AlertCircle,
-  Rocket
+  Rocket,
+  Mail,
+  Bell,
+  Check,
+  X
 } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useEarningsCalendar } from "../hooks/useEarningsCalendar";
+import { useEmailSubscription } from "../hooks/useEmailSubscription";
 import { CalendarDateUtils } from "../services/earningsCalendarService";
 import { 
   UnifiedCalendarEvent,
@@ -755,6 +760,11 @@ export function EarningsCalendar() {
         </div>
       )}
 
+      {/* 이메일 구독 섹션 */}
+      {!isInitialLoading && hasAnyData && (
+        <EmailSubscriptionSection />
+      )}
+
       {/* 주간 뉴스 섹션 */}
       {!isInitialLoading && weeklyNewsData && (
         <EarningsNewsSection 
@@ -934,6 +944,177 @@ function EarningsNewsSection({
           <p className="text-foreground/70 mb-2">이번 주 실적 관련 뉴스가 없습니다</p>
         </div>
       )}
+    </div>
+  );
+}
+
+// ============================================================================
+// 이메일 구독 섹션
+// ============================================================================
+
+function EmailSubscriptionSection() {
+  const [email, setEmail] = useState('');
+  const [showUnsubscribe, setShowUnsubscribe] = useState(false);
+  
+  const {
+    loading,
+    error,
+    success,
+    message,
+    isSubscribed,
+    subscribe,
+    unsubscribe,
+    clearState
+  } = useEmailSubscription();
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    
+    await subscribe(email.trim());
+  };
+
+  const handleUnsubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    
+    await unsubscribe(email.trim());
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    if (success || error) {
+      clearState();
+    }
+  };
+
+  const resetForm = () => {
+    setEmail('');
+    clearState();
+  };
+
+  return (
+    <div className="mt-6 pt-6 border-t border-foreground/10">
+      <div className="glass-subtle rounded-xl p-5">
+        {/* 헤더 */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 rounded-lg bg-primary/20">
+              <Bell size={18} className="text-primary" />
+            </div>
+            <div>
+              <h4 className="font-medium text-sm">주간 실적 발표 알림</h4>
+              <p className="text-xs text-foreground/60">매주 일요일 다음 주 일정을 이메일로 받아보세요</p>
+            </div>
+          </div>
+          
+          {/* 구독취소 토글 */}
+          <button
+            onClick={() => {
+              setShowUnsubscribe(!showUnsubscribe);
+              resetForm();
+            }}
+            className="text-xs text-foreground/50 hover:text-foreground/70 transition-colors"
+          >
+            {showUnsubscribe ? '구독하기' : '구독 취소'}
+          </button>
+        </div>
+
+        {/* 성공/에러 메시지 */}
+        {(success || error) && (
+          <div className={`mb-4 p-3 rounded-lg flex items-center justify-between ${
+            success 
+              ? 'bg-success/10 border border-success/20' 
+              : 'bg-red-500/10 border border-red-500/20'
+          }`}>
+            <div className="flex items-center space-x-2">
+              {success ? (
+                <Check size={16} className="text-success" />
+              ) : (
+                <AlertCircle size={16} className="text-red-400" />
+              )}
+              <span className={`text-sm ${success ? 'text-success' : 'text-red-400'}`}>
+                {message}
+              </span>
+            </div>
+            <button 
+              onClick={resetForm}
+              className="p-1 hover:bg-foreground/10 rounded transition-colors"
+            >
+              <X size={14} className="text-foreground/50" />
+            </button>
+          </div>
+        )}
+
+        {/* 구독 폼 */}
+        {!showUnsubscribe ? (
+          <form onSubmit={handleSubscribe} className="flex gap-2">
+            <div className="relative flex-1">
+              <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40" />
+              <input
+                type="email"
+                value={email}
+                onChange={handleEmailChange}
+                placeholder="이메일 주소를 입력하세요"
+                className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-background/50 border border-foreground/10 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/20 text-sm placeholder:text-foreground/40 transition-all"
+                required
+                disabled={loading}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading || !email.trim()}
+              className="px-5 py-2.5 rounded-lg bg-primary hover:bg-primary/90 disabled:bg-primary/50 disabled:cursor-not-allowed text-white font-medium text-sm transition-all flex items-center space-x-2"
+            >
+              {loading ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <>
+                  <Bell size={16} />
+                  <span>구독</span>
+                </>
+              )}
+            </button>
+          </form>
+        ) : (
+          /* 구독 취소 폼 */
+          <form onSubmit={handleUnsubscribe} className="flex gap-2">
+            <div className="relative flex-1">
+              <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40" />
+              <input
+                type="email"
+                value={email}
+                onChange={handleEmailChange}
+                placeholder="구독 취소할 이메일 주소"
+                className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-background/50 border border-foreground/10 focus:border-red-500/50 focus:outline-none focus:ring-1 focus:ring-red-500/20 text-sm placeholder:text-foreground/40 transition-all"
+                required
+                disabled={loading}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading || !email.trim()}
+              className="px-5 py-2.5 rounded-lg bg-red-500/80 hover:bg-red-500 disabled:bg-red-500/40 disabled:cursor-not-allowed text-white font-medium text-sm transition-all flex items-center space-x-2"
+            >
+              {loading ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <>
+                  <X size={16} />
+                  <span>취소</span>
+                </>
+              )}
+            </button>
+          </form>
+        )}
+
+        {/* 안내 문구 */}
+        <p className="mt-3 text-xs text-foreground/40 text-center">
+          {showUnsubscribe 
+            ? '등록된 이메일 주소로 구독을 취소할 수 있습니다'
+            : 'S&P 500 주요 기업의 실적 발표 일정을 매주 받아보세요'}
+        </p>
+      </div>
     </div>
   );
 }
