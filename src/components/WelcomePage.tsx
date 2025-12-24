@@ -181,7 +181,8 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
           <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-white via-primary to-white bg-clip-text drop-shadow-sm">
             W.E Investing
           </h1>
-          <p className="text-foreground/70 text-lg font-medium">Wise & Easy Investing - Your Investment Cheatsheet</p>
+          <p className="text-foreground/70 text-lg font-medium">Wise & Easy Investing</p>
+          <p className="text-foreground/70 text-lg font-medium">Your Investment Cheatsheet</p>
         </div>
       </div>
 
@@ -190,7 +191,6 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-blue-600/5"></div>
         <BookOpenCheck className="w-12 h-12 mx-auto text-primary drop-shadow-md relative z-10" />
         <h2 className="text-xl font-bold leading-tight relative z-10">
-          S&P 500, ETF, 암호화폐 투자가 어렵다면,<br />
           실시간 시장 데이터를 기반으로<br />
           <span className="text-primary drop-shadow-sm">쉽고 현명하게</span> 배우면서 투자하세요
         </h2>
@@ -203,21 +203,21 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
           <div className="w-12 h-12 rounded-xl glass-subtle flex items-center justify-center">
             <Brain className="text-primary" size={24} />
           </div>
-          <h3 className="font-bold text-lg">W.E Investing에서 무엇을 얻을 수 있나요?</h3>
+          <h3 className="font-bold text-lg">무엇을 얻을 수 있나요?</h3>
         </div>
         <div className="space-y-3 relative z-10">
           {[
             {
               icon: <BarChart3 size={18} className="text-blue-400" />,
-              text: "S&P500 기업들의 데이터로 재무제표를 분석하고 투자할 수 있어요"
+              text: "S&P500 기업들의 재무제표 분석"
             },
             {
               icon: <DollarSign size={18} className="text-yellow-400" />,
-              text: "ETF와 암호화폐에 대해 생태계와 시장에 대해 쉽게 알 수 있어요"
+              text: "암호화폐의 생태계와 시장 분석"
             },
             {
               icon: <TrendingUp size={18} className="text-green-400" />,
-              text: "다양한 경제 지표들의 시장에 의미하는 바와 상관관계를 한 눈에 볼 수 있어요"
+              text: "경제 지표들과 시장의 상관관계 분석"
             }
           ].map((item, index) => (
             <div key={index} className="flex items-start space-x-3 glass-subtle rounded-lg p-3 hover:glass-card transition-all duration-300">
@@ -239,29 +239,25 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
           <div className="w-12 h-12 rounded-xl glass-subtle flex items-center justify-center">
             <Target className="text-primary" size={24} />
           </div>
-          <h3 className="font-bold text-lg">W.E Investing는 어떤 서비스를 제공하나요?</h3>
+          <h3 className="font-bold text-lg">어떤 서비스를 제공하나요?</h3>
         </div>
         <div className="space-y-3 relative z-10">
           {[
             {
               icon: <BarChart3 size={18} className="text-blue-400" />,
-              text: "S&P 500 기업들의 실적 발표와 IPO 캘린더로 미리 투자를 준비할 수 있어요"
-            },
-            {
-              icon: <TrendingUp size={18} className="text-green-400" />,
-              text: "S&P 500 기업들의 분석과 투자 인사이트를 제공해요"
+              text: "실적 발표와 IPO 캘린더로 미리하는 투자 준비"
             },
             {
               icon: <Newspaper size={18} className="text-orange-400" />,
-              text: "암호화폐의 전 세계 거래소 가격 비교를 통한 김치프리미엄을 분석해요"
+              text: "암호화폐 거래소 가격 비교를 통한 김치프리미엄 분석"
             },
             {
               icon: <MessageSquare size={18} className="text-purple-400" />,
-              text: "ETF 업종과 보유 종목을 한눈에 볼 수 있어요"
+              text: "ETF 업종과 보유 종목 보기"
             },
             {
               icon: <DollarSign size={18} className="text-yellow-400" />,
-              text: "시장에 영향을 줄 수 있는 인물들의 SNS 계정 게시글이 시장에 미치는 영향을 분석해요"
+              text: "트럼프와 일론머스크의 SNS 게시글 분석"
             }
           ].map((item, index) => (
             <div key={index} className="flex items-start space-x-3 glass-subtle rounded-lg p-3 hover:glass-card transition-all duration-300">
@@ -285,7 +281,7 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
           <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-blue-600/10 group-hover:from-primary/20 group-hover:to-blue-600/20 transition-all duration-300"></div>
           <div className="flex items-center justify-center space-x-3 relative z-10">
             <Play size={20} className="text-primary group-hover:scale-110 transition-transform" />
-            <span className="font-bold">투자 여정 시작하기</span>
+            <span className="font-bold">WE INVESTING 시작</span>
             <ChevronRight size={20} className="text-primary group-hover:translate-x-2 transition-transform" />
           </div>
         </button>
@@ -293,9 +289,6 @@ export function WelcomePage({ onComplete, onSkip }: WelcomePageProps) {
 
       {/* 하단 메시지 */}
       <div className="text-center pt-4 pb-8">
-        <p className="text-xs text-foreground/50">
-          로그인 없이도 대부분의 기능을 이용할 수 있어요
-        </p>
       </div>
     </div>
   );
